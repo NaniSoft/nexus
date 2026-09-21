@@ -9,7 +9,9 @@
   },
   "assets": {
     "directory": "./out",
-    "binding": "ASSETS",
+    // No "binding" here: this is an assets-only Worker (no "main" script),
+    // and bindings are only legal alongside one. If a build ticket adds a
+    // Worker script (e.g. an llms.txt mirror), re-add "binding": "ASSETS".
     // Next's static export emits out/404.html (app/not-found.tsx); the
     // default auto-trailing-slash html_handling matches trailingSlash: false.
     "not_found_handling": "404-page"
