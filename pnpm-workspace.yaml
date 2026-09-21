@@ -1,0 +1,14 @@
+# Config-only — this is a flat single-app repo, not a pnpm workspace.
+# Dependency-build policy, mirroring the prism repo: neither package needs its
+# postinstall (esbuild's platform binary arrives via optionalDependencies;
+# wrangler deploy/config never needs workerd — wrangler dev is unused here,
+# static assets + remote preview).
+allowBuilds:
+  esbuild: false
+  workerd: false
+# First-party prism packages are excluded from the release-age policy: they
+# are ours, resolved from npm by exact version in the lockfile, and fresh
+# releases are precisely what this repo wants to pick up.
+minimumReleaseAgeExclude:
+  - '@nanisoft/prism-tokens@0.3.0'
+  - '@nanisoft/prism-ui@0.4.0'

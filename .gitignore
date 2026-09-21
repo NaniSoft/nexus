@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# next
+.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# generated build-time css (scripts/bake-antd-css.mjs)
+/app/antd-vars.css
+
+# wrangler local state
+.wrangler/
+
+# local planning — the wayfinder map lives in the Nanisoft workspace, not in repos
+.scratch/
+
+# misc
+.DS_Store
