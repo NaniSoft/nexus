@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Prism mark: a white beam entering a prism, refracted into the blue inks
+       (ADR-0001 — the beam is neutral, refraction is the brand). -->
+  <rect width="32" height="32" rx="4" fill="#0B1220" />
+  <g stroke-linecap="round">
+    <path d="M4 16 L13 16" stroke="#E8EEF9" stroke-width="2.5" />
+    <path d="M15 14 L28 8" stroke="#2563EB" stroke-width="2.5" />
+    <path d="M15 16 L28 16" stroke="#3B82F6" stroke-width="2.5" />
+    <path d="M15 18 L28 24" stroke="#2563EB" stroke-width="2.5" />
+    <path d="M13 12 L15 20 L13 20 Z" fill="#93B2FF" stroke="none" />
+  </g>
+</svg>
