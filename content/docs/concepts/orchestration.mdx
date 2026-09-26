@@ -1,0 +1,56 @@
+---
+title: Orchestration
+description: The Microsoft Agent Framework coordinates the factory's agents; OpenCode does the coding inside each worker container.
+---
+
+Orchestration is what turns a queue of work items into running builds. Nexus
+orchestrates with the **Microsoft Agent Framework** (MAF) through its .NET SDK,
+and does the coding with **OpenCode**.
+
+## Why an agent framework at all
+
+A factory run is not one agent doing one thing. A run involves planning the
+change, making it, checking it, and reporting on it — and the factory runs many
+of them at once, across many projects, with retries and timeouts around each.
+Coordinating that by hand-rolled glue is where ad hoc agent work becomes
+unmaintainable. MAF supplies the orchestration primitives: agents as
+first-class objects, structured handoffs between them, and a runtime that owns
+concurrency and failure.
+
+Nexus is a **generic** factory — the same orchestrator serves every configured
+project, and no project's logic lives in the orchestrator itself. Project
+differences enter as configuration, not as code.
+
+## The .NET SDK
+
+The orchestrator is a .NET service. The .NET SDK is what binds MAF's agent
+abstractions to the rest of the factory: the config loader, the GitHub poller,
+the container worker, the Kanban service, and the merger all sit in the same
+runtime, which is what makes their contracts ordinary method calls rather than
+network guesses.
+
+## NOpenCode and OpenCode
+
+**OpenCode** is the coding agent that works inside the worker container.
+**NOpenCode** is the .NET integration that connects it to the orchestrator: the
+orchestrator hands a work item to NOpenCode, NOpenCode drives OpenCode inside
+the container, and the result — files changed, commands run, tests' outcomes —
+comes back as structured data the orchestrator can act on.
+
+That boundary is deliberate. The orchestrator knows about work items, rounds,
+and pull requests. OpenCode knows about repositories and code. Neither needs to
+model the other's internals, which is what lets either side change without the
+other following.
+
+## What the orchestrator decides
+
+Given a work item, the orchestrator decides the things a factory has to decide
+the same way every time:
+
+- which project's configuration applies;
+- when a worker container starts, and what happens when it exits;
+- whether the result goes to Review, back to the build, or to escalation;
+- when the feedback round counter closes the loop.
+
+Those decisions are the factory's actual policy. They are written down in
+[Architecture — orchestration layer](/docs/architecture/orchestration-layer).

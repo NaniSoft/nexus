@@ -1,0 +1,58 @@
+---
+title: Writing an issue the factory can build
+description: The issue is the factory's only specification — what a buildable one states, and what it leaves out.
+---
+
+The factory reads no specification except the issue. There is no prompt to
+tune, no session to babysit, no second channel where the real requirement
+lives. That is the factory's discipline, and it puts the weight on the input:
+**an issue the factory can build is an issue a competent engineer could act on
+without asking you anything.**
+
+## What a buildable issue states
+
+**The outcome, not the steps.** Say what should be true when the work is done.
+The build agents decide how to get there; an issue that prescribes an
+implementation inherits the reviewer's job of deciding whether the prescription
+was right.
+
+**Where the work lands.** The factory knows the repository from configuration,
+but not the area of the code, the component, or the files that matter. Name
+them.
+
+**How "done" is checked.** The factory runs the project's own tests inside the
+container, and the reviewer reads the results. If the work has an acceptance
+check the tests do not cover, write it into the issue — it becomes the thing
+the reviewer verifies.
+
+**What must not change.** Constraints are specification. "Do not touch the
+migration layer", "keep the public API unchanged", "no new dependencies" are
+all buildable instructions, and they are far cheaper to state at the start than
+to discover in review.
+
+## What wastes a round
+
+Every round of feedback costs a container and a review. The issues that burn
+them are predictable:
+
+- **Two requirements in one issue.** The factory builds one work item per
+  issue. Split them.
+- **A preference stated as a question.** "Should this be cached?" is a design
+  conversation; it cannot be resolved by a build.
+- **Missing context that exists elsewhere.** If the answer is in another issue
+  or a document, link it. The container does not read your team's chat.
+- **"And also."** Added after the build started, it belongs in the next issue.
+
+## The ceiling is a feature
+
+Three rounds is the maximum feedback the factory will carry, and it is designed
+so that hitting it means something. An issue that comes back three times is
+telling you that the requirement was not understood yet — by you or by the
+agents — and the honest response is to close it and write a better one, not to
+keep steering.
+
+## Before you open it
+
+Read the issue back as the person who will have to approve the result. If you
+would not be able to tell, from the issue alone, whether a pull request
+answered it — the factory will not be able to tell either.

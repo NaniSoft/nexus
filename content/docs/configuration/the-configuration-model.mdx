@@ -1,0 +1,69 @@
+---
+title: The configuration model
+description: The four concerns a project's YAML carries — repository, worker image, LLM provider, keys — and how the loader validates them.
+---
+
+A project's configuration is a YAML file naming four things: where the work
+comes from, what environment builds it, what model drives the agents, and what
+credentials that requires. Everything else the factory does is the same for
+every project.
+
+## The four documented concerns
+
+| Concern | What it fixes |
+| --- | --- |
+| **Repository** | The Git repo the factory polls for issues and opens pull requests against. |
+| **API keys** | The credentials the project's builds need, referenced by name. |
+| **LLM provider** | Which provider the project's build agents use. |
+| **Worker image** | The Docker image each issue's worker container starts from. |
+
+A design-stage illustration of the shape — field names are illustrative, not
+frozen:
+
+```yaml
+# factories/atlas.yaml
+name: atlas
+
+# The repository: polled for issues, target for pull requests.
+repo:
+  url: https://github.com/NaniSoft/atlas
+
+# The image every one of this project's worker containers starts from.
+worker:
+  image: nexus-worker-atlas
+
+# What drives the build agents, and what they authenticate with.
+llm:
+  provider: PROVIDER
+keys:
+  github: GITHUB_TOKEN
+  llm: LLM_API_KEY
+```
+
+Two things to notice about that file. First, it is per **project**, not per
+issue: nothing here changes between two issues on the same repository. Second,
+it names no agent behaviour. The factory's policy — rounds, timeouts, merge
+rules — is the factory's, identical everywhere; a project configures its inputs,
+not the factory's rules.
+
+## Validation
+
+The config loader **validates** a project's file before anything downstream
+sees it. A file that fails validation stops that project from joining the
+factory rather than failing later, mid-run, in a worker container.
+
+Validation is what makes the rest of the design simple. The poller, the
+worker, and the board all read configuration values through the loader, and
+none of them has to handle the case of a missing provider or an unresolvable
+image — the loader already refused it.
+
+## Who reads what
+
+Configuration is exposed to **the issue poller, the worker, and the board**
+components:
+
+- the poller needs the repository and the GitHub key;
+- the worker needs the image and the LLM provider and key;
+- the board needs the project's name, to group and filter tickets.
+
+One loaded configuration, three consumers, no second parsing path.

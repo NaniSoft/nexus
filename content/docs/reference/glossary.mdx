@@ -1,0 +1,93 @@
+---
+title: Glossary
+description: The factory's vocabulary, defined once.
+---
+
+Terms the Nexus docs use, defined once. Each links to the page that explains it
+in full.
+
+**Agent** — a software-creation program the factory runs to do part of a build.
+OpenCode is the factory's coding agent; the orchestrator drives it through
+NOpenCode. See [orchestration](/docs/concepts/orchestration).
+
+**Auto-merge** — the factory opening and merging a pull request without a human
+clicking approve: on approval, or on feedback timeout. See
+[the auto-merge policy](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
+
+**Backlog** — the swimlane holding issues polled from GitHub that the factory
+has not started. See [the Kanban](/docs/concepts/kanban-and-the-human-feedback-loop).
+
+**Board** — the Kanban at port 5000: swimlanes, auto-refresh, and the only
+surface that accepts a review decision. See [Kanban service](/docs/architecture/kanban-service).
+
+**Board** — the Kanban at port 5000: swimlanes, auto-refresh, and the only
+surface that accepts a review decision. See [Kanban service](/docs/architecture/kanban-service).
+
+**code-server** — VS Code in the browser, running inside the worker container;
+the build's editing environment.
+
+**Dead letter / escalated** — the terminal state for a ticket the factory gave
+up on. Rendered on the board, never silent. See
+[observability and error handling](/docs/architecture/observability-and-error-handling#dead-letter-escalation).
+
+**Done** — the swimlane for approved and merged tickets. The only way in is
+through Review.
+
+**Factory** — the whole system: config loader, issue poller, orchestrator and
+workers, Kanban service, merger. Generic — it serves every project configured
+in `factories/` without modification. See [the factory model](/docs/concepts/the-factory-model).
+
+**`factories/`** — the directory holding one YAML file per project. Adding a
+file is adding a project. See [the factories/ layout](/docs/configuration/the-factories-layout).
+
+**Feedback round** — one cycle of "changes requested" → rebuild → re-review.
+Three is the maximum. See [why three rounds](/docs/concepts/kanban-and-the-human-feedback-loop#why-three-rounds).
+
+**Frontier** — the swimlane for work items the factory has accepted and is about
+to build.
+
+**In Progress** — the swimlane for work items with a live worker container
+open on them.
+
+**Issue** — a GitHub issue on a configured repository; the factory's only input
+specification. See [writing an issue the factory can build](/docs/guides/writing-an-issue-the-factory-can-build).
+
+**MAF** — the Microsoft Agent Framework, the orchestration layer the factory is
+built on with its .NET SDK. See [orchestration](/docs/concepts/orchestration).
+
+**Merger** — the component that opens and merges the pull request on approval.
+It merges; it does not decide.
+
+**NOpenCode** — the .NET integration connecting the orchestrator to OpenCode.
+See [NOpenCode and OpenCode](/docs/concepts/orchestration#nopencode-and-opencode).
+
+**OpenCode** — the coding agent that works an issue inside a worker container.
+
+**Poller** — the component that reads open issues from every configured
+repository and converts each into a work item in Backlog.
+
+**Pull request** — the factory's only recognised output. If the work cannot be
+shaped into one, the factory has not finished the job.
+
+**Reject** — the review decision that ends a ticket in the rejected state. The
+factory stops spending on it.
+
+**Request changes** — the review decision that returns a ticket to the build
+with feedback attached, consuming one of the three rounds.
+
+**Review** — the swimlane where a build waits for a human decision.
+
+**Round robin** — the order the factory walks configured projects in, so no
+project starves another. See
+[multi-project processing](/docs/concepts/multi-project-processing).
+
+**Testcontainers** — the integration-test layer's tool for running the factory's
+real dependencies — a real container, a real build — inside a test. See
+[testing strategy](/docs/operations/testing-strategy#integration-do-the-pieces-work-against-the-real-thing).
+
+**Work item** — the factory's internal representation of one issue: its project,
+its source issue, its swimlane, its round count, and its build results.
+
+**Worker container** — the fresh Docker container started for a single build
+attempt, running code-server and OpenCode. See
+[worker containers](/docs/concepts/worker-containers).

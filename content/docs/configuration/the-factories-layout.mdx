@@ -1,0 +1,51 @@
+---
+title: The factories/ layout
+description: One YAML file per project, loaded together at start — the whole act of adding a repository to the factory.
+---
+
+Per-project configuration lives in the `factories/` directory: one YAML file
+per project, nothing else.
+
+```
+factories/
+├── atlas.yaml
+├── alphalens.yaml
+└── prism.yaml
+```
+
+## Adding a project
+
+Adding a project to the factory is adding a file to this directory and nothing
+else. No component changes, no rebuild of the factory, no per-project plugin.
+That is the concrete meaning of the factory being **generic** — reusable across
+multiple projects without being modified for any of them.
+
+## Loaded together, at start
+
+The factory **loads all of the project configs in `factories/`** and serves
+every project it finds. The set of files is the set of projects; there is no
+separate registry to keep in sync with the directory.
+
+Loading is followed by validation, per project: a file that does not validate
+keeps its project out of the rotation instead of failing the whole factory.
+[A project whose configuration is wrong is a project that is not being
+served](/docs/configuration/the-configuration-model#validation) — visibly, and
+with the reason.
+
+## How the directory is consumed
+
+Round-robin order is walked over the loaded set, so a project's position in the
+rotation comes from the directory's contents rather than from an ordering
+anyone maintains. [Multi-project processing](/docs/concepts/multi-project-processing)
+describes what that means for fairness and for non-blocking.
+
+## Conventions worth keeping
+
+The directory works best when it stays boring:
+
+- one file per project, named for the project;
+- no shared or partial config files that other files include;
+- no generated files — if a value is derived, it is derived by the loader.
+
+The moment `factories/` starts carrying logic, the factory's promise — that
+adding a project is adding a file — quietly stops being true.

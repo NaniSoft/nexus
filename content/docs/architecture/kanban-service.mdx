@@ -1,0 +1,59 @@
+---
+title: Kanban service
+description: The board at port 5000 — its swimlanes, its single state source, its auto-refresh contract, and the decision API.
+---
+
+The Kanban service holds the factory's board state and serves it at **port
+5000**. It is the component people look at, and the only one that accepts a
+review decision.
+
+## State
+
+Work items are **persisted**, and the board reads the same records the
+orchestrator writes. There is no board-side copy of the truth to drift out of
+sync: what the board shows is the state the factory holds, refreshed.
+
+Each work item carries its project, its source issue, its swimlane, its round
+count, and — once a build has finished — the build results a reviewer needs.
+
+## Swimlanes
+
+| Swimlane | Meaning |
+| --- | --- |
+| **Backlog** | Polled from GitHub, not yet accepted. |
+| **Frontier** | Accepted, waiting for a worker. |
+| **In Progress** | A worker container is open on it. |
+| **Review** | Build finished, awaiting a decision. |
+| **Done** | Approved and merged. |
+
+**Rejected** and **escalated** are terminal states off the main flow. Both are
+rendered on the board; the factory does not hide failures from the surface
+people watch.
+
+## Auto-refresh
+
+The board auto-refreshes and shows real-time status. The design point is not
+convenience — it is that a board someone has to refresh manually is a board
+they stop trusting. Auto-refresh keeps the board honest against the factory's
+actual state, which matters most when a build is failing and someone is
+watching it fail.
+
+## Decisions
+
+A ticket in **Review** exposes three actions, and they are the board's whole
+write path:
+
+- **Approve** — hands the ticket to the merger, which opens and merges the pull
+  request. The ticket moves to Done.
+- **Request changes** — attaches the feedback and returns the ticket to the
+  build; the round counter increments.
+- **Reject** — moves the ticket to the rejected state; the factory stops work
+  on it.
+
+Feedback timeout also moves a ticket: past the threshold, the factory merges
+rather than holding the pipeline.
+
+## Multi-project on one board
+
+Tickets are grouped or filterable by project, so a reviewer can read one
+repository's queue. The board is shared; the view of it does not have to be.

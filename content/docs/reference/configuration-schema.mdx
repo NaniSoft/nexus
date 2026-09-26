@@ -1,0 +1,95 @@
+---
+title: Configuration schema reference
+description: Every concern the design-stage configuration model carries — design intent, not a frozen contract.
+---
+
+This is the **configuration model** — the design's statement of what a project
+tells the factory. It is documented as a design-stage model:
+
+- there is no versioned schema to validate against yet, and no released loader;
+- field **names** below are illustrative where the design has not fixed them —
+  the concern each field serves is the stable part;
+- nothing here is a contract between releases, because there are no releases.
+
+## Top level
+
+| Field | Type | Required | Concern |
+| --- | --- | --- | --- |
+| `name` | string | yes | The project's identity on the factory. Used by the board to group and filter tickets. |
+| `repo` | mapping | yes | Where issues are polled from and pull requests are opened. See [Repository](#repository). |
+| `worker` | mapping | yes | The container environment the build runs in. See [Worker](#worker). |
+| `llm` | mapping | yes | What drives the build agents. See [LLM](#llm). |
+| `keys` | mapping | yes | Credentials, referenced by environment variable name. See [Keys](#keys). |
+
+That is the whole top level. The factory's behaviour — rounds, timeouts, merge
+policy, retry strategy — is **not** configurable per project; it is the
+factory's, identical everywhere. See
+[the configuration model](/docs/configuration/the-configuration-model).
+
+## Repository
+
+| Field | Type | Required | Concern |
+| --- | --- | --- | --- |
+| `url` | string (Git URL) | yes | The Git repository the issue poller reads and the merger opens pull requests against. |
+
+One repository per project. A second repository is a second file in
+[`factories/`](/docs/configuration/the-factories-layout).
+
+## Worker
+
+| Field | Type | Required | Concern |
+| --- | --- | --- | --- |
+| `image` | string (image reference) | yes | The Docker image every worker container for this project starts from. |
+
+The image carries the project's toolchain, so its tests can run inside the
+container that built the change. Building and publishing it is part of
+configuring the project; [rootless Docker](/docs/configuration/rootless-docker)
+describes the constraints the image has to satisfy on the host.
+
+## LLM
+
+| Field | Type | Required | Concern |
+| --- | --- | --- | --- |
+| `provider` | string | yes | Which LLM provider this project's build agents use. |
+
+Per project, deliberately: provider choice is a project's own cost and
+capability decision, and a factory-wide default would make one project's choice
+every project's bill.
+
+## Keys
+
+| Field | Type | Required | Concern |
+| --- | --- | --- | --- |
+| `github` | string (env var name) | yes | The variable holding the project's GitHub token. Scoped to the narrowest set the factory needs. |
+| `llm` | string (env var name) | yes | The variable holding the project's model credential. |
+
+Values are **names of environment variables**, never the secrets themselves —
+see [secrets and token scopes](/docs/configuration/secrets-and-token-scopes).
+Project files stay committable, and rotation is an environment change.
+
+## Worked example
+
+```yaml
+# factories/atlas.yaml — design-stage illustration.
+name: atlas
+
+repo:
+  url: https://github.com/NaniSoft/atlas
+
+worker:
+  image: nexus-worker-atlas
+
+llm:
+  provider: PROVIDER
+
+keys:
+  github: GITHUB_TOKEN
+  llm: LLM_API_KEY
+```
+
+## What the schema does not carry
+
+No agent prompts, no per-issue overrides, no board configuration, no plugin
+list. Each of those would move factory policy into project configuration, and
+the factory's promise — that a project is a file, and the factory behaves the
+same for all of them — depends on that line holding.

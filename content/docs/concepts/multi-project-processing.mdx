@@ -1,0 +1,44 @@
+---
+title: Multi-project processing
+description: One factory serves every configured repository in round-robin order, and no project's pipeline blocks another's.
+---
+
+Nexus is designed to run many projects from one deployment. Each project is a
+YAML file in `factories/`; the factory loads all of them at start and serves
+them continuously.
+
+## Round-robin, not first-come
+
+The factory polls and processes configured projects **in round-robin order**.
+Each pass through the loop gives every project a turn, so one noisy repository
+cannot starve the rest. This matters because the alternative — a work queue
+ordered by arrival — would let a single project with a burst of issues hold the
+factory's capacity while quieter projects waited behind it.
+
+## Non-blocking by design
+
+Workers processing issues from different projects do not block each other. A
+long build in project A does not stop project B's issue from starting: each
+work item gets its own container, so concurrency is bounded by the factory's
+container budget rather than by a shared working tree or a shared lock.
+
+## What stays per-project
+
+Configuration is per-project — repository, keys, LLM provider, worker image.
+Work items carry their project with them, and the board can group or filter
+tickets by project, so a reviewer looking at one repository's queue sees that
+repository's tickets rather than the factory's whole output.
+
+## What stays shared
+
+The orchestrator, the worker pool, the board, and the observability surface are
+shared. That is the reason to run one factory instead of one per repository:
+retry behaviour, escalation, metrics, and the feedback loop are identical
+everywhere, and improving them improves every project at once.
+
+## The isolation that still holds
+
+Multi-project does not weaken the factory's central guarantee. **Each issue
+still gets a fresh container environment regardless of project** — a worker
+container never carries state from a previous run, and never from another
+project's run. Round-robin orders the work; isolation bounds it.

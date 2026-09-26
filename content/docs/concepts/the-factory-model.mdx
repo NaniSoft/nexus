@@ -1,0 +1,46 @@
+---
+title: The factory model
+description: Issues as work orders, containers as the shop floor, and a pull request as the only output the factory recognises.
+---
+
+A factory takes a standard input, applies a repeatable process, and produces a
+standard output. Nexus applies that shape to software creation.
+
+## The input is an issue
+
+The factory's input is a GitHub issue on a configured repository. An issue is
+already a work order: it has a title, a description, a reporter, and a place in
+a queue the team already reads. Nexus does not invent a parallel backlog — it
+consumes the one that exists. Every open issue on a configured repository is a
+candidate work order; the factory polls for them and turns each into a work
+item on the board.
+
+## The process is contained and repeated
+
+Each work order is built in its own container. The container starts from the
+image the project's configuration names, carries nothing over from the previous
+run, and is thrown away when the run ends. Because the environment is identical
+every time, a build that fails gives you a signal about the work, not about the
+machine it happened to land on.
+
+The work inside the container is done by coding agents — OpenCode, hosted by
+code-server — driven by the orchestrator. The agents plan, edit, and run the
+project's own tests. They do not decide whether the result ships.
+
+## The output is a pull request
+
+The factory recognises exactly one output: a pull request against the
+configured repository. If the work cannot be shaped into a reviewable pull
+request, the factory has not finished the job — the ticket goes back for another
+round or escalates.
+
+## The three commitments
+
+The factory model is three commitments, and they are the ones the rest of the
+design defends:
+
+1. **One issue, one fresh container.** No shared state between runs.
+2. **One reviewed change.** A human sees the diff before it merges; the factory
+   never merges around them.
+3. **A bounded loop.** Three rounds of feedback maximum. The factory terminates
+   instead of spinning.

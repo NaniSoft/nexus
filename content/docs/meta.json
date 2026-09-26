@@ -1,0 +1,12 @@
+{
+  "title": "Nexus",
+  "pages": [
+    "introduction",
+    "concepts",
+    "architecture",
+    "configuration",
+    "operations",
+    "guides",
+    "reference"
+  ]
+}

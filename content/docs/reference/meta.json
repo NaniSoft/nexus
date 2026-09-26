@@ -1,0 +1,8 @@
+{
+  "title": "Reference",
+  "description": "The configuration schema (design stage) and the factory's glossary.",
+  "pages": [
+    "configuration-schema",
+    "glossary"
+  ]
+}

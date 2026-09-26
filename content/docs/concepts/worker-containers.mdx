@@ -1,0 +1,55 @@
+---
+title: Worker containers
+description: Every issue gets a fresh Docker container running code-server and OpenCode — isolated, disposable, and identical every time.
+---
+
+A **worker container** is the Docker container the factory starts for a single
+work item. It is the shop floor: the place where the issue's code is actually
+built and tested.
+
+## What runs inside
+
+Two things, and they are the pair the design is built around:
+
+- **code-server** — VS Code in the browser,
+  running inside the container. It gives the run a real editing environment: the
+  project's language tooling, its test runner, its debugger.
+- **OpenCode** — the coding agent that works the issue. It reads the
+  repository, plans, edits files, and runs commands inside the container.
+
+The two are integrated through **NOpenCode**, the .NET integration the
+orchestrator uses to drive OpenCode from outside the container's lifetime.
+
+## Why one container per issue
+
+Isolation is the point, and it buys four things.
+
+**Reproducibility.** A container starts from a known image with no state from
+any previous run. The same issue built twice starts from the same place.
+
+**Safety.** Agent work happens inside a throwaway filesystem with scoped
+credentials, not on a shared machine. A bad run cannot reach a neighbouring
+project's work or the factory host.
+
+**Concurrency.** Containers are cheap to start in parallel. The factory can
+build issues from several projects at once without the runs contending for one
+working tree.
+
+**Honest teardown.** When a run ends — success, rejection, or crash — the
+container goes with it. Nothing lingers to make the next run's behaviour
+mysterious.
+
+## The image
+
+The image a project's workers start from is named in that project's
+configuration, so each repository gets an environment that matches its own
+toolchain rather than one image that pretends to fit everything. Building and
+distributing that image is part of configuring a project — see
+[Configuration](/docs/configuration/the-configuration-model).
+
+## Lifecycle
+
+The container's whole life is one build attempt: start, check out, build, test,
+report, stop. [Architecture](/docs/architecture/worker-container-lifecycle)
+walks that sequence stage by stage, including what happens when a stage fails
+midway.

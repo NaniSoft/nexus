@@ -1,0 +1,60 @@
+---
+title: Orchestration layer
+description: The .NET service that owns factory policy — Microsoft Agent Framework for agents, NOpenCode for the build, and the round state machine.
+---
+
+The orchestration layer is a .NET service built on the **Microsoft Agent
+Framework**. It is the only component that makes policy decisions, which is
+what keeps the factory's behaviour explainable: every transition a work item
+goes through was decided here.
+
+## Agents under MAF
+
+MAF treats agents as first-class, composable objects with a runtime that owns
+concurrency, handoff, and failure. The factory uses that rather than
+re-implementing it: the agents involved in a build are declared to the
+framework, and the framework sequences them. Multi-agent orchestration is the
+framework's job; the factory's job is deciding what the agents are and what
+their outputs mean.
+
+## Driving the build through NOpenCode
+
+The orchestrator does not reach into the container to run commands. It hands a
+work item to **NOpenCode**, which drives **OpenCode** inside the worker
+container and returns structured results. The orchestrator consumes those
+results — what changed, what ran, what passed — and updates the work item.
+
+Keeping that boundary means the orchestrator can be tested against a fake
+NOpenCode, and OpenCode can be upgraded without the factory's policy moving.
+
+## The round state machine
+
+Every work item carries a round counter. The transitions are:
+
+```
+Backlog → Frontier → In Progress → Review ─┬→ Done            (approved)
+                                           ├→ In Progress     (changes requested, round < 3)
+                                           ├→ Rejected        (rejected)
+                                           └→ Escalated       (terminal failure)
+```
+
+Two rules close the loop:
+
+- **Three rounds maximum.** A fourth request for changes is not accepted; the
+  ticket leaves the normal loop instead.
+- **Feedback timeout merges.** A ticket left in Review past the threshold is
+  merged by the factory rather than held. [Why](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
+
+## Round-robin scheduling
+
+The orchestrator's loop walks configured projects in round-robin order, one
+turn each. Work items from different projects are handed to workers without a
+shared lock, so a slow build in one project delays its own ticket, not another
+project's.
+
+## What the orchestrator does not do
+
+It does not hold build state of its own — work items are persisted, and the
+board reads the same record the orchestrator writes. It does not open pull
+requests; the merger does. And it does not retry blindly: retries are
+[strategy, not reflex](/docs/architecture/observability-and-error-handling).

@@ -1,0 +1,10 @@
+{
+  "title": "Configuration",
+  "description": "The per-project YAML model, the factories/ layout, secrets and token scopes, and rootless Docker.",
+  "pages": [
+    "the-configuration-model",
+    "the-factories-layout",
+    "secrets-and-token-scopes",
+    "rootless-docker"
+  ]
+}

@@ -1,0 +1,66 @@
+---
+title: The Kanban and the human feedback loop
+description: Five swimlanes, one board, three decisions — approve, request changes, reject — and a hard ceiling of three rounds.
+---
+
+The Kanban board is where the factory becomes visible and where a human takes
+over. It is a board at port 5000 with five swimlanes and auto-refresh, and it
+is the only place work is approved.
+
+## The five swimlanes
+
+| Swimlane | What it holds |
+| --- | --- |
+| **Backlog** | Issues polled from the configured repositories, not yet started. |
+| **Frontier** | Work items the factory has accepted and is about to build. |
+| **In Progress** | Live builds — a worker container is open on the issue. |
+| **Review** | Finished builds waiting for a human decision. |
+| **Done** | Approved and merged. |
+
+Two further states exist off the main flow: a **rejected** state for tickets a
+human declines, and **escalated** for tickets that failed hard enough to leave
+the normal loop. Both are visible on the board — nothing disappears into a log.
+
+## The three decisions
+
+A ticket in Review presents its diff and its build result, and offers exactly
+three actions.
+
+**Approve** — the factory opens the pull request and merges it. Approval is the
+only path to Done.
+
+**Request changes** — the ticket returns to the build with the feedback
+attached, and the round counter increments. Three rounds is the ceiling.
+
+**Reject** — the ticket moves to the rejected state and the factory stops
+spending on it.
+
+## Why three rounds
+
+The ceiling exists to prevent the failure mode every unbounded feedback loop
+has: the agent and the reviewer disagreeing forever while the factory keeps
+paying for containers. Three rounds is enough for a reviewer to steer a build
+that is close and cheap to abandon for one that is not. When the third round
+comes back and feedback is still outstanding, the loop closes — see
+[the auto-merge policy](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
+
+## The auto-merge policy
+
+Auto-merge is the factory's answer to a bottleneck it cannot schedule around: a
+reviewer who is not looking. The design merges on approval, and merges on
+feedback timeout — if a ticket sits in Review past the threshold, the factory
+merges rather than holding the pipeline.
+
+That is an aggressive default and it is stated plainly so it can be governed.
+The board is where the threshold is visible, the board is where the decision
+was supposed to happen, and the merge is always a pull request that can be
+reverted. A factory that silently stops is worse than one that ships a
+revertible change.
+
+## The board as a control surface
+
+Auto-refresh means the board reflects reality without anyone polling it, and it
+carries the factory's health as well as its work: escalated tickets, failed
+builds, and round counts all appear where the work is. That is deliberate —
+[observability](/docs/architecture/observability-and-error-handling) at the
+factory level is most useful at the moment someone is looking at a ticket.

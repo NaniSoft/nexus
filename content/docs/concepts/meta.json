@@ -1,0 +1,11 @@
+{
+  "title": "Concepts",
+  "description": "The ideas the factory is built out of.",
+  "pages": [
+    "the-factory-model",
+    "worker-containers",
+    "orchestration",
+    "kanban-and-the-human-feedback-loop",
+    "multi-project-processing"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Operations",
+  "description": "Deployment with Docker Compose, and the four-layer testing strategy.",
+  "pages": [
+    "deployment",
+    "testing-strategy"
+  ]
+}

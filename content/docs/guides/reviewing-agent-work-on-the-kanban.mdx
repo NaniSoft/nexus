@@ -1,0 +1,62 @@
+---
+title: Reviewing agent work on the Kanban
+description: The three decisions, what to read before making one, and how the three-round ceiling changes the conversation.
+---
+
+Reviewing is the factory's human job. A build arrives in **Review** with its
+diff and its build results, and you make one of three decisions. Everything
+else about the role follows from taking that seriously.
+
+## What is in front of you
+
+A Review ticket carries what happened, not a summary of it: the files that
+changed, the commands that ran, and the outcomes of the project's own tests —
+all produced inside [the container that built
+it](/docs/architecture/worker-container-lifecycle).
+
+Read the tests first. The factory runs the project's suite, so a green run is
+evidence, but it is evidence about what the project already tests. A change
+with no test touching it is unverified no matter how green the run is.
+
+Then read the diff as a whole. Agent work fails in characteristic ways — a
+change that solves the issue in one place while quietly breaking an assumption
+somewhere else, or a fix that adds a special case where the codebase already has
+an abstraction.
+Whole-diff reading is what catches those.
+
+## The three decisions
+
+**Approve** merges. Do it when the diff answers the issue and you would have
+merged it from a colleague. Approval is a signature on the change, not a
+thank-you to the factory.
+
+**Request changes** sends the ticket back with your feedback attached and
+consumes one of the three rounds. Write the feedback as you would for a
+colleague's pull request: specific, actionable, and pointed at the change
+rather than the agent. "This is wrong" costs a round and produces another
+guess; "this path drops the error case — the caller in X assumes it is set"
+produces a fix.
+
+**Reject** ends the ticket. Use it when the issue itself turns out to be wrong,
+duplicated, or not worth the remaining rounds. Rejection is not a judgement on
+the build; it is the decision that the work should not continue.
+
+## Three rounds, so spend them well
+
+The [round ceiling](/docs/concepts/kanban-and-the-human-feedback-loop#why-three-rounds)
+exists so that disagreement terminates. It also changes what good feedback
+looks like: three rounds is enough to steer a build that is close, and not
+enough to design something by committee through the board.
+
+If you are asking for changes a second time, stop and consider whether the
+issue was buildable. If it was not, the honest move is
+[reject and rewrite](/docs/guides/writing-an-issue-the-factory-can-build#the-ceiling-is-a-feature)
+rather than a third round aimed at a target that keeps moving.
+
+## The auto-merge threshold
+
+Tickets left in **Review** past the feedback threshold merge without you. That
+is the factory's answer to a review queue nobody is reading, and it is worth
+understanding before you rely on it: Review is a place where work is waiting
+for a decision, not a place where it is safely parked. A ticket you are not
+ready to decide is a ticket to reject or to approve.

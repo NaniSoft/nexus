@@ -1,0 +1,44 @@
+---
+title: Rootless Docker
+description: The considerations behind running worker containers without a root daemon — the least privileged host the factory can run on.
+---
+
+The design names **rootless Docker** as a security consideration, and it is
+worth spelling out why: the factory's whole job is starting containers and
+letting agents run arbitrary build commands inside them. How privileged the
+thing that starts those containers is determines how bad the worst case is.
+
+## The problem being reduced
+
+A rootful Docker daemon is effectively root on the host. Any path from a
+container to the daemon is a path to the host, and the factory deliberately
+opens that path hundreds of times a day, on work it did not write.
+
+Rootless Docker removes that ceiling. The daemon runs unprivileged, containers
+are bounded by the user that owns them, and an escape from a worker container
+lands on an unprivileged user rather than on the machine.
+
+## What it touches in the design
+
+Running rootless is mostly a property of the host and the daemon, but it
+constrains three things the factory does:
+
+- **Image handling.** Registries and storage live under the unprivileged user;
+  the images a project's config names have to be resolvable there.
+- **Ports and networking.** Unprivileged users cannot bind low ports. The
+  factory's own published surface — the board on port 5000 — is unaffected,
+  and worker containers need no inbound ports at all.
+- **Volume ownership.** Mounted paths must be readable and writable by the
+  daemon's user, which is a host provisioning concern rather than a
+  configuration concern.
+
+None of those change the factory model. They are why rootless is a
+*consideration* recorded in design rather than a switch in a config file.
+
+## The posture in one line
+
+The factory assumes its workloads are untrusted — they are written by agents —
+so it runs them in the least privileged environment that still builds software:
+one fresh container per issue, scoped credentials, no root daemon.
+[Secrets and token scopes](/docs/configuration/secrets-and-token-scopes) is the
+other half of that sentence.

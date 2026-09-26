@@ -1,0 +1,21 @@
+---
+title: Configuration
+description: One YAML file per project — repository, keys, LLM provider, worker image — and the directory that holds them.
+---
+
+Configuration is how a project joins the factory, and it is deliberately small:
+one YAML file per project, four concerns in it.
+
+- **[The configuration model](/docs/configuration/the-configuration-model)** —
+  the four documented concerns and how the loader validates them.
+- **[The `factories/` layout](/docs/configuration/the-factories-layout)** — one
+  file per project, loaded together at start.
+- **[Secrets and token scopes](/docs/configuration/secrets-and-token-scopes)** —
+  environment variables, and the narrowest scope that works.
+- **[Rootless Docker](/docs/configuration/rootless-docker)** — the
+  considerations behind running workers without a root daemon.
+
+These pages document the **configuration model**: the shape the design commits
+to. The factory has not shipped, so there is nothing here to install and no
+versioned schema to migrate — field names are illustrative where the design has
+not fixed them, and each page says which.

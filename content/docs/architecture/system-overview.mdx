@@ -1,0 +1,50 @@
+---
+title: System overview
+description: Five components — config, poller, orchestrator and workers, board, merger — and the path a work item takes between them.
+---
+
+The factory is five components with narrow contracts between them.
+
+| Component | Responsibility |
+| --- | --- |
+| **Config loader** | Reads and validates `factories/*.yaml`; exposes values to every other component. |
+| **Issue poller** | Reads open issues from each configured repository; converts them to work items. |
+| **Orchestrator + workers** | Accepts work items, starts worker containers, drives the build, tracks rounds. |
+| **Kanban service** | Holds board state and serves the board at port 5000. |
+| **Merger** | Opens and merges the pull request when a ticket is approved. |
+
+## The path of a work item
+
+1. The **config loader** starts first. Nothing else runs without a validated
+   project configuration — see [the configuration model](/docs/configuration/the-configuration-model).
+2. The **issue poller** reads open issues from each configured repository, in
+   round-robin order. Each issue becomes a work item with a title, a
+   description, and an initial **Backlog** status.
+3. Work items are **persisted**, so the board and the orchestrator read the same
+   state rather than each keeping their own.
+4. The **orchestrator** accepts an item, starts a fresh worker container, and
+   drives the build through NOpenCode and OpenCode. The item moves Frontier →
+   In Progress.
+5. On completion the item moves to **Review**, where a human approves, requests
+   changes, or rejects.
+6. On approval the **merger** opens the pull request against the configured
+   repository and merges it. The item moves to **Done**.
+
+## Where the contracts are
+
+The seams are deliberately boring. The poller knows GitHub and work items; it
+does not know about containers. The orchestrator knows work items, containers,
+and rounds; it does not know how the board renders. The board reads state and
+writes decisions; it does not build. The merger knows pull requests; it does
+not decide.
+
+That is what makes the factory **generic**. Adding a project is a configuration
+file, because no component has to learn anything about a project to serve it.
+
+## What is deliberately not here
+
+There is no scheduler component, no per-project plugin system, and no second
+queue beside the board. Round-robin ordering, the round ceiling, and escalation
+all live in the orchestrator, where [the retry and escalation
+policy](/docs/architecture/observability-and-error-handling) can be reasoned
+about in one place.

@@ -1,0 +1,22 @@
+---
+title: Architecture
+description: The factory's components, their contracts, and the failure paths between them.
+---
+
+Architecture describes the factory as built components with contracts between
+them. [Concepts](/docs/concepts) says what each idea is; these pages say what
+runs, in what order, and what happens when a stage fails.
+
+- **[System overview](/docs/architecture/system-overview)** — the five
+  components and the path a work item takes through them.
+- **[Orchestration layer](/docs/architecture/orchestration-layer)** — the .NET
+  service that owns policy: MAF, NOpenCode, and the round state machine.
+- **[Worker-container lifecycle](/docs/architecture/worker-container-lifecycle)** —
+  start to teardown, stage by stage, including mid-run failure.
+- **[Kanban service](/docs/architecture/kanban-service)** — the board at port
+  5000, its state source, and its auto-refresh contract.
+- **[Observability and error handling](/docs/architecture/observability-and-error-handling)** —
+  structured logs, metrics, retries, and dead-letter escalation.
+
+Every page here traces to the factory's design; where the design leaves a
+decision open, the page says so rather than picking one quietly.

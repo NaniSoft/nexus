@@ -1,0 +1,48 @@
+---
+title: Worker-container lifecycle
+description: Start, checkout, build, test, report, teardown — the six stages of one build attempt, and what happens when a stage fails.
+---
+
+A worker container exists for exactly one build attempt. Its life has six
+stages, and each stage has a defined failure.
+
+## The stages
+
+**1. Start.** The orchestrator asks the Docker runtime for a container from the
+project's configured image. Nothing is restored: no cache from a previous run,
+no working tree from another project. If the image cannot be pulled or the
+container cannot start, the failure is transient-class and goes to
+[retry](/docs/architecture/observability-and-error-handling#retries).
+
+**2. Checkout.** The container fetches the configured repository at the issue's
+base. The work item's project determines the repository; there is nothing else
+to resolve.
+
+**3. Build.** OpenCode works the issue inside the container, driven through
+NOpenCode: read the repository, plan the change, edit. code-server provides the
+editing environment — toolchain, runner, debugger.
+
+**4. Test.** The project's own tests run inside the same container, on the same
+tree the build produced. The factory does not decide what "tested" means; the
+project's configuration and its existing scripts do.
+
+**5. Report.** Files changed, commands run, and test outcomes come back as
+structured results. The work item moves to **Review** with those results
+attached — the reviewer sees what happened, not a summary of it.
+
+**6. Teardown.** The container is removed. Whether the attempt succeeded,
+failed, or was cancelled, nothing survives to affect the next run.
+
+## Failure in the middle
+
+A stage that fails does not leave a half-alive environment behind. The
+container is torn down as part of the failure path, the work item records where
+it stopped, and the board shows the ticket in the state that reflects it —
+retrying, failed, or escalated. The next attempt, if there is one, starts from
+stage 1 in a new container.
+
+## Concurrency
+
+Containers are independent, so the factory's concurrency is a container budget
+rather than a lock. Builds from different projects run side by side; the
+round-robin loop decides what gets the next free slot.

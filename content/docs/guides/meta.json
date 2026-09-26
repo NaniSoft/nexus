@@ -1,0 +1,8 @@
+{
+  "title": "Guides",
+  "description": "The two jobs a human does in the factory: write the issue, and review the work.",
+  "pages": [
+    "writing-an-issue-the-factory-can-build",
+    "reviewing-agent-work-on-the-kanban"
+  ]
+}

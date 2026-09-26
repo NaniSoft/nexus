@@ -1,0 +1,67 @@
+---
+title: Testing strategy
+description: Unit, Testcontainers integration, end-to-end, and chaos tests — four layers, each answering a question the one below cannot.
+---
+
+A factory that builds software has to be more trustworthy than the software it
+builds. Its testing strategy has four layers, and the layers are ordered by the
+question each one answers.
+
+## Unit — is each piece correct alone?
+
+Unit tests cover the pieces that make decisions in isolation: configuration
+loading and validation, issue-to-work-item conversion, the feedback state
+machine, and retry and dead-letter logic.
+
+These are the tests that make the factory's policy cheap to change. The round
+ceiling, the auto-merge threshold, and escalation all live in code that can be
+exercised without a container, a repository, or a model — which is exactly what
+lets those rules be adjusted deliberately rather than nervously.
+
+## Integration — do the pieces work against the real thing?
+
+Integration tests use **Testcontainers** to run the real dependencies: a worker
+container that actually starts, an actual build inside it, results actually
+reported back.
+
+This is the layer that catches what unit tests cannot see. A container that
+starts but has no toolchain, an image that resolves locally but not in the
+deployment environment, a results payload that parses but is missing the field
+the reviewer needs — all of these look fine in a unit test and fail here.
+
+The GitHub-facing path is integrated too: issue polling and work-item
+conversion against the GitHub API, mocked where determinism matters and real
+where the API's actual shape is the thing under test.
+
+## End-to-end — does the loop close?
+
+End-to-end tests walk a work item through the whole factory: issue in, build,
+review decision, merge. Two flows are the design's load-bearing ones, and both
+are covered:
+
+- **approve → merge** — the factory's happy path, end to end;
+- **two or more configured projects** — round-robin order, non-blocking
+  workers, and a fresh container per issue regardless of project.
+
+The multi-project flow is the one that would catch the factory quietly
+becoming single-project: every guarantee in
+[multi-project processing](/docs/concepts/multi-project-processing) is asserted
+here rather than assumed.
+
+## Chaos — what happens when the world misbehaves?
+
+Chaos tests inject failure deliberately: a container that dies mid-build, an
+API that starts erroring, a worker that never reports.
+
+What they assert is the failure path from
+[observability and error handling](/docs/architecture/observability-and-error-handling):
+retries fire where the failure is transient, they stop where it is not,
+terminal failures escalate, and escalated tickets show up on the board. The
+design's promise is that nothing ends in silence — chaos tests are how that
+promise is checked rather than hoped for.
+
+## Why four layers
+
+Each layer is cheaper than the one above it and less realistic. Running all
+four is what lets the factory change fast in the places that are still being
+designed and stay predictable in the places that are settled.

@@ -1,0 +1,51 @@
+---
+title: Deployment
+description: Docker Compose brings up the factory — one deployment, every configured project, secrets in the environment.
+---
+
+The factory deploys with **Docker Compose**. That choice is not nostalgic: the
+factory's own product is Docker containers, so the environment it runs in is
+one it already has to understand, and a Compose file describes the whole thing
+in a form that can be read, diffed, and reviewed like any other file in a
+repository.
+
+## One deployment, every project
+
+A single factory deployment serves **every project configured in
+`factories/`**. There is no per-project deployment to stand up, and no
+per-project credentials beyond what each project's own configuration names.
+Adding a repository to the factory is [adding a file to a
+directory](/docs/configuration/the-factories-layout), not adding a service.
+
+## What is running
+
+The deployment brings up the factory's components together: the orchestrator
+with its worker pool, the Kanban service publishing the board at **port 5000**,
+and the Docker runtime they both start containers against.
+
+Workers are **not** long-running members of the deployment. A worker container
+exists for one build attempt, starts on demand, and is removed when the attempt
+ends — see [the worker-container lifecycle](/docs/architecture/worker-container-lifecycle).
+
+## The environment
+
+The deployment's environment carries the factory's secrets, referenced by name
+from project configuration. Compose is the natural place for that mapping,
+because it is where the deployment's other inputs already live. The rules those
+credentials follow — environment variables, not files, and the narrowest scope
+that works — are in [secrets and token scopes](/docs/configuration/secrets-and-token-scopes).
+
+## Before it starts
+
+The config loader validates every project file at start, and a file that does
+not validate keeps its project out of the rotation rather than failing the
+deployment. Checking that the set of projects the factory is actually serving
+matches the set you expect is the first thing to do after a config change, and
+the board — grouped by project — is where that check is visible.
+
+## No upgrade story yet
+
+The factory has not shipped, so there is no release to upgrade from and no
+migration to run. When there is, this page grows the section; until then,
+documenting an upgrade path for software that has no versions would be a claim
+about the future wearing an operations manual's clothes.

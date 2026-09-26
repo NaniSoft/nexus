@@ -1,0 +1,67 @@
+---
+title: Observability and error handling
+description: Structured logging, metrics, retry strategies, and dead-letter escalation — how the factory stays legible when things fail.
+---
+
+A factory that fails silently is worse than no factory. This is the design's
+answer, in four parts.
+
+## Structured logging
+
+Every component logs structured events — the **poller**, the **worker**, the
+**board**, and the **merger**. Structured means each event carries its fields:
+work item, project, stage, outcome. The point is that a question like "what
+happened to this ticket" has an answer that does not require reading prose, and
+that events from concurrent runs do not blur into one another.
+
+## Metrics
+
+The factory exposes counters for the numbers that describe its health:
+
+- issues processed;
+- builds succeeded and failed;
+- feedback rounds per ticket.
+
+Those three are chosen because together they answer the question a maintainer
+actually has — is the factory shipping work, and is it doing so without burning
+rounds. Round counts matter most: a factory whose average is drifting toward
+three is a factory whose issues are written for it badly, or whose projects are
+misconfigured. The metric is the early warning.
+
+## Retries
+
+Retry strategy applies to **transient** failures: GitHub API calls, container
+starts. The distinction is the whole design. A rate-limited API call and a
+missing image are both failures; only one of them benefits from being tried
+again.
+
+Retries are a strategy rather than a reflex — the orchestrator applies them
+where a failure is transient, bounds them, and stops when they stop helping.
+A build that fails its tests is not a transient failure, and retrying it is
+just an expensive way to hide the result.
+
+## Dead-letter escalation
+
+Failures that are not transient and do not resolve across rounds are
+**escalated** to a dead-letter state. The ticket leaves the normal loop instead
+of occupying it.
+
+Escalated tickets are **visible on the Kanban board**. That is the part that
+makes escalation real: a dead-letter queue nobody looks at is where failures go
+to be forgotten, and the board is the one surface the factory's operators
+already read. Escalation is not a punishment for the ticket — it is the
+factory saying it needs a human, with the record of why attached.
+
+## The full failure path
+
+```
+transient failure → retry (bounded) → retry succeeds → continue
+                                   → retries exhausted → escalate
+permanent failure → escalate directly
+feedback exhausted (3 rounds)     → close the loop, escalate
+reviewer silent past threshold    → auto-merge
+```
+
+Nothing in that path ends in silence. Every terminal state is a state the board
+renders, which is the design's real guarantee: a ticket the factory gave up on
+is a ticket someone can see.
