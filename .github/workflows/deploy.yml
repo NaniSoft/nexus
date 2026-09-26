@@ -1,8 +1,7 @@
 name: Deploy
 
 # Push to main deploys the Worker. Auth is the org-level
-# CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID pair (visibility: all), first
-# proven live by this scaffold's placeholder deploy (wayfinder ticket 05).
+# CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID pair (visibility: all)
 on:
   push:
     branches: [main]
