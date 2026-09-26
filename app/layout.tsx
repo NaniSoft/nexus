@@ -3,6 +3,8 @@ import { Archivo, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { GithubIcon } from '@/components/prism-client';
+
 // Chrome via its subpaths — the proven import pattern (prism's own site never
 // pulls components from the root barrel: in Next's RSC graph, root-barrel
 // components resolve to undefined, found while scaffolding, ticket 05).
@@ -35,12 +37,39 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://nexus.nanisoft.com'),
   title: {
-    default: 'Nexus — the Agent Factory',
+    default: 'Nexus — software that builds software',
     template: '%s · Nexus',
   },
-  description: 'The Agent Factory — autonomous software creation.',
+  description:
+    'Nexus is the Agent Factory: a coding agent takes a GitHub issue and returns a reviewed, merged pull request. In active development — the design is public.',
 };
+
+const NAV = [
+  { label: 'Docs', url: '/docs' },
+  { label: 'Blog', url: '/blog' },
+  { label: 'About', url: '/about' },
+];
+
+const FOOTER_COLUMNS = [
+  {
+    title: 'Site',
+    links: [
+      { label: 'Landing', url: '/' },
+      { label: 'Docs', url: '/docs' },
+      { label: 'Blog', url: '/blog' },
+      { label: 'About', url: '/about' },
+    ],
+  },
+  {
+    title: 'Elsewhere',
+    links: [
+      { label: 'GitHub', url: 'https://github.com/NaniSoft/nexus' },
+      { label: 'www.nanisoft.com', url: 'https://www.nanisoft.com' },
+    ],
+  },
+];
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -51,9 +80,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <AntdRegistry>
           <PrismThemeModeProvider pack={DEFAULT_PACK} defaultMode={DEFAULT_MODE}>
-            <SiteHeader site={SITE_ID} />
+            <SiteHeader site={SITE_ID} nav={NAV} />
             <main className="site-main">{children}</main>
-            <SiteFooter site={SITE_ID} />
+            <SiteFooter
+              site={SITE_ID}
+              columns={FOOTER_COLUMNS}
+              social={[
+                { label: 'GitHub', url: 'https://github.com/NaniSoft/nexus', icon: <GithubIcon /> },
+              ]}
+            />
           </PrismThemeModeProvider>
         </AntdRegistry>
       </body>

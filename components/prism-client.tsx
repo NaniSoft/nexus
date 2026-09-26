@@ -1,7 +1,8 @@
 'use client';
 
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactElement } from 'react';
 
+import { GithubOutlined } from '@nanisoft/prism-ui/icons';
 import { Typography } from '@nanisoft/prism-ui/components/typography';
 
 // The client boundary for prism-ui surfaces that cannot evaluate in the RSC
@@ -23,4 +24,15 @@ export function Text(props: ComponentProps<typeof Typography.Text>) {
 /** Typography.* cannot cross the RSC boundary as a namespace — forward it. */
 export function Paragraph(props: ComponentProps<typeof Typography.Paragraph>) {
   return <Typography.Paragraph {...props} />;
+}
+
+/**
+ * antd's icon components cannot be evaluated in the RSC runtime either —
+ * `@nanisoft/prism-ui/icons` re-exports them without a 'use client' directive,
+ * so a server component importing one crashes at module evaluation
+ * (React.createContext is absent there). Anything needing an icon takes it
+ * through this boundary.
+ */
+export function GithubIcon(props: ComponentProps<typeof GithubOutlined>): ReactElement {
+  return <GithubOutlined {...props} />;
 }
