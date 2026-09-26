@@ -1,0 +1,623 @@
+/*
+ * The Instrument Bench — nexus.nanisoft.com's landing (ticket 09 variant A,
+ * wearing ticket 06's content). Scoped under .nx so nothing leaks into the
+ * docs, blog, or about pages; the root layout's shared chrome stays outside it.
+ *
+ * Colour always comes from the pre-baked prism-lavender-<mode> variable
+ * rulesets — var(--prism-*) tokens, never raw hex. Pastel as atmosphere
+ * (ADR-0005): lavender is this site's only accent ink; washes and beam tints
+ * carry the rest. The other packs appear only as the pack dots on the three
+ * Built-on-Nexus cards, where the dot's colour is the product's own ink.
+ *
+ * Motion law ADR-0001: 80/160/280ms, cubic-bezier(0.25, 1, 0.5, 1), no bounce;
+ * reveals ride transform + opacity only; reduced motion renders everything
+ * settled and drops the packet.
+ */
+
+.nx {
+  --nx-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --nx-slow: 280ms;
+  --nx-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --nx-sans: var(--font-archivo), -apple-system, 'Segoe UI', sans-serif;
+  --nx-hairline: var(--prism-color-border-secondary);
+  --nx-ink: var(--prism-color-primary);
+
+  background: var(--prism-color-bg-layout);
+  color: var(--prism-color-text);
+  font-family: var(--nx-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.nx a {
+  color: inherit;
+}
+
+.nx a:focus-visible,
+.nx-cta-row :focus-visible {
+  outline: 2px solid var(--nx-ink);
+  outline-offset: 2px;
+}
+
+.nx h1 em,
+.nx h2 em {
+  font-style: italic;
+  font-family: var(--nx-sans);
+}
+
+/* ---------- shared primitives ---------- */
+
+.nx-shell {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+
+.nx-eyebrow {
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.62;
+  margin: 0 0 20px;
+}
+
+.nx-display {
+  font-family: var(--nx-sans);
+  font-stretch: 115%;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+  font-size: clamp(44px, 6.4vw, 84px);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.nx-display--md {
+  font-size: clamp(34px, 4.6vw, 60px);
+}
+
+.nx-lede {
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.55;
+  opacity: 0.82;
+  max-width: 56ch;
+  margin: 24px 0 32px;
+}
+
+.nx-intro {
+  max-width: 68ch;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.82;
+  margin: 0 0 36px;
+}
+
+.nx-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nx-cta-row--center {
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.nx-caption {
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.7;
+  opacity: 0.6;
+  max-width: 72ch;
+  margin: 28px 0 0;
+}
+
+.nx-caption--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.nx-caption--nuance {
+  margin-top: 20px;
+  max-width: 46ch;
+}
+
+/* Scroll reveal (components/landing/reveal.ts).
+   The hidden state is CSS-authored, so it has to be able to dismiss itself:
+   if the reveal observer never runs — script blocked, hydration failed — the
+   landing would otherwise stay at opacity 0. A 3s forwards animation settles
+   every [data-reveal] regardless of JS, with no flash on the normal path
+   (adding .is-in cancels the animation before it can start). */
+.nx [data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity var(--nx-slow) var(--nx-ease),
+    transform var(--nx-slow) var(--nx-ease);
+  animation: nx-reveal-fallback 1ms linear 3s forwards;
+}
+
+@keyframes nx-reveal-fallback {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (scripting: none) {
+  .nx [data-reveal] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.nx [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* The canvas host. Its height is DEFINITE — sized by the hero panel's flex
+   column, never by its own content (a content-sized host feeds a
+   ResizeObserver growth loop). */
+.nx-dag {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+}
+
+.nx-dag canvas {
+  display: block;
+}
+
+/* ---------- hero ---------- */
+
+.nx-hero {
+  padding: 96px 0 0;
+}
+
+.nx-hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+
+.nx-hero__panel {
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--nx-hairline);
+  border-radius: 4px;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 0%, color-mix(in srgb, var(--nx-ink) 7%, transparent), transparent 70%),
+    color-mix(in srgb, var(--prism-color-bg-container) 55%, transparent);
+  overflow: hidden;
+}
+
+.nx-hero__panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--nx-hairline);
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.nx-hero__panel-mode {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.nx-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--nx-ink);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--nx-ink) 60%, transparent);
+}
+
+.nx-hero__panel .nx-dag {
+  flex: 1;
+}
+
+.nx-ticker {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px 32px;
+  flex-wrap: wrap;
+  margin: 40px 0 0;
+  padding: 14px 0;
+  border-block: 1px solid var(--nx-hairline);
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  opacity: 0.66;
+}
+
+/* ---------- numbered sections ---------- */
+
+.nx-section {
+  border-top: 1px solid var(--nx-hairline);
+  padding: 104px 0;
+}
+
+.nx-section__head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 52px;
+}
+
+.nx-section__index {
+  font-family: var(--nx-mono);
+  font-size: 12px;
+  color: var(--nx-ink);
+}
+
+.nx-section__label {
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+/* 01 — the conveyor rail. */
+
+.nx-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding: 26px 0 22px;
+  border-block: 1px solid var(--nx-hairline);
+  overflow: hidden;
+}
+
+.nx-rail__packet {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 96px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--nx-ink));
+  animation: nx-travel 5.6s linear infinite;
+}
+
+@keyframes nx-travel {
+  from {
+    transform: translateX(-96px);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-rail__packet {
+    display: none;
+  }
+}
+
+.nx-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nx-stage__no {
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  color: var(--nx-ink);
+}
+
+.nx-stage__name {
+  font-weight: 620;
+  font-size: 16px;
+}
+
+.nx-stage__caption {
+  font-size: 12.5px;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+.nx-rail__serving {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nx-ink);
+}
+
+.nx-notes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0 32px;
+  margin-top: 48px;
+}
+
+.nx-note {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--nx-hairline);
+}
+
+.nx-note h4 {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+  font-weight: 620;
+}
+
+.nx-note p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+/* 02 — the capability cards. */
+
+.nx-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.nx-card {
+  border: 1px solid var(--nx-hairline);
+  border-radius: 4px;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 90% 70% at 100% 0%, color-mix(in srgb, var(--nx-ink) 6%, transparent), transparent 65%),
+    color-mix(in srgb, var(--prism-color-bg-container) 45%, transparent);
+}
+
+.nx-card__no {
+  font-family: var(--nx-mono);
+  font-size: 11px;
+  color: var(--nx-ink);
+}
+
+.nx-card h3 {
+  margin: 14px 0 10px;
+  font-size: 16px;
+  font-weight: 620;
+}
+
+.nx-card p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  opacity: 0.78;
+}
+
+/* 03 — the survey grid. */
+
+.nx-survey {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.nx-survey--ours {
+  margin-top: 14px;
+}
+
+.nx-tile {
+  border: 1px solid var(--nx-hairline);
+  border-radius: 4px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: color-mix(in srgb, var(--prism-color-bg-container) 35%, transparent);
+}
+
+.nx-tile__name {
+  font-weight: 620;
+  font-size: 14px;
+}
+
+.nx-tile__role {
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nx-ink);
+  opacity: 0.85;
+}
+
+.nx-tile--ours {
+  border-style: dashed;
+}
+
+.nx-tile__mark {
+  font-family: var(--nx-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nx-ink);
+}
+
+.nx-tile__blurb {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+/* 04 — the status ledger. */
+
+.nx-ledger {
+  border-top: 1px solid var(--nx-hairline);
+}
+
+.nx-row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 3fr) minmax(0, 2fr) minmax(0, 6fr);
+  gap: 8px 20px;
+  align-items: baseline;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--nx-hairline);
+}
+
+.nx-row__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  align-self: center;
+  border: 1.5px solid var(--nx-ink);
+}
+
+.nx-row[data-status='complete'] .nx-row__dot {
+  background: var(--nx-ink);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--nx-ink) 55%, transparent);
+}
+
+.nx-row[data-status='specified'] .nx-row__dot {
+  opacity: 0.45;
+}
+
+.nx-row__name {
+  font-weight: 620;
+  font-size: 17px;
+}
+
+.nx-row__status {
+  font-family: var(--nx-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nx-ink);
+}
+
+.nx-row[data-status='specified'] .nx-row__status {
+  color: var(--prism-color-text);
+  opacity: 0.55;
+}
+
+.nx-row__detail {
+  font-size: 13.5px;
+  line-height: 1.6;
+  opacity: 0.78;
+}
+
+/* 05 — built on Nexus. */
+
+.nx-bon {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.nx-bon__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--nx-hairline);
+  border-radius: 4px;
+  padding: 22px 24px;
+  text-decoration: none;
+  transition: border-color var(--nx-slow) var(--nx-ease);
+}
+
+.nx-bon__card:hover {
+  border-color: var(--nx-ink);
+}
+
+.nx-bon__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.nx-bon__name {
+  font-weight: 620;
+  font-size: 17px;
+}
+
+.nx-bon__tagline {
+  font-size: 13px;
+  opacity: 0.72;
+}
+
+/* The close. */
+
+.nx-cta {
+  border-top: 1px solid var(--nx-hairline);
+  padding: 128px 0 140px;
+  text-align: center;
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 100%,
+    color-mix(in srgb, var(--nx-ink) 8%, transparent),
+    transparent 70%
+  );
+}
+
+.nx-cta .nx-cta-row--center {
+  margin-top: 36px;
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 1080px) {
+  .nx-cards,
+  .nx-notes,
+  .nx-survey {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .nx-hero__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nx-rail {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .nx-row {
+    grid-template-columns: 16px minmax(0, 1fr);
+  }
+
+  .nx-row__detail {
+    grid-column: 2;
+  }
+
+  .nx-bon {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .nx-cards,
+  .nx-notes,
+  .nx-survey {
+    grid-template-columns: 1fr;
+  }
+
+  .nx-hero__panel {
+    min-height: 380px;
+  }
+}
