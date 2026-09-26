@@ -1,0 +1,116 @@
+---
+title: The anatomy of an agent factory
+description: The orchestrator, the worker containers, and the two pieces of software inside them — how Nexus is assembled, and why each seam is where it is.
+date: '2026-09-21'
+tags:
+  - nexus
+  - architecture
+---
+
+A factory is not a clever model. It is a queue, a shop floor, and a rule for
+when something is finished. This is how Nexus is assembled — five components,
+and the reason each seam sits where it sits.
+
+## The five components
+
+| Component | Does |
+| --- | --- |
+| Config loader | Reads and validates `factories/*.yaml`. |
+| Issue poller | Reads open issues; converts each to a work item. |
+| Orchestrator + workers | Starts containers, drives the build, tracks rounds. |
+| Kanban service | Holds board state, serves the board on port 5000. |
+| Merger | Opens and merges the pull request on approval. |
+
+The seams between them are deliberately boring. The poller knows GitHub and
+work items; it does not know about containers. The orchestrator knows work
+items, containers, and rounds; it does not know how the board renders. The
+board reads state and writes decisions; it does not build. The merger merges;
+it does not decide.
+
+Boring seams are what make the factory **generic**. Adding a project is a YAML
+file in `factories/`, because no component has to learn anything about a
+project to serve it.
+
+## The orchestrator: Microsoft Agent Framework on .NET
+
+A factory run is not one agent doing one thing. It is planning, building,
+checking, and reporting — many times over, concurrently, across many projects,
+with retries and timeouts around each. Coordinating that with hand-rolled glue
+is precisely where ad hoc agent work becomes unmaintainable.
+
+So the factory does not hand-roll it. The orchestration layer is a .NET service
+built on the **Microsoft Agent Framework**, which supplies agents as
+first-class objects, structured handoffs between them, and a runtime that owns
+concurrency and failure. The factory's job is deciding what the agents are and
+what their outputs mean; the framework's job is sequencing them.
+
+The .NET SDK is also what binds the factory together. Config loader, poller,
+worker, board, merger — one runtime, so their contracts are ordinary method
+calls instead of network guesses between services that each need their own
+deploy.
+
+## NOpenCode: the seam that keeps policy out of the container
+
+The orchestrator does not reach into the container to run commands. It hands a
+work item to **NOpenCode**, the .NET integration that drives **OpenCode**
+inside the container and returns structured results — files changed, commands
+run, test outcomes.
+
+That boundary is the most consequential one in the design. The orchestrator
+knows work items, rounds, and pull requests. OpenCode knows repositories and
+code. Neither models the other's internals, which means:
+
+- the orchestrator is testable against a fake NOpenCode;
+- OpenCode can be upgraded without the factory's policy moving;
+- the build agents cannot decide whether their own work ships.
+
+That last one is not a technical nicety. The factory's entire credibility rests
+on a human seeing the diff before it merges, and that is only true if the
+component that merges is not the component that wrote the code.
+
+## The worker container
+
+Every issue gets a fresh Docker container from the image its project's
+configuration names. Nothing carries over — no cache, no working tree, no
+state from any previous run. Two reasons, and they are worth separating.
+
+**Reproducibility.** The same issue built twice starts from the same place, so
+a failure is a signal about the work rather than about the environment it
+landed in. Anyone who has debugged a test that passes locally and fails in CI
+has already paid for this once.
+
+**Safety.** Agent work happens in a throwaway filesystem with scoped
+credentials, on a host running [rootless Docker](/docs/configuration/rootless-docker).
+A bad run cannot reach a neighbouring project's work, because there is no path
+from one container to another.
+
+Inside, two pieces of software: **code-server**, which gives the run a real
+editing environment — the project's toolchain, test runner, debugger — and
+**OpenCode**, which works the issue. The container's life is six stages: start,
+checkout, build, test, report, teardown. It is removed on success, failure, and
+cancellation alike.
+
+## The board, and the loop that ends
+
+Work items are persisted once, and the board reads the same records the
+orchestrator writes — no board-side copy to drift. The board serves on port
+5000 with auto-refresh, five swimlanes (Backlog → Frontier → In Progress →
+Review → Done) and two terminal states off the flow: rejected and escalated.
+
+The loop's rules live in the orchestrator, and they are the part worth arguing
+about rather than the parts worth admiring: three feedback rounds maximum, and
+merge on approval or on feedback timeout. We will take those on in the next
+post, because they are the difference between a factory and a very expensive
+way of generating diffs.
+
+## What is not here
+
+No scheduler component. No per-project plugin system. No second queue beside
+the board. No per-project override of the factory's rules. Every one of those
+would be easy to add and would quietly end the promise that makes the factory
+worth having — that a project is a file, and the factory behaves the same for
+all of them.
+
+The full architecture is in [the docs](/docs/architecture/system-overview),
+including the failure paths: retries for transient failures, dead-letter
+escalation for everything else, and a board that renders both.

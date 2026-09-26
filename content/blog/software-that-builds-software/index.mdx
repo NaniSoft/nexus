@@ -1,0 +1,76 @@
+---
+title: Software that builds software
+description: Agent work is powerful and ad hoc. The factory is what makes it repeatable — and the design is the announcement.
+date: '2026-09-21'
+tags:
+  - nexus
+  - thesis
+---
+
+NaniSoft's sites were built by agents. Not by a product called Nexus — by a
+person and a coding agent working a repository, one session at a time. The work
+is real, it is in production, and none of it was repeatable. That gap is why
+Nexus exists.
+
+## The capability is not the bottleneck
+
+A coding agent in a checkout of a repository can read a codebase, plan a
+change, write it, run the tests, and hand you a diff. This is no longer a
+research claim; it is how a growing share of software gets written. The
+capability arrived faster than the discipline around it.
+
+What did not arrive is the structure that turns a capability into a
+production system. Today's agent work is a person doing all of the following,
+every time, by hand:
+
+- picking the repository and setting up the environment;
+- writing the prompt that stands in for a specification;
+- watching the run and correcting it mid-flight;
+- reviewing the diff;
+- pushing.
+
+Every step is manual, and none of it is recorded anywhere a team can inspect.
+The output is software; the process is a memory.
+
+## A factory is what that becomes
+
+A factory takes a standard input, applies a repeatable process, and produces a
+standard output. Apply that shape to software creation and most of the
+guesswork falls away.
+
+- The **input** is a GitHub issue — already a work order, already in a queue
+  the team reads. No parallel backlog, no prompt to write.
+- The **process** is a fresh container per issue, a known image, agents that
+  work the issue and run the project's own tests. Identical every time, so a
+  failure tells you about the work and not about the machine.
+- The **output** is a pull request, reviewed by a human, with a hard ceiling of
+  three feedback rounds before the loop closes. The factory terminates instead
+  of spinning.
+
+Nothing in that list is a research problem. It is plumbing, state management,
+and a refusal to let a loop run forever — which is exactly the kind of problem
+that is worth solving once instead of once per project per person.
+
+## What we are announcing
+
+The design. Nexus — the Agent Factory — is designed and documented:
+Microsoft Agent Framework orchestration on .NET, worker containers running
+code-server and OpenCode, a Kanban board with five swimlanes and a human
+feedback loop, multi-project round-robin across a directory of YAML files, and
+an observability posture built around one promise: nothing ends in silence.
+
+It is in active development, and we are publishing the design before the
+release because the design is the part worth arguing about. The docs describe
+the system in the present tense — what it does, not what it will do — and the
+[configuration model](/docs/configuration/the-configuration-model) is written
+down as a model, not a contract, because nothing has shipped to be contracted.
+
+## What comes next
+
+Three more posts this week: the anatomy of the factory — the orchestrator, the
+workers, the board; the feedback loop — why three rounds and why auto-merge is
+the default; and the meta one — how these sites were built, and what changes
+when the factory builds them.
+
+The build follows from there. When Nexus ships, this is the place it gets
+announced — and the factory's first issue will be an issue on this repository.

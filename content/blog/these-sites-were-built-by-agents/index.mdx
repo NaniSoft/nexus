@@ -1,0 +1,83 @@
+---
+title: These sites were built by agents
+description: Five sites, one design system, and a factory still under construction — the honest version of how nanisoft.com's family got here.
+date: '2026-09-21'
+tags:
+  - nexus
+  - platform
+  - agents
+---
+
+There are five nanisoft.com sites. This one, Atlas, AlphaLens, Prism, and the
+company root. They share one design language, one component library, one
+pack spectrum, and one chrome — and every one of them was built by an agent
+working a repository with a person directing it.
+
+Not by Nexus. Nexus is not shipping yet. That distinction is the whole point of
+this post.
+
+## What actually happened
+
+Each site went the way agent development goes today: a person opened a
+repository, pointed a coding agent at a spec, reviewed what came back, asked
+for changes, and eventually merged. Repeat per site, per feature, per fix.
+
+The outputs are good, and they are real — you are reading one. But the process
+was bespoke every time. The environment was whatever the person's machine had.
+The specification was a prompt written for one session. The review was a
+diff in a terminal. Nothing about it compounds: the second site did not get
+cheaper because the first one happened, except in the ways the person got
+better at directing.
+
+That is the difference between a capability and a factory. The capability is
+here. The factory is what Nexus is for.
+
+## What the factory changes
+
+Take the same work and put it through the designed loop, and the parts that
+were per-session become per-project configuration:
+
+- **The environment** becomes a container from a named image — identical every
+  run, torn down after, unable to reach another project's work.
+- **The specification** becomes a GitHub issue, the only input the factory
+  reads. No prompt to tune per session; the issue is the spec.
+- **The review** becomes a board with three decisions and a ceiling: approve,
+  request changes, reject, three rounds maximum.
+- **The record** becomes the factory's own. Structured logs, metrics,
+  escalation. A team can inspect what happened instead of asking the person who
+  was there.
+
+The first three are exactly the steps that were manual every time. That is not
+a coincidence — it is the definition of the work.
+
+## The platform story, and its honest tense
+
+NaniSoft's story is that Nexus is the core, and the products are built on it:
+Atlas modelling real systems, AlphaLens for quantitative research, Prism as the
+design language they all wear. You will read that on every one of these sites,
+because it is the architecture we are building toward.
+
+Read it in the right tense. Today, agent development built these sites, and a
+person held the loop. The design in these docs is what makes that repeatable
+without the person in the middle of every step — one factory, many projects,
+round-robin across a directory of YAML files, a human review that terminates.
+
+## Why publish the design first
+
+Because the design is the part that benefits from being argued about before it
+is code, and the release is the part that does not.
+
+Everything Nexus claims is written down where it can be checked: the
+[architecture](/docs/architecture/system-overview), the
+[configuration model](/docs/configuration/the-configuration-model), the
+[testing strategy](/docs/operations/testing-strategy), and the two rules this
+post leans on — [three rounds, and merge on
+timeout](/blog/humans-in-the-loop-three-rounds-max). There are no screenshots
+here, no quickstart, and no changelog, because there is nothing to screenshot,
+install, or release.
+
+The next thing Nexus builds should be built through the factory: an issue on a
+configured repository, a fresh container, a diff on a board, a person deciding.
+That is the milestone this site is waiting to announce — and when it happens,
+it will be the first claim on this site that is about Nexus rather than about
+the design of it.

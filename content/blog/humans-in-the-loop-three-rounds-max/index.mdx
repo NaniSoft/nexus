@@ -1,0 +1,105 @@
+---
+title: Humans in the loop, three rounds max
+description: Why the factory has three review decisions instead of one approval button, why the loop terminates at three rounds, and why auto-merge is the default.
+date: '2026-09-21'
+tags:
+  - nexus
+  - kanban
+  - feedback
+---
+
+An unbounded feedback loop is the failure mode nobody designs on purpose and
+every automated system finds anyway. The agent and the reviewer disagree; the
+ticket goes back; the agent changes something; the reviewer asks again. Each
+cycle costs a container, a build, and a human read — and none of them is ever
+the last one.
+
+Nexus closes the loop. This post is about the two rules that close it, and the
+one that makes them bearable.
+
+## Three decisions, not one button
+
+A build lands in **Review** with its diff and its build results, and the board
+offers exactly three actions.
+
+**Approve** opens the pull request and merges it. It is the only path to Done.
+
+**Request changes** returns the ticket to the build with your feedback
+attached, and consumes one of the three rounds.
+
+**Reject** ends the ticket in a rejected state and stops the factory spending
+on it.
+
+The third decision is the one most review tools leave out, and leaving it out
+is a mistake. A factory with only "approve" and "more changes" forces a human
+to keep steering work that should never have started — an issue that turned out
+to be wrong, duplicated, or not worth the remaining rounds. Rejection is not a
+judgement on the build. It is the decision that the work should stop, and it is
+a normal outcome rather than a failure one.
+
+That is also why the terminal states are on the board. Rejected and escalated
+tickets are rendered where everyone looks, because a queue that hides its
+failures trains the people watching it to stop trusting it.
+
+## Why three rounds
+
+Three is not a magic number; it is the number at which the conversation
+changes character.
+
+One round is steering: "you missed the error path", "keep the API unchanged".
+It is the normal cost of working with a colleague you cannot talk to
+mid-change, and it is usually worth it.
+
+Two rounds is design disagreement: the reviewer wants a different shape and the
+build keeps producing this one. Still recoverable, but now the missing
+conversation is a design conversation, and the board is a bad place to have it.
+
+Three rounds and still going means the requirement was never understood — by
+the person writing the issue, or by the person reading it. The factory stops
+there, and the honest response is to close the ticket and write a better issue.
+That is why the ceiling is a ceiling: not to punish the agents, but to force
+the fourth iteration to happen in the specification, where it is cheap, rather
+than in the factory, where it is not.
+
+There is a cost side to this too. Every round is a real container, a real
+build, a real model spend. A factory without a ceiling does not fail loudly; it
+just gets slowly more expensive while producing nothing anyone merges.
+
+## Auto-merge, on approval or on timeout
+
+The factory merges on **approval**, and merges on **feedback timeout** — a
+ticket left in Review past the threshold merges rather than holding the
+pipeline.
+
+The second half is the aggressive one, so it deserves the reasoning.
+
+A factory's throughput is bounded by its review queue, and its review queue is
+bounded by people who have other work. That is fine until it is not: a queue
+nobody reads is indistinguishable from a factory that has stopped, except that
+the factory keeps paying. Auto-merge on timeout is the design choosing the
+failure it prefers. Holding the pipeline silently is a failure nobody notices
+until someone asks why nothing has shipped in three weeks; merging a revertible
+pull request is a failure that is visible, bounded, and one `git revert` from
+gone.
+
+It is also worth being precise about what is being trusted. The factory is not
+deciding that the code is good. It is deciding that the work should not wait
+indefinitely for a decision that was available and not made. The review
+opportunity was real, it was visible on a board with auto-refresh, and it
+expired.
+
+And the merge is always a pull request — reviewable, revertible, attributed. A
+factory that merged directly to a branch would be taking a different kind of
+liberty entirely.
+
+## What makes the loop good, in practice
+
+The rules only work if the input does. A round spent on "what did you mean by
+this?" is a wasted container, and the fix for that is upstream of the factory:
+[an issue a competent engineer could act on without asking you
+anything](/docs/guides/writing-an-issue-the-factory-can-build).
+
+Which is the quiet conclusion of the whole design. The factory does not make
+review cheaper by automating it away. It makes review rarer by making the work
+arrive in a state where one round of it is usually enough — and by refusing to
+run forever when it is not.
