@@ -10,17 +10,17 @@ Part of the five-site Nanisoft web platform (www + nexus + atlas + alphalens + p
 
 Import UI from `@nanisoft/prism-ui` (tokens from `@nanisoft/prism-tokens`) — never from `antd` directly. The shared chrome (SiteHeader with the product switcher, SiteFooter) is an npm dependency, never copied into this repo.
 
-Import shape (proven by prism's own site, and required — see below): components via their per-component subpaths (`@nanisoft/prism-ui/components/button`), blocks via `/blocks`, provider via `/provider`, the boot script via the root barrel. antd ships ' + "'use client'" + ', so inside server components a direct component (`<Button>`) renders fine, but `Typography.*` (a namespace — property access on a client reference is `undefined`) and `DisplayTitle` (destructures `Typography.Title` at module scope) must go through the site' + "'s" + ' client boundary, `components/prism-client.tsx` — otherwise the prerender crashes (found in scaffold ticket 05). Do NOT import `@nanisoft/prism-ui/theming` from app code — it pulls the SSR extractor meant for build scripts only.
+Import shape (proven by prism's own site, and required — see below): components via their per-component subpaths (`@nanisoft/prism-ui/components/button`), blocks via `/blocks`, provider via `/provider`, the boot script via the root barrel. antd ships ' + "'use client'" + ', so inside server components a direct component (`<Button>`) renders fine, but `Typography.*` (a namespace — property access on a client reference is `undefined`) and `DisplayTitle` (destructures `Typography.Title` at module scope) must go through the site' + "'s" + ' client boundary, `components/prism-client.tsx` — otherwise the prerender crashes (found during the original scaffold). Do NOT import `@nanisoft/prism-ui/theming` from app code — it pulls the SSR extractor meant for build scripts only.
 
 ## Wayfinding
 
-The effort map — the law for this repo's scope, pack, and standing decisions — lives in the Nanisoft workspace at `.scratch/nanisoft-web/map.md` (workspace folder `C:\Users\dpven\source\nanisoft`, sibling of this repo folder; context doc beside it at `.scratch/nanisoft-web/CONTEXT.md`). This repo came from scaffold ticket 05; its build ticket lands the real site. The five-repo consistency contract — CONSISTENCY.md in this repo, mirrored across the family — binds the dependency pins, import shapes, and shared laws.
+The five-repo consistency contract — `CONSISTENCY.md` in this repo, mirrored across the family — binds the dependency pins, import shapes, and shared laws, and it is the only cross-repo document. This repo's own scope, pack, and standing decisions live here and in `README.md`; the published docs are `content/docs/`. The wayfinder map these sites were built from is retired, so its ticket numbers are history — don't cite them.
 
 ## Stack
 
 - Next 16 static export (`output: 'export'`) at the repo root — flat single-app, no workspace.
 - pnpm + TypeScript strict + oxlint + Vitest (jsdom + Testing Library).
-- Theming: `PrismThemeModeProvider` + pre-baked `prism-<pack>-<mode>` variable rulesets (`pnpm bake` → `app/antd-vars.css`) + the blocking boot script in `lib/theme.ts` — flash-free mode swap per ADR-0006. Mode-only: the pack never changes at runtime.
+- Theming: `PrismThemeModeProvider` + pre-baked `prism-<pack>-<mode>` variable rulesets (`pnpm bake` → `app/antd-vars.css`) + the blocking boot script in `lib/theme.ts` — flash-free mode swap. Mode-only: the pack never changes at runtime.
 - Deploys: push to main → GitHub Actions (`deploy.yml`) runs `pnpm build` + `wrangler deploy` with the org-level Cloudflare secrets; PRs run CI (lint → test → build). Local lane: `pnpm deploy`.
 
 ## Commands
