@@ -14,7 +14,7 @@ Import shape (proven by prism's own site, and required — see below): component
 
 ## Wayfinding
 
-The effort map — the law for this repo's scope, pack, and standing decisions — lives in the Nanisoft workspace at `.scratch/nanisoft-web/map.md` (workspace folder `C:\Users\dpven\source\nanisoft`, sibling of this repo folder; context doc beside it at `.scratch/nanisoft-web/CONTEXT.md`). This repo came from scaffold ticket 05; its build ticket lands the real site.
+The effort map — the law for this repo's scope, pack, and standing decisions — lives in the Nanisoft workspace at `.scratch/nanisoft-web/map.md` (workspace folder `C:\Users\dpven\source\nanisoft`, sibling of this repo folder; context doc beside it at `.scratch/nanisoft-web/CONTEXT.md`). This repo came from scaffold ticket 05; its build ticket lands the real site. The five-repo consistency contract — CONSISTENCY.md in this repo, mirrored across the family — binds the dependency pins, import shapes, and shared laws.
 
 ## Stack
 
