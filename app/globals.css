@@ -1,18 +1,485 @@
 /*
- * Site styles over prism-ui's shipped ground (fonts, dither patterns, chrome).
- * Colour always comes from the pre-baked prism-<pack>-<mode> variable rulesets
- * — consume var(--prism-*) tokens, never raw hex.
+ * Site styles over prism-ui's shipped ground (fonts, display width axis,
+ * dither patterns, and the shared chrome — SiteHeader/SiteFooter are styled by
+ * the package). This sheet owns the app-level pieces: the shell, DocsShell's
+ * structural classes, the blog list, MDX prose, and the About page.
+ *
+ * FINDING carried from ticket 09: prism-ui ships the pages layer (DocsShell /
+ * BlogLayout) as structure without styles — `prism-docs-shell` appears nowhere
+ * in the published styles.css. These are the per-site styles ticket 16 leaves
+ * open; if prism-ui ships them later, delete this block rather than drifting.
+ *
+ * Colour always comes from the pre-baked prism-lavender-<mode> variable
+ * rulesets — consume var(--prism-*) tokens, never raw hex.
  */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
+  font-family: var(--font-archivo), sans-serif;
   background: var(--prism-color-bg-layout);
   color: var(--prism-color-text);
 }
 
+a {
+  color: var(--prism-color-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Shell ---------- */
+
 .site-main {
   min-height: 100dvh;
 }
+
+.site-mono {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.site-eyebrow {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.62;
+  margin: 0 0 20px;
+}
+
+/* ---------- Docs skeleton (prism-ui DocsShell structural classes) ---------- */
+
+.prism-docs-shell__body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 48px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+}
+
+.prism-docs-shell__body:has(+ .prism-docs-shell__toc),
+.prism-docs-shell__body:has(~ .prism-docs-shell__toc) {
+  grid-template-columns: 240px minmax(0, 1fr) 200px;
+}
+
+.prism-docs-shell__nav,
+.prism-docs-shell__toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.prism-docs-shell__nav__nested,
+.prism-docs-shell__toc-list .prism-docs-shell__nav__nested {
+  padding-left: 14px;
+  margin-top: 6px;
+}
+
+.prism-docs-shell__nav a,
+.prism-docs-shell__toc-list a {
+  color: var(--prism-color-text);
+  opacity: 0.78;
+}
+
+.prism-docs-shell__nav a:hover,
+.prism-docs-shell__toc-list a:hover {
+  opacity: 1;
+  text-decoration: none;
+  color: var(--prism-color-primary);
+}
+
+.prism-docs-shell__sidebar {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+  max-height: calc(100vh - 108px);
+  overflow: auto;
+}
+
+.prism-docs-shell__toc {
+  display: none;
+}
+
+@media (min-width: 1080px) {
+  .prism-docs-shell__toc {
+    display: block;
+    position: sticky;
+    top: 84px;
+    align-self: start;
+  }
+}
+
+.prism-docs-shell__title {
+  font-variation-settings: 'wdth' 118, 'wght' 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.prism-docs-shell__description {
+  margin: 0 0 8px;
+  opacity: 0.78;
+  line-height: 1.65;
+}
+
+.prism-docs-shell__neighbours {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--prism-color-border-secondary);
+  font-size: 13px;
+}
+
+.prism-docs-shell__neighbours a:last-child {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* Sidebar group headers — DocsShell renders separators as anchors without href. */
+.prism-docs-shell__nav a:not([href]) {
+  display: block;
+  margin: 18px 0 4px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.prism-docs-shell__nav a:not([href]):first-child {
+  margin-top: 0;
+}
+
+/* ---------- MDX prose ---------- */
+
+.site-prose {
+  line-height: 1.72;
+  font-size: 15px;
+}
+
+.site-prose h2 {
+  font-variation-settings: 'wdth' 114, 'wght' 600;
+  margin: 40px 0 12px;
+  scroll-margin-top: 84px;
+}
+
+.site-prose h3 {
+  font-variation-settings: 'wdth' 110, 'wght' 600;
+  margin: 32px 0 10px;
+  scroll-margin-top: 84px;
+}
+
+.site-prose p {
+  margin: 12px 0;
+}
+
+.site-prose ul,
+.site-prose ol {
+  padding-left: 22px;
+}
+
+.site-prose li {
+  margin: 6px 0;
+}
+
+.site-prose blockquote {
+  margin: 16px 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--prism-color-border-secondary);
+  opacity: 0.85;
+}
+
+.site-prose code {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 13px;
+  background: var(--prism-color-fill-tertiary);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.site-prose pre {
+  background: var(--prism-color-bg-container);
+  border: 1px solid var(--prism-color-border-secondary);
+  border-radius: 4px;
+  padding: 14px 16px;
+  overflow: auto;
+}
+
+.site-prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.site-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.site-prose th,
+.site-prose td {
+  border: 1px solid var(--prism-color-border-secondary);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.site-prose th {
+  background: var(--prism-color-fill-tertiary);
+  font-weight: 600;
+}
+
+.site-prose hr {
+  border: 0;
+  border-top: 1px solid var(--prism-color-border-secondary);
+  margin: 32px 0;
+}
+
+/* The standing status note — the docs' one honesty device (ticket 06). Styled
+   the way the design language marks status: a washed hairline panel with a mono
+   ink label, not an accent bar. */
+.site-status-note {
+  border: 1px solid var(--prism-color-border-secondary);
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 0 0 28px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  opacity: 0.9;
+  background: color-mix(in srgb, var(--prism-color-bg-container) 45%, transparent);
+}
+
+.site-status-note strong {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--prism-color-primary);
+  margin-right: 8px;
+}
+
+.site-status-note + .site-status-note {
+  display: none;
+}
+
+/* ---------- Blog ---------- */
+
+.prism-blog-layout__post {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+.prism-blog-layout__title {
+  font-variation-settings: 'wdth' 118, 'wght' 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+
+.prism-blog-layout__description {
+  margin: 0 0 8px;
+  opacity: 0.78;
+  line-height: 1.65;
+}
+
+.prism-blog-layout__meta-info {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  opacity: 0.62;
+  margin-bottom: 8px;
+}
+
+.prism-blog-layout__tags {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.prism-blog-layout__draft {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--prism-color-primary);
+}
+
+/* ---------- Section index pages (docs landing, blog index) ---------- */
+
+.site-catalog {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.site-catalog__title {
+  font-variation-settings: 'wdth' 118, 'wght' 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  font-size: clamp(30px, 3.6vw, 44px);
+}
+
+.site-catalog__lede {
+  margin: 0 0 28px;
+  opacity: 0.78;
+  line-height: 1.65;
+  max-width: 62ch;
+}
+
+.site-catalog__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.site-catalog__item {
+  display: block;
+  border: 1px solid var(--prism-color-border-secondary);
+  border-radius: 4px;
+  padding: 16px 18px;
+  background: var(--prism-color-bg-container);
+  color: var(--prism-color-text);
+}
+
+.site-catalog__item:hover {
+  text-decoration: none;
+  border-color: var(--prism-color-primary);
+}
+
+.site-catalog__item strong {
+  display: block;
+  font-weight: 600;
+}
+
+.site-catalog__item span {
+  display: block;
+  font-size: 13px;
+  opacity: 0.72;
+  margin-top: 6px;
+  line-height: 1.55;
+}
+
+.site-catalog__start {
+  margin: 28px 0 0;
+  font-size: 14px;
+  opacity: 0.78;
+}
+
+.site-blog-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 28px;
+}
+
+.site-blog-list__title {
+  font-size: 20px;
+  font-weight: 600;
+  font-variation-settings: 'wdth' 112;
+}
+
+.site-blog-list__description {
+  margin: 6px 0;
+  opacity: 0.78;
+  line-height: 1.65;
+  max-width: 64ch;
+}
+
+.site-blog-list__meta {
+  margin: 0;
+  opacity: 0.66;
+}
+
+/* ---------- About ---------- */
+
+.site-about {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 88px 32px 120px;
+}
+
+.site-about h1 {
+  font-variation-settings: 'wdth' 115, 'wght' 620;
+  font-size: clamp(34px, 4.6vw, 56px);
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+  margin: 0 0 24px;
+}
+
+.site-about p {
+  font-size: 15.5px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.site-about__facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 40px 0;
+}
+
+.site-about__fact {
+  border: 1px solid var(--prism-color-border-secondary);
+  border-radius: 4px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--prism-color-bg-container) 45%, transparent);
+}
+
+.site-about__fact dt {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--prism-color-primary);
+}
+
+.site-about__fact dd {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  opacity: 0.82;
+}
+
+.site-about__links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.site-about__links a {
+  color: var(--prism-color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- 404 ---------- */
 
 .placeholder-hero {
   display: flex;
@@ -25,13 +492,15 @@ body {
   text-align: center;
 }
 
-.placeholder-kicker {
-  font-family: var(--font-jetbrains), monospace;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
+/* ---------- Narrow screens ---------- */
 
-.placeholder-lede {
-  max-width: 560px;
-  margin-bottom: 0;
+@media (max-width: 720px) {
+  .site-about__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .prism-docs-shell__body {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }
