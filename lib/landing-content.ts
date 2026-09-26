@@ -1,10 +1,11 @@
-// The landing's content, held apart from its presentation (the split ticket 09
-// prescribes: content module shared-per-site, presentation app-local).
+// The landing's content, held apart from its presentation: content module
+// shared-per-site, presentation app-local.
 //
-// Every string here traces to the factory's design — the agent-factory design
-// spec and its sequenced build tickets. Nothing is a capability claim about
-// software that does not exist: the honesty law (in development, present tense)
-// is carried by the ticker, the build-order ledger, and the hero's nuance line.
+// Every string here traces to the factory's design record — DESIGN.md in the
+// sibling agent-factory repository, whose canonical reader-facing version is
+// published here at /docs. Nothing is a capability claim about software that
+// does not exist: the honesty law (in development, present tense) is carried by
+// the ticker, the build-order ledger, and the hero's nuance line.
 
 export const HERO = {
   eyebrow: 'nanisoft · nexus',
