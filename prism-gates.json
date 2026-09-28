@@ -1,0 +1,48 @@
+{
+  "$comment": [
+    "This site's half of the cross-repository contract, and it is data only.",
+    "",
+    "The laws are not here. They are the failure messages of the gates in",
+    "`@nanisoft/prism-ui/gates`, which this repository installs by pinning that",
+    "package exactly, so a change to a law lands once and reaches this repository",
+    "in one release and cannot be declined here. What is here is the set of facts",
+    "only this site knows: which stylesheets are its own, how much of them counts",
+    "as having read something, which pack map describes its landing, and which",
+    "destination its own corpus gets wrong.",
+    "",
+    "A line in this file that stated a rule would be the defect the file exists to",
+    "end, because a rule held in five repositories is five rules that will disagree."
+  ],
+  "gateKit": 1,
+  "gates": [
+    "pin",
+    "retired-line",
+    "stylesheet-ownership",
+    "links",
+    "pack-boundary",
+    "runtime-token-read"
+  ],
+  "stylesheet-ownership": {
+    "sheets": ["app/globals.css"],
+    "minDeclarations": 20,
+    "supplied": {
+      "--font-inter": "declared by next/font at build time as a class on the document element"
+    }
+  },
+  "links": {
+    "outDir": "out",
+    "minRoutes": 30,
+    "minAnchors": 1200
+  },
+  "pack-boundary": {
+    "outDir": "out",
+    "map": "scripts/pack-map.json",
+    "regionResolver": "scripts/pack-regions.mjs",
+    "landing": "/",
+    "markSlot": "product-mark"
+  },
+  "runtime-token-read": {
+    "sourceRoots": ["app", "lib"],
+    "minFiles": 5
+  }
+}

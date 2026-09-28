@@ -6,16 +6,20 @@
 allowBuilds:
   esbuild: false
   workerd: false
-# First-party prism packages are excluded from the release-age policy: they
-# are ours, resolved from npm by exact version in the lockfile, and fresh
-# releases are precisely what this repo wants to pick up.
+# First-party prism packages are excluded from the release-age policy: they are
+# ours, resolved from npm by exact version in the lockfile, and fresh releases are
+# precisely what this repo wants to pick up.
 #
-# The two pins are deliberately different numbers. `@nanisoft/prism-ui` declares
-# an exact peer dependency on the token package it was released against, and a
-# release that changes only the component package leaves the token package
-# behind, so the tokens pin names 0.6.0 and the ui pin names 0.7.0. Reading the
-# two as a mistake and "fixing" them to match moves this site onto a token line
-# the component package was not released with.
+# A SCOPE, and no version. The policy exists to slow a compromised package down,
+# and our own packages are the one set where waiting buys nothing: a delay here
+# means this repository is on an older line than the three sites beside it, which
+# is the split this programme spent a release undoing. Naming versions here would
+# also be a second declaration of a number another repository owns, so a scope is
+# both the smaller rule and the honest one: it says "ours are exempt" and states
+# nothing about which of ours.
+#
+# The token package is not named and is not declared, because the component
+# package declares it at an exact version and brings it with it. A consumer cannot
+# be handed a mismatched pair, and there is nothing here to keep in step.
 minimumReleaseAgeExclude:
-  - '@nanisoft/prism-tokens@0.3.0 || 0.6.0'
-  - '@nanisoft/prism-ui@0.4.0 || 0.7.0'
+  - '@nanisoft/*'

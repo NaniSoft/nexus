@@ -171,7 +171,12 @@ console.log(`\n${NAME}: ${findings.length} finding(s) across ${read.length} file
    exact value is printed on every run. A range would let this site move onto a line
    nobody chose for it, which is the one thing an exact pin is for. */
 const manifest = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const PINS = ['@nanisoft/prism-ui', '@nanisoft/prism-tokens'];
+/* The one package this repository pins. The token package is deliberately absent:
+   `@nanisoft/prism-ui` declares it at an exact version, so it arrives at the version
+   the component package was released against and this repository cannot be handed a
+   mismatched pair. Naming it here would be a second declaration of a number another
+   repository owns, and that is how one site spent a release on a different line. */
+const PINS = ['@nanisoft/prism-ui'];
 for (const name of PINS) {
   const pin = manifest.dependencies?.[name];
   if (typeof pin !== 'string' || !/^\d+\.\d+\.\d+$/.test(pin)) {

@@ -68,7 +68,11 @@ import process from 'node:process';
 const NAME = 'cascade';
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'out');
-const require = createRequire(path.join(ROOT, 'package.json'));
+/* Seeded from the component package's own manifest rather than this repository's.
+   The token package is the component package's dependency, so it resolves from there;
+   this repository does not declare it, and a consumer that did would hold a second
+   copy of a version number another repository owns. */
+const require = createRequire(createRequire(path.join(ROOT, 'package.json')).resolve('@nanisoft/prism-ui/package.json'));
 
 /** Where a browser might be, in the order a person would expect. `PRISM_BROWSER` wins. */
 const BROWSERS = [

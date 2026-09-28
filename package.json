@@ -21,10 +21,10 @@
     "check:pack-map": "node scripts/check-pack-map.mjs",
     "check:docs-tree": "node scripts/check-docs-tree.mjs",
     "check:cascade": "node scripts/check-cascade.mjs",
+    "check:prism-gates": "prism-gates",
     "check": "pnpm check:antd && pnpm check:stylesheet && pnpm check:links && pnpm check:pack-map && pnpm check:docs-tree"
   },
   "dependencies": {
-    "@nanisoft/prism-tokens": "0.6.0",
     "@nanisoft/prism-ui": "0.7.0",
     "fumadocs-core": "^16.15.12",
     "fumadocs-mdx": "^15.4.2",

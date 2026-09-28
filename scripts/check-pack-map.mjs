@@ -143,7 +143,12 @@ const RULES = packRules();
  * The token contract, as the published package states it
  * ------------------------------------------------------------------ */
 
-const require = createRequire(path.join(ROOT, 'package.json'));
+
+/* Seeded from the component package's own manifest rather than this repository's.
+   The token package is the component package's dependency, so it resolves from there;
+   this repository does not declare it, and a consumer that did would hold a second
+   copy of a version number another repository owns. */
+const require = createRequire(createRequire(path.join(ROOT, 'package.json')).resolve('@nanisoft/prism-ui/package.json'));
 
 /** The published per-pack block for one pack and mode, as the token package emits it. */
 function contract(pack, mode) {

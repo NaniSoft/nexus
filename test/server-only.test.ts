@@ -75,8 +75,13 @@ describe('the site has no client code', () => {
   });
 
   it('reads no token at runtime, and takes no colour from a computed style', () => {
-    // The canvas law, as an assertion about the whole tree rather than about a canvas.
-    const pattern = /getPropertyValue|getComputedStyle|prismBrandPacks|prismCssVarKey/;
+    // The runtime token-read law, as an assertion about the whole tree rather than
+    // about a canvas. The law's wording, and the retired line's own names, are in the
+    // gate kit: its `runtime-token-read` gate scans this same tree for every one of
+    // them. What this test is for is the file list above, which is the half a gate
+    // cannot assert. A test that spells the law out is a second copy of it, and four
+    // copies of a sentence is the failure this programme exists to end.
+    const pattern = /getPropertyValue|getComputedStyle/;
     const offenders = files.filter((file) => pattern.test(readFileSync(file, 'utf8')));
     expect(offenders, `a runtime token read in ${offenders.join(', ')}`).toEqual([]);
   });

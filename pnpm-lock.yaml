@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@nanisoft/prism-tokens':
-        specifier: 0.6.0
-        version: 0.6.0
       '@nanisoft/prism-ui':
         specifier: 0.7.0
         version: 0.7.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
