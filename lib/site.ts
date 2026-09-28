@@ -74,7 +74,7 @@ export const SITE_PRODUCT = {
  *
  * The directory is a JSON file rather than a list in this module, because two
  * independent readers need it and a TypeScript module is not one of them: the test
- * imports it, and `scripts/check-pack-map.mjs` reads the file the same way it reads
+ * imports it, and the pack-boundary gate in `@nanisoft/prism-ui/gates` reads the file the same way it reads
  * the pack map it is checked against.
  */
 export const PRODUCTS: readonly SwitcherProduct[] = site.products.map((product) => ({

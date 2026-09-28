@@ -11,7 +11,7 @@ import map from '@/scripts/pack-map.json';
 /**
  * The pack map, asserted against the composition rather than against a screenshot.
  *
- * `scripts/pack-map.json` is the declaration. `scripts/check-pack-map.mjs` reads it
+ * `scripts/pack-map.json` is the declaration. the pack-boundary gate in `@nanisoft/prism-ui/gates` reads it
  * from the built export, where it is also checked in both modes against the emitted
  * CSS and against the published token contract. This file reads the same declaration
  * from the DOM, so the two readers cannot drift: a region that gains a pack fails the

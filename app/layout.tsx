@@ -84,7 +84,7 @@ const inter = Inter({
 // preloaded, the `@font-face` rules ship, and the class that declares
 // `--font-inter` is on no element, so `--font-sans` is invalid at computed-value time
 // and the whole first family of the design system resolves to nothing. That is the
-// same failure the dead-alias assertion in `scripts/check-stylesheet-ownership.mjs`
+// same failure the dead-alias assertion in the stylesheet-ownership gate in `@nanisoft/prism-ui/gates`
 // is about, arrived at from the other end, and the gate checks it from the export.
 export const HTML_CLASS = [inter.variable, THEME_ATTRIBUTES.className].filter(Boolean).join(' ');
 

@@ -47,7 +47,7 @@
  * The baseline lives outside this repository and is destroyed at the close of the
  * sweep. A large snapshot committed to a public repository is a liability, and the
  * liability is rot rather than secrecy. The permanent gate that outlives the sweep
- * is `check-links.mjs`, which resolves every internal destination against the
+ * is the links gate in `@nanisoft/prism-ui/gates`, which resolves every internal destination against the
  * emitted route set.
  *
  * Usage:

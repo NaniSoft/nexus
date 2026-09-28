@@ -15,17 +15,13 @@
     "lint": "oxlint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "check:antd": "node scripts/check-antd.mjs",
-    "check:stylesheet": "node scripts/check-stylesheet-ownership.mjs",
-    "check:links": "node scripts/check-links.mjs",
-    "check:pack-map": "node scripts/check-pack-map.mjs",
     "check:docs-tree": "node scripts/check-docs-tree.mjs",
     "check:cascade": "node scripts/check-cascade.mjs",
     "check:prism-gates": "prism-gates",
-    "check": "pnpm check:antd && pnpm check:stylesheet && pnpm check:links && pnpm check:pack-map && pnpm check:docs-tree"
+    "check": "pnpm check:prism-gates && pnpm pnpm check:docs-tree"
   },
   "dependencies": {
-    "@nanisoft/prism-ui": "0.7.0",
+    "@nanisoft/prism-ui": "0.8.0",
     "fumadocs-core": "^16.15.12",
     "fumadocs-mdx": "^15.4.2",
     "next": "^16.3.5",
