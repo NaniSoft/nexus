@@ -1,0 +1,62 @@
+{
+  "$comment": [
+    "The product site's own facts, as data: which pack is the ground, which mode a",
+    "visitor gets who has never chosen, and the set of products the switcher moves",
+    "between. A pack identifier is a token, and this file is the one place a site",
+    "picks one, so a renamed or retired pack is a compile error rather than a page",
+    "that quietly inherits the ground. The records treat the page ground and a",
+    "product's mark as two different axes: the ground is stable for the life of the",
+    "page, and a product's mark comes from this directory.",
+    "",
+    "The five products are the five repositories that coordinate. Four of them are",
+    "not this site, which is why the header carries a switcher at all: a set that has",
+    "to tell five things apart is the reason five packs are on one page. This site's",
+    "own mark wears the page's own pack, so its boundary is the ground rather than a",
+    "second claim.",
+    "",
+    "`tagline` is here rather than in the landing because the directory is the one",
+    "place a product's own words live, and three of them are read on the landing as",
+    "product rows. It was there before this migration too, in the shared registry the",
+    "old chrome read; the words did not change, only the file they are read from."
+  ],
+  "siteId": "nexus",
+  "ground": "lavender",
+  "defaultMode": "dark",
+  "products": [
+    {
+      "id": "www",
+      "name": "NaniSoft",
+      "pack": "sky",
+      "href": "https://www.nanisoft.com",
+      "tagline": "Software that builds software."
+    },
+    {
+      "id": "nexus",
+      "name": "Nexus",
+      "pack": "lavender",
+      "href": "https://nexus.nanisoft.com",
+      "tagline": "The Agent Factory — autonomous software creation."
+    },
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "pack": "mint",
+      "href": "https://atlas.nanisoft.com",
+      "tagline": "The Digital Twin Platform — living models of real systems."
+    },
+    {
+      "id": "alphalens",
+      "name": "AlphaLens",
+      "pack": "blush",
+      "href": "https://alphalens.nanisoft.com",
+      "tagline": "Quantitative trading research for the Indian market."
+    },
+    {
+      "id": "prism",
+      "name": "Prism",
+      "pack": "peach",
+      "href": "https://prism.nanisoft.com",
+      "tagline": "One design language across every product."
+    }
+  ]
+}

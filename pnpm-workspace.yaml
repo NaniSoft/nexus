@@ -9,6 +9,13 @@ allowBuilds:
 # First-party prism packages are excluded from the release-age policy: they
 # are ours, resolved from npm by exact version in the lockfile, and fresh
 # releases are precisely what this repo wants to pick up.
+#
+# The two pins are deliberately different numbers. `@nanisoft/prism-ui` declares
+# an exact peer dependency on the token package it was released against, and a
+# release that changes only the component package leaves the token package
+# behind, so the tokens pin names 0.6.0 and the ui pin names 0.7.0. Reading the
+# two as a mistake and "fixing" them to match moves this site onto a token line
+# the component package was not released with.
 minimumReleaseAgeExclude:
-  - '@nanisoft/prism-tokens@0.3.0'
-  - '@nanisoft/prism-ui@0.4.0'
+  - '@nanisoft/prism-tokens@0.3.0 || 0.6.0'
+  - '@nanisoft/prism-ui@0.4.0 || 0.7.0'

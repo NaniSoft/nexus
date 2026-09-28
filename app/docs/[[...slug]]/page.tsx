@@ -2,14 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactElement } from 'react';
 import Link from 'next/link';
-import { findNeighbour } from 'fumadocs-core/page-tree';
-
-import { DocsShell, type DocsNavEntry } from '@nanisoft/prism-ui/pages';
+import { DocsShell } from '@nanisoft/prism-ui/pages';
 
 import { StatusNote } from '@/components/status-note';
 import { getMdxComponents } from '@/lib/mdx-components';
 import { docsSource } from '@/lib/source';
-import { toPrismTree } from '@/lib/to-prism-tree';
+import { toContents, toPrismTree } from '@/lib/to-prism-tree';
 
 // Optional catch-all: `/docs` renders the section index, `/docs/<slug>` the
 // page. The optional root keeps the static export satisfiable even while a
@@ -40,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: page.data.title, description: page.data.description };
 }
 
-/** The six docs sections, for the `/docs` landing. */
+/** The six docs sections, for the `/docs` index. */
 const SECTIONS = [
   {
     title: 'Concepts',
@@ -74,68 +72,80 @@ const SECTIONS = [
   },
 ] as const;
 
+/**
+ * The four words a reader hears for the documentation screen's four regions.
+ *
+ * The design system requires all four and ships none, because a Page that ships no
+ * copy ships no reader-facing copy either. Three of them are names this site already
+ * publishes: the rail is the documentation this site links to as "Docs", and the
+ * pager moves between pages. "Contents" is the one new word, and it is the shortest
+ * name the region has: it is the headings of the page the reader is already on, and
+ * naming it anything longer would be a claim the rail does not make.
+ */
+const SHELL_LABELS = {
+  navLabel: 'Docs',
+  tocLabel: 'Contents',
+  pagerLabel: 'Pages',
+  pagerLabels: { previous: 'Previous', next: 'Next' },
+} as const;
+
+/**
+ * The section index, which is this site's own and not the design system's.
+ *
+ * The catalogue deliberately ships no documentation index Page, for the same reason it
+ * ships no blog index: a Page is judged on what it encodes, and a section catalogue
+ * encodes this site's information architecture. So the copy, the six blurbs and the
+ * starting point are site content over site classes, and the twenty-seven documents
+ * behind them are the design system's own screen.
+ */
+function DocsIndex(): ReactElement {
+  return (
+    <div className="site-catalog">
+      <p className="site-eyebrow">nanisoft · nexus — docs</p>
+      <h1 className="site-catalog__title">Nexus documentation</h1>
+      <p className="site-catalog__lede">
+        The Agent Factory: what it is, how it is built, and how to work with it. Six sections, each
+        tracing to the design.
+      </p>
+      <StatusNote />
+      <div className="site-catalog__grid">
+        {SECTIONS.map((section) => (
+          <Link className="site-catalog__item" href={section.url} key={section.title}>
+            <strong>{section.title}</strong>
+            <span>{section.blurb}</span>
+          </Link>
+        ))}
+      </div>
+      <p className="site-catalog__start">
+        New here? Start with <Link href="/docs/introduction">Introduction</Link>.
+      </p>
+    </div>
+  );
+}
+
 export default async function DocsPage({ params }: PageProps): Promise<ReactElement> {
   const { slug } = await params;
 
-  // `/docs` — the section index, carrying the standing status note.
-  if (!slug) {
-    return (
-      <div className="site-catalog">
-        <p className="site-eyebrow">nanisoft · nexus — docs</p>
-        <h1 className="site-catalog__title">Nexus documentation</h1>
-        <p className="site-catalog__lede">
-          The Agent Factory: what it is, how it is built, and how to work with it. Six sections,
-          each tracing to the design.
-        </p>
-        <StatusNote />
-        <div className="site-catalog__grid">
-          {SECTIONS.map((section) => (
-            <Link className="site-catalog__item" href={section.url} key={section.title}>
-              <strong>{section.title}</strong>
-              <span>{section.blurb}</span>
-            </Link>
-          ))}
-        </div>
-        <p className="site-catalog__start">
-          New here? Start with <Link href="/docs/introduction">Introduction</Link>.
-        </p>
-      </div>
-    );
-  }
+  if (!slug) return <DocsIndex />;
 
   const page = docsSource.getPage(slug);
   if (!page) notFound();
 
-  const tree = docsSource.getPageTree();
-  const neighbour = findNeighbour(tree, page.url);
   const MDX = page.data.body;
 
   return (
     <DocsShell
       title={page.data.title}
       description={page.data.description}
-      nav={toPrismTree(tree.children)}
-      toc={page.data.toc ? toTocEntries(page.data.toc) : undefined}
-      neighbours={{
-        previous: neighbour.previous && { title: String(neighbour.previous.name), url: neighbour.previous.url },
-        next: neighbour.next && { title: String(neighbour.next.name), url: neighbour.next.url },
-      }}
+      nav={toPrismTree(docsSource.getPageTree().children)}
+      toc={page.data.toc ? toContents(page.data.toc) : undefined}
+      currentHref={page.url}
+      {...SHELL_LABELS}
     >
-      <div className="site-prose">
+      <div className="site-prose-table">
         <StatusNote />
         <MDX components={getMdxComponents()} />
       </div>
     </DocsShell>
   );
-}
-
-/** fumadocs TOC → prism-ui nav entries (h2–h3 only). */
-function toTocEntries(toc: Array<{ title: unknown; url: string; depth: number }>): DocsNavEntry[] {
-  return toc
-    .filter((entry) => entry.depth >= 2 && entry.depth <= 3)
-    .map((entry, index) => ({
-      id: `${entry.url}-${index}`,
-      title: typeof entry.title === 'string' ? entry.title : '',
-      url: entry.url,
-    }));
 }

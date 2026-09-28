@@ -5,33 +5,137 @@
 Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, one design language ([Prism](https://prism.nanisoft.com)).
 
 - **Live**: https://nexus.nanisoft.com (Custom Domain, auto-created on deploy)
-- **Pack**: lavender mode-switchable, beam-dark by default
-- **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest · Cloudflare Workers
-- **Chrome**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) (SiteHeader / SiteFooter) — npm dependency, never copied into this repo
+- **Pack**: `lavender` is the ground, on the document element, and it does not change. Four other packs are on marks: the header's product switcher carries `sky`, `lavender`, `mint`, `blush` and `peach`, and the landing's products section carries the three its rows name. That is the whole five-pack layering, and `scripts/pack-map.json` is the map and `scripts/check-pack-map.mjs` is the gate, checked in both light and dark mode
+- **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest (jsdom + Testing Library) · Cloudflare Workers
+- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.7.0, pinned exactly, and [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) 0.6.0, pinned exactly. There is no local component and no client runtime: every page is a server component, so the site ships no JavaScript of its own
 
 ## What ships
 
-- **Landing** (`/`) — the Instrument Bench, in lavender: split hero with the loop drawn on a canvas inside an instrument panel, status ticker, then five numbered hairline sections — the loop as a conveyor rail (issue → container → build → review → merge), the capability grid, the survey grid of composed parts against the four built in-house, the build-order ledger, and the products built on Nexus — closing on a final CTA block.
-- **Docs** (`/docs`) — a section catalog over `content/docs/`, then Introduction plus six sections: Concepts, Architecture, Configuration, Operations, Guides, Reference. 27 pages across six folder-per-section trees, each with its own `meta.json`. Every docs page carries the standing status note.
-- **Blog** (`/blog`) — the four launch posts over `content/blog/` (folder-per-post, required date, drafts excluded), reverse-chronological with prev/next.
+- **Landing** (`/`) — the thesis as the page's `h1` with two real links under it, then the five standing facts as one line, then five numbered sections: **the loop** (five stages, then the four guarantees under them) · **what's inside** (the eight capabilities) · **how it's built** (the eight composed parts, then the four built in house) · **the build order** (the status ledger, one tier and one published word per row) · **built on Nexus** (Atlas, AlphaLens and Prism, each row a mark in that product's own pack and a whole-row link to its live site). It closes on a filled call to action.
+- **Docs** (`/docs`) — this site's own section index over `content/docs/`, then the design system's documentation screen for the twenty-seven documents behind it: the Introduction plus six sections, Concepts, Architecture, Configuration, Operations, Guides and Reference, each a folder with its own `meta.json`. Every one of those pages carries a navigation rail of all twenty-seven, a contents rail of its own headings where it has any, and a pager derived from the tree rather than passed in.
+- **Blog** (`/blog`) — the four launch posts over `content/blog/`, folder-per-post with a required ISO `date`, optional `tags` and `draft` (drafts never export), reverse-chronological. The index is this site's own composition and this site's own CSS, because the four blog lists in this family are four deliberate designs and the design system deliberately ships none. Each post is the design system's blog post Page, which owns the byline, the date in both its display and its machine form, and the trail to the neighbouring posts.
 - **About** (`/about`) — the product's story: what the factory is for, what it is made of, and the honest tense of where it stands.
+- **Not found** — the design system's not-found Page: the code as the page's heading, the sentence under it, and two ways out.
 
-The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the ticker says `release → none yet`, and the standing status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
+The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the standing facts say `release → none yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
+
+## How it is put together
+
+```
+app/layout.tsx        the document: two theme attributes, the boot script, the chrome
+app/page.tsx          the landing, composed from catalogue items and nothing else
+app/globals.css       253 lines: the two section indexes, the status note, the table hairline
+app/about/page.tsx    a page header, the prose at the measure, a fact list, three links
+app/not-found.tsx     the not-found Page
+app/blog/…            the blog index (site's own) and the blog post (the catalogue's)
+app/docs/…            the section index (site's own) and the documentation screen (the catalogue's)
+lib/site.json         the ground, the default mode, the product directory
+lib/site.ts           those facts, typed by the design system's pack vocabulary
+lib/landing-content.ts every word of the landing, as data
+lib/to-prism-tree.ts  the content pipeline's page tree, as the documentation Page's data
+scripts/              the five gates, the pack map, the parity expectations, the browser lane
+```
+
+Three things are worth knowing before changing anything here.
+
+**A consumer cannot write a design-system utility class.** The emitted stylesheet is
+compiled from the design system's own source, so a utility exists in it only if a
+Prism component uses it. `mb-12` is safe; a utility Prism happens not to use would do
+nothing and say nothing. Anything this site needs for itself goes in `app/globals.css`
+as a site class.
+
+**The site stylesheet owns almost nothing, and that is a rule.** It must not declare
+the page ground, the body ink, a focus outline or a hairline colour on a selector with
+no class in it, and it must not carry a `:focus` rule at all: the design system's base
+layer is layered and this sheet is not, so a bare-element rule here wins the cascade
+whatever the cascade then does with it. Three rules were deleted rather than mapped for
+exactly that reason, and `scripts/check-stylesheet-ownership.mjs` is why that is
+enforced rather than remembered. Two more were repaired with explicit longhands, because
+a shorthand with one dead operand erases the whole declaration rather than repainting
+it, and that is how a box loses both its edge and its fill without anything throwing.
+
+**A pack boundary is not only colour.** It repoints the pack's corner radius beneath
+it, and it wears the mode of the nearest ancestor carrying `.dark`, which is why a
+server-rendered boundary has no mode class of its own. So a boundary belongs on a fully
+rounded mark and nowhere else, and a page that put a second pack on a section would be
+encoding its section index in its corner radius. All five light grounds are the same
+white and the five dark grounds span about three steps of near-neutral, so a section
+ground buys almost nothing and costs a shape change. The map says where two regions may
+carry a second pack; the gate says the count and the identifiers, in both modes, and a
+third region fails the build.
 
 ## Develop
 
 ```bash
 pnpm install
-pnpm dev      # bake + dev server
-pnpm build    # bake + static export to out/
-pnpm test
-pnpm lint
+pnpm dev          # dev server
+pnpm build        # static export to out/
+pnpm lint         # oxlint
+pnpm typecheck    # next typegen && tsc --noEmit
+pnpm test         # vitest
+pnpm check        # the five gates; run after pnpm build
 ```
+
+The five gates, and what each is for:
+
+| gate | what it holds |
+| --- | --- |
+| `check:antd` | No trace of the retired line: no dependency, no import, no generated stylesheet, no build step, no living instruction. The lockfile is read as a dependency graph, and both design-system pins must be exact. |
+| `check:stylesheet` | The site's own sheet competes with nothing the design system declares, carries no `:focus` rule, takes no `color-mix()` over a `var()`, and reads no custom property nothing declares. |
+| `check:links` | Every internal destination and every in-page fragment resolves to something this site emits. |
+| `check:pack-map` | The pack map, from the built export, in both light and dark mode: the region set, the identifiers, the boundary count, a boundary on a mark and nowhere else, and each boundary's own pack resolved against the published token contract. |
+| `check:docs-tree` | The documentation tree, from the built export: twenty-seven pages across seven sections, a rail of all twenty-seven on every one of them, a pager whose two halves are the tree's own neighbours, and a contents rail whose every fragment names a heading the same document emits. |
+
+The browser lane is a sixth tool and is **not** in `pnpm check`, because it needs a
+browser this repository does not depend on and a continuous-integration runner does not
+guarantee:
+
+```bash
+pnpm check:cascade
+```
+
+It drives a real headless Chrome over the DevTools protocol, with no dependency of its
+own, and it resolves in both light and dark mode: the page ground, the body ink and a
+plain anchor's colour, against the values the design system declares; the contrast ratio
+of the body text on the page in each mode; and the resolved background of each of the
+three product marks, which is the assertion a DOM query cannot make. An element that
+exists and paints nothing is the defect this site shipped until this migration, so
+"the mark is in the document" is not evidence and the lane exists because of it. It
+fails, loudly, when no browser is found, because a gate that silently skips is the
+thing this family keeps warning about.
+
+The content-parity comparison is a fifth tool and is not in `pnpm check` either, because
+its baseline lives outside the repository and is destroyed at the close of the sweep:
+
+```bash
+node scripts/check-content-parity.mjs --record <file>            # cut a baseline
+node scripts/check-content-parity.mjs --baseline <file> \
+  --expect scripts/content-parity-expectations.json              # compare
+```
+
+It reads the built export through a document parser, so it sees the copy in
+`lib/landing-content.ts` and in JSX as well as the copy in `content/`, which a digest of
+the content tree would have been blind to. Every difference is declared in
+`scripts/content-parity-expectations.json` with the reason it is a rendering change and
+not a copy change, and a declaration that matches nothing is itself a finding.
 
 ## Deploy
 
-Push to `main` → GitHub Actions builds and deploys the Worker (`nexus-site`). Pull requests run CI (lint → test → build). Local lane: `pnpm deploy`.
+Push to `main` → GitHub Actions runs the checks and then, as a job that needs them,
+`wrangler deploy` for the `nexus-site` Worker, authenticated with the org-level
+`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets. A push that fails its checks
+cannot deploy, because the deploy job is never reached. `pnpm deploy` is the local lane
+and needs wrangler auth.
 
 ## Status
 
-Live — the landing, the six docs sections, the four launch posts, and the About page are all published from this branch, and the design documents the factory Nexus is meant to be. The factory itself is a separate matter: in active development, design complete, implementation specified and not started. The wayfinder map this site was built from is retired, so the ticket numbers once cited across this family are history; the published docs are the authority.
+Live at https://nexus.nanisoft.com. The landing, the twenty-seven documents across
+seven sections, the four launch posts, and the About page are all published from this
+branch, and the design documents the factory Nexus is meant to be. The factory itself is
+a separate matter: in active development, design complete, implementation specified and
+not started.
+
+The wayfinder map these sites were built from is retired, and it and its ticket numbers
+are gone from this repository's documents. The standing references are `AGENTS.md` (this
+repository's own scope, stack and commands), `CONSISTENCY.md` (the cross-repository law
+and the gate that holds each clause) and this file.

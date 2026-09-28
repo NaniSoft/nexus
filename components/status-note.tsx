@@ -1,8 +1,14 @@
 import type { ReactElement } from 'react';
 
-// The standing status note — the docs' one honesty device, rendered at the top
-// of every docs page (ticket 06: "one clear in-development status note … at the
-// top of docs"). Marked up as plain HTML, styled by .site-status-note.
+/**
+ * The standing status note: the documentation set's one honesty device, rendered at
+ * the top of every docs page, every blog post, and the docs index.
+ *
+ * It is plain HTML with no heading and no role, styled by `.site-status-note`, because
+ * it is a note inside a document rather than a region of the page. The words are
+ * frozen content: they are the sentence the site's honesty law is made of, and the
+ * migration this file was rewritten in did not touch them.
+ */
 export function StatusNote(): ReactElement {
   return (
     <aside className="site-status-note">

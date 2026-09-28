@@ -1,374 +1,236 @@
 /*
- * Site styles over prism-ui's shipped ground (fonts, display width axis,
- * dither patterns, and the shared chrome — SiteHeader/SiteFooter are styled by
- * the package). This sheet owns the app-level pieces: the shell, DocsShell's
- * structural classes, the blog list, MDX prose, and the About page.
+ * This site's own stylesheet, and it is almost nothing.
  *
- * FINDING carried from ticket 09: prism-ui ships the pages layer (DocsShell /
- * BlogLayout) as structure without styles — `prism-docs-shell` appears nowhere
- * in the published styles.css. These are the per-site styles ticket 16 leaves
- * open; if prism-ui ships them later, delete this block rather than drifting.
+ * The old sheet was 506 lines over prism-ui's shipped ground, and 462 of those lines
+ * were one of three things: restating a surface the design system already owns,
+ * reading custom properties that only the 126 KB generated variablesheet defined, or
+ * drawing a client subtree the design system has no place for. What is left here is
+ * three things the catalogue does not ship: the blog index, the section index, and
+ * the standing status note. The reason is worth stating for the three sites that copy
+ * this file:
  *
- * Colour always comes from the pre-baked prism-lavender-<mode> variable
- * rulesets — consume var(--prism-*) tokens, never raw hex.
+ *   - A site stylesheet must not declare, on a selector with no class in it, any of
+ *     `background`, `background-color`, `color`, `font-family`, `outline`,
+ *     `outline-style` or `border-color`, and must not carry a `:focus` or
+ *     `:focus-visible` rule at all. Those are the properties prism's own base layer
+ *     declares, prism's base is layered and this sheet is not, so a bare-element
+ *     declaration here always wins the cascade and silently replaces a rule the
+ *     design system chose. Three rules on this site were deleted rather than mapped
+ *     for exactly that reason, and `scripts/check-stylesheet-ownership.mjs` is the
+ *     gate that holds it.
+ *   - The sheet is the only place a consumer can express anything the catalogue does
+ *     not ship, because the consumer does not run Tailwind: a utility exists in the
+ *     emitted stylesheet only if a Prism component uses it. A site class is a
+ *     declaration the site owns, which is exactly what these are.
+ *   - Colour is a token, never a raw value, and never a `color-mix()` over a
+ *     `var()`: a shorthand with one dead operand erases the declaration instead of
+ *     repainting it, and a live one computes away under an unlayered rule. Every
+ *     `var()` below names a custom property the design system declares, and the same
+ *     gate checks that, because a dead read is not a wrong colour: it is no
+ *     declaration at all.
+ *   - Where a box needs an edge, the edge is three longhands rather than the `border`
+ *     shorthand. Two of the selectors below were exactly this defect: each named a
+ *     hairline colour in a `border` shorthand and a fill in a `color-mix()`, and with
+ *     the generated variablesheet gone both operands resolved to nothing, so both
+ *     declarations were invalid at computed-value time and the box lost both its edge
+ *     and its fill. A shorthand with one dead operand erases itself; three longhands
+ *     each with a live operand do not.
+ *   - Radius is derived from `--radius` in a `calc()`, never read from the scale. The
+ *     emitted stylesheet declares `--radius` and `--radius-xl` and no other member of
+ *     the scale, because a member is emitted only where a component uses it and a
+ *     consumer does not run Tailwind. So `var(--radius-sm)` and `var(--radius-lg)`
+ *     resolve to nothing in a consumer's sheet, and a `calc()` on the one property the
+ *     sheet does declare is the design system's own derivation rather than a second
+ *     spelling of it.
+ *
+ * What is left is the two section indexes and the blog list, which the catalogue
+ * deliberately does not ship, and the blog list because the four blog lists in this
+ * family are four deliberate designs. Nothing here restyles a catalogue item, and no
+ * link below is given a focus indicator: a plain anchor keeps the browser's own, which
+ * is the only indicator on an element no Prism component drew.
  */
 
-* {
-  box-sizing: border-box;
-}
+/*
+ * The one thing this sheet declares that is not a site class: the design system's
+ * first family, supplied.
+ *
+ * prism's emitted sheet declares `--font-sans: Inter, ui-sans-serif, system-ui, ...`
+ * and 0.7.0 ships no font file, so the first entry is a name nothing resolves to and
+ * every page on the site renders in the platform's UI face. This supplies the file
+ * the token already names and repeats prism's own fallback list verbatim behind it, so
+ * the design system's intent is unchanged and only its first entry becomes real.
+ *
+ * It is a custom property rather than a `font-family` on a bare element on purpose:
+ * a site stylesheet must not declare `font-family` on a selector with no class in it,
+ * because prism's base is layered and this sheet is not. A token is not that.
+ */
 
-html {
-  scroll-behavior: smooth;
+:root {
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
-
-body {
-  margin: 0;
-  font-family: var(--font-archivo), sans-serif;
-  background: var(--prism-color-bg-layout);
-  color: var(--prism-color-text);
-}
-
-a {
-  color: var(--prism-color-link);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* ---------- Shell ---------- */
 
 .site-main {
+  /* Keeps the footer below the fold on a short page. Layout, so it is a class rule
+     and not a bare-element one, and it competes with nothing prism declares. */
   min-height: 100dvh;
 }
 
-.site-mono {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-}
+/* ---------- The landing elements this site owns ---------- */
 
-.site-eyebrow {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.62;
-  margin: 0 0 20px;
-}
-
-/* ---------- Docs skeleton (prism-ui DocsShell structural classes) ---------- */
-
-.prism-docs-shell__body {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: 48px;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 40px 24px 96px;
-}
-
-.prism-docs-shell__body:has(+ .prism-docs-shell__toc),
-.prism-docs-shell__body:has(~ .prism-docs-shell__toc) {
-  grid-template-columns: 240px minmax(0, 1fr) 200px;
-}
-
-.prism-docs-shell__nav,
-.prism-docs-shell__toc-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 13px;
-  display: grid;
-  gap: 6px;
-}
-
-.prism-docs-shell__nav__nested,
-.prism-docs-shell__toc-list .prism-docs-shell__nav__nested {
-  padding-left: 14px;
-  margin-top: 6px;
-}
-
-.prism-docs-shell__nav a,
-.prism-docs-shell__toc-list a {
-  color: var(--prism-color-text);
-  opacity: 0.78;
-}
-
-.prism-docs-shell__nav a:hover,
-.prism-docs-shell__toc-list a:hover {
-  opacity: 1;
-  text-decoration: none;
-  color: var(--prism-color-primary);
-}
-
-.prism-docs-shell__sidebar {
-  position: sticky;
-  top: 84px;
-  align-self: start;
-  max-height: calc(100vh - 108px);
-  overflow: auto;
-}
-
-.prism-docs-shell__toc {
-  display: none;
-}
-
-@media (min-width: 1080px) {
-  .prism-docs-shell__toc {
-    display: block;
-    position: sticky;
-    top: 84px;
-    align-self: start;
-  }
-}
-
-.prism-docs-shell__title {
-  font-variation-settings: 'wdth' 118, 'wght' 600;
-  letter-spacing: -0.01em;
-  margin-bottom: 4px;
-}
-
-.prism-docs-shell__description {
-  margin: 0 0 8px;
-  opacity: 0.78;
-  line-height: 1.65;
-}
-
-.prism-docs-shell__neighbours {
+.site-hero__actions {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 56px;
-  padding-top: 20px;
-  border-top: 1px solid var(--prism-color-border-secondary);
-  font-size: 13px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
 }
 
-.prism-docs-shell__neighbours a:last-child {
-  margin-left: auto;
-  text-align: right;
+.site-caption {
+  max-width: var(--container-measure);
+  margin: 1.5rem auto 0;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.429;
+  text-wrap: pretty;
 }
 
-/* Sidebar group headers — DocsShell renders separators as anchors without href. */
-.prism-docs-shell__nav a:not([href]) {
-  display: block;
-  margin: 18px 0 4px;
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
+.site-caption--nuance {
+  max-width: 46ch;
+}
+
+.site-measure {
+  /* The About page's body copy at the reading measure. `Prose` already holds one, so
+     this is here only because the page sets it twice, once per block, and a class is
+     cheaper than restating the measure on each. */
+  max-width: var(--container-measure);
+}
+
+/* ---------- The standing status note, the docs' one honesty device ---------- */
+
+.site-status-note {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border);
+  border-radius: calc(var(--radius) * 0.6);
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.75rem;
+  /* `--card` and not `--muted`, and the reason is a measurement rather than a taste.
+     In this pack's dark mode `--muted` and `--border` resolve to the same value, so a
+     note filled with `--muted` and edged with `--border` is an edge drawn around its
+     own colour, and the box a reader is meant to see is the one thing they cannot.
+     `--card` is a different value from `--border` in both modes, and the shadow is
+     the design system's own resting surface. `scripts/check-cascade.mjs` reads the
+     resolved pair and fails when they are equal. */
+  background-color: var(--card);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.site-status-note strong {
+  color: var(--brand-ink);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.6;
-  pointer-events: none;
+  margin-right: 0.5rem;
 }
 
-.prism-docs-shell__nav a:not([href]):first-child {
-  margin-top: 0;
-}
-
-/* ---------- MDX prose ---------- */
-
-.site-prose {
-  line-height: 1.72;
-  font-size: 15px;
-}
-
-.site-prose h2 {
-  font-variation-settings: 'wdth' 114, 'wght' 600;
-  margin: 40px 0 12px;
-  scroll-margin-top: 84px;
-}
-
-.site-prose h3 {
-  font-variation-settings: 'wdth' 110, 'wght' 600;
-  margin: 32px 0 10px;
-  scroll-margin-top: 84px;
-}
-
-.site-prose p {
-  margin: 12px 0;
-}
-
-.site-prose ul,
-.site-prose ol {
-  padding-left: 22px;
-}
-
-.site-prose li {
-  margin: 6px 0;
-}
-
-.site-prose blockquote {
-  margin: 16px 0;
-  padding: 4px 0 4px 18px;
-  border-left: 2px solid var(--prism-color-border-secondary);
-  opacity: 0.85;
-}
-
-.site-prose code {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 13px;
-  background: var(--prism-color-fill-tertiary);
-  border-radius: 4px;
-  padding: 2px 6px;
-}
-
-.site-prose pre {
-  background: var(--prism-color-bg-container);
-  border: 1px solid var(--prism-color-border-secondary);
-  border-radius: 4px;
-  padding: 14px 16px;
-  overflow: auto;
-}
-
-.site-prose pre code {
-  background: none;
-  padding: 0;
-  font-size: 12.5px;
-  line-height: 1.65;
-}
-
-.site-prose table {
+/*
+ * Table hairlines, and nothing else about a table.
+ *
+ * The design system's `Prose` holds a table to the measure and pads its cells but
+ * draws no rule between them, because the library's own table Component draws them
+ * and MDX tables are not that Component. Without these, a documentation table with
+ * four columns is four unaligned columns of text, which is the one thing a table
+ * exists to prevent. The edges are longhands for the reason at the head of this file.
+ */
+.site-prose-table table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 14px;
-  margin: 16px 0;
+  font-size: 0.875rem;
+  margin: 1rem 0;
 }
 
-.site-prose th,
-.site-prose td {
-  border: 1px solid var(--prism-color-border-secondary);
-  padding: 8px 12px;
+.site-prose-table th,
+.site-prose-table td {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border);
+  padding: 0.5rem 0.75rem;
   text-align: left;
   vertical-align: top;
 }
 
-.site-prose th {
-  background: var(--prism-color-fill-tertiary);
+.site-prose-table th {
+  background-color: var(--muted);
   font-weight: 600;
 }
 
-.site-prose hr {
-  border: 0;
-  border-top: 1px solid var(--prism-color-border-secondary);
-  margin: 32px 0;
-}
+/* ---------- Section index pages: the docs index and the blog index ---------- */
 
-/* The standing status note — the docs' one honesty device (ticket 06). Styled
-   the way the design language marks status: a washed hairline panel with a mono
-   ink label, not an accent bar. */
-.site-status-note {
-  border: 1px solid var(--prism-color-border-secondary);
-  border-radius: 4px;
-  padding: 12px 16px;
-  margin: 0 0 28px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  opacity: 0.9;
-  background: color-mix(in srgb, var(--prism-color-bg-container) 45%, transparent);
-}
-
-.site-status-note strong {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+.site-eyebrow {
+  margin: 0 0 1.25rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--prism-color-primary);
-  margin-right: 8px;
 }
 
-.site-status-note + .site-status-note {
-  display: none;
+.site-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
 }
-
-/* ---------- Blog ---------- */
-
-.prism-blog-layout__post {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 48px 24px 96px;
-}
-
-.prism-blog-layout__title {
-  font-variation-settings: 'wdth' 118, 'wght' 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 4px;
-}
-
-.prism-blog-layout__description {
-  margin: 0 0 8px;
-  opacity: 0.78;
-  line-height: 1.65;
-}
-
-.prism-blog-layout__meta-info {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 11px;
-  opacity: 0.62;
-  margin-bottom: 8px;
-}
-
-.prism-blog-layout__tags {
-  list-style: none;
-  display: flex;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-}
-
-.prism-blog-layout__draft {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--prism-color-primary);
-}
-
-/* ---------- Section index pages (docs landing, blog index) ---------- */
 
 .site-catalog {
-  max-width: 1180px;
+  max-width: var(--container-page);
   margin: 0 auto;
-  padding: 64px 24px 96px;
+  padding: 4rem 1.5rem 6rem;
 }
 
 .site-catalog__title {
-  font-variation-settings: 'wdth' 118, 'wght' 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 4px;
-  font-size: clamp(30px, 3.6vw, 44px);
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.875rem, 3.6vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
 .site-catalog__lede {
-  margin: 0 0 28px;
-  opacity: 0.78;
-  line-height: 1.65;
   max-width: 62ch;
+  margin: 0 0 1.75rem;
+  color: var(--muted-foreground);
+  line-height: 1.556;
+  text-wrap: pretty;
 }
 
-.site-catalog__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-  margin-top: 32px;
-}
-
+/*
+ * One section card, and the one place on this site a `var()` in a shorthand used to
+ * erase a box. It named its hairline in a `border` shorthand and its fill in a
+ * `background` shorthand over a custom property that only the generated variablesheet
+ * defined, so with that file gone both declarations were invalid at computed-value
+ * time: the edge reverted to no border at all and the fill to no background, and the
+ * six section cards read as six unboxed paragraphs. Every declaration below is a
+ * longhand and every operand is a token prism declares in both modes of this pack.
+ */
 .site-catalog__item {
   display: block;
-  border: 1px solid var(--prism-color-border-secondary);
-  border-radius: 4px;
-  padding: 16px 18px;
-  background: var(--prism-color-bg-container);
-  color: var(--prism-color-text);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.125rem;
+  background-color: var(--card);
 }
 
 .site-catalog__item:hover {
   text-decoration: none;
-  border-color: var(--prism-color-primary);
+  border-color: var(--primary);
 }
 
 .site-catalog__item strong {
@@ -378,129 +240,65 @@ a:hover {
 
 .site-catalog__item span {
   display: block;
-  font-size: 13px;
-  opacity: 0.72;
-  margin-top: 6px;
+  margin-top: 0.375rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
   line-height: 1.55;
 }
 
 .site-catalog__start {
-  margin: 28px 0 0;
-  font-size: 14px;
-  opacity: 0.78;
+  margin: 1.75rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
 }
 
+/*
+ * The blog list, which is site content by decision: the four blog lists in this
+ * family are four deliberate designs and the design system deliberately ships none.
+ */
 .site-blog-list {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
   display: grid;
-  gap: 28px;
+  gap: 1.75rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .site-blog-list__title {
-  font-size: 20px;
+  color: var(--brand-ink);
+  font-size: 1.25rem;
   font-weight: 600;
-  font-variation-settings: 'wdth' 112;
+  letter-spacing: -0.025em;
+  text-decoration: none;
+}
+
+.site-blog-list__title:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
 }
 
 .site-blog-list__description {
-  margin: 6px 0;
-  opacity: 0.78;
-  line-height: 1.65;
   max-width: 64ch;
+  margin: 0.375rem 0;
+  color: var(--muted-foreground);
+  line-height: 1.556;
+  text-wrap: pretty;
 }
 
 .site-blog-list__meta {
   margin: 0;
-  opacity: 0.66;
+  color: var(--muted-foreground);
 }
 
-/* ---------- About ---------- */
-
-.site-about {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 88px 32px 120px;
-}
-
-.site-about h1 {
-  font-variation-settings: 'wdth' 115, 'wght' 620;
-  font-size: clamp(34px, 4.6vw, 56px);
-  letter-spacing: -0.015em;
-  line-height: 1.04;
-  margin: 0 0 24px;
-}
-
-.site-about p {
-  font-size: 15.5px;
-  line-height: 1.7;
-  opacity: 0.85;
-}
+/* ---------- The About page's fact list and its way out ---------- */
 
 .site-about__facts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin: 40px 0;
-}
-
-.site-about__fact {
-  border: 1px solid var(--prism-color-border-secondary);
-  border-radius: 4px;
-  padding: 16px 18px;
-  background: color-mix(in srgb, var(--prism-color-bg-container) 45%, transparent);
-}
-
-.site-about__fact dt {
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--prism-color-primary);
-}
-
-.site-about__fact dd {
-  margin: 6px 0 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  opacity: 0.82;
+  margin: 2.5rem 0;
 }
 
 .site-about__links {
   display: flex;
-  gap: 24px;
+  gap: 1.5rem;
   flex-wrap: wrap;
-}
-
-.site-about__links a {
-  color: var(--prism-color-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* ---------- 404 ---------- */
-
-.placeholder-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  min-height: 100dvh;
-  padding: 48px 24px;
-  text-align: center;
-}
-
-/* ---------- Narrow screens ---------- */
-
-@media (max-width: 720px) {
-  .site-about__facts {
-    grid-template-columns: 1fr;
-  }
-
-  .prism-docs-shell__body {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
+  margin-top: 2.5rem;
 }

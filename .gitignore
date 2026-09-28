@@ -10,9 +10,6 @@ next-env.d.ts
 # generated build-time content index (fumadocs-mdx, from content/)
 /.source/
 
-# generated build-time css (scripts/bake-antd-css.mjs)
-/app/antd-vars.css
-
 # wrangler local state
 .wrangler/
 
