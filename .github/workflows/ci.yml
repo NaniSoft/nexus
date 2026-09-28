@@ -1,9 +1,21 @@
 name: CI
 
+# The deploy lives in this workflow, as a job that needs `verify`, rather than in
+# a second workflow on the same push.
+#
+# Two separate workflows on `push: main` cannot be ordered against each other, so
+# a migration that breaks the site produced a green check run and a broken live
+# page simultaneously. Folding the deploy in makes the ordering a property of the
+# graph rather than a matter of two runs happening to race: a push that fails its
+# checks cannot deploy, because the deploy job is never reached.
+#
+# `workflow_dispatch` re-runs the same path rather than a shortcut, so a manual
+# deploy is gated by the same checks as an automatic one.
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,3 +35,23 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+
+  deploy:
+    needs: verify
+    if: github.repository == 'NaniSoft/nexus' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Auth is the org-level CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID pair
+      # (visibility: all).
+      - run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
