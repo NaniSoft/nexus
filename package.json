@@ -18,7 +18,7 @@
     "check:docs-tree": "node scripts/check-docs-tree.mjs",
     "check:cascade": "node scripts/check-cascade.mjs",
     "check:prism-gates": "prism-gates",
-    "check": "pnpm check:prism-gates && pnpm pnpm check:docs-tree"
+    "check": "pnpm check:prism-gates && pnpm check:docs-tree"
   },
   "dependencies": {
     "@nanisoft/prism-ui": "0.10.2",

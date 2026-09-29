@@ -1,6 +1,6 @@
 {
   "title": "Architecture",
-  "description": "How the factory composes — the orchestrator, the worker lifecycle, the board, and what happens when something fails.",
+  "description": "How the factory composes: the orchestrator, the worker lifecycle, the board, and what happens when something fails.",
   "pages": [
     "system-overview",
     "orchestration-layer",

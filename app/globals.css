@@ -48,6 +48,13 @@
  * family are four deliberate designs. Nothing here restyles a catalogue item, and no
  * link below is given a focus indicator: a plain anchor keeps the browser's own, which
  * is the only indicator on an element no Prism component drew.
+ *
+ * The second half of that rule is the one this sheet has broken before. A class a
+ * site writes and the design system does not use is not a class, it is a name:
+ * `.site-catalog__grid` was on the docs index and declared nowhere, so six section
+ * cards stacked in one column at every width while the markup said grid. A class in
+ * this sheet with no reader is as dead as a `var()` with no declaration, and the
+ * `token-read` gate is the half that catches the second kind.
  */
 
 /*
@@ -55,14 +62,19 @@
  * first family, supplied.
  *
  * prism's emitted sheet declares `--font-sans: Inter, ui-sans-serif, system-ui, ...`
- * and 0.7.0 ships no font file, so the first entry is a name nothing resolves to and
- * every page on the site renders in the platform's UI face. This supplies the file
- * the token already names and repeats prism's own fallback list verbatim behind it, so
- * the design system's intent is unchanged and only its first entry becomes real.
+ * and ships no font file, so the first entry is a name nothing resolves to and every
+ * page on the site renders in the platform's UI face. This supplies the file the token
+ * already names and repeats prism's own fallback list verbatim behind it, so the design
+ * system's intent is unchanged and only its first entry becomes real.
  *
  * It is a custom property rather than a `font-family` on a bare element on purpose:
  * a site stylesheet must not declare `font-family` on a selector with no class in it,
  * because prism's base is layered and this sheet is not. A token is not that.
+ *
+ * The family itself is not this site's to choose. Prism declares Inter as the first
+ * family of its own token and four repositories render from it, so this site supplies
+ * the file rather than selecting the face, and a redesign of the landing does not get
+ * to be the place a shared design system gets a new typeface.
  */
 
 :root {
@@ -74,32 +86,6 @@
   /* Keeps the footer below the fold on a short page. Layout, so it is a class rule
      and not a bare-element one, and it competes with nothing prism declares. */
   min-height: 100dvh;
-}
-
-/* ---------- The landing elements this site owns ---------- */
-
-/* The hero's own vertical rhythm is the design system's, so the band that follows
-   it is the one place this page needs to say something about spacing. The nuance
-   line is a footnote to the thesis, not a section, and a section's worth of
-   padding above and below it would give it the weight of a claim. */
-.site-band--tight {
-  padding-block: 0 4rem;
-}
-
-.site-caption {
-  max-width: var(--container-measure);
-  margin: 0 auto;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  line-height: 1.429;
-  text-wrap: pretty;
-}
-
-.site-measure {
-  /* The About page's body copy at the reading measure. `Prose` already holds one, so
-     this is here only because the page sets it twice, once per block, and a class is
-     cheaper than restating the measure on each. */
-  max-width: var(--container-measure);
 }
 
 /* ---------- The standing status note, the docs' one honesty device ---------- */
@@ -167,19 +153,11 @@
 
 /* ---------- Section index pages: the docs index and the blog index ---------- */
 
-.site-eyebrow {
-  margin: 0 0 1.25rem;
-  color: var(--muted-foreground);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.site-mono {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.04em;
+.site-measure {
+  /* The About page's body copy at the reading measure. `Prose` already holds one, so
+     this is here only because the page sets it twice, once per block, and a class is
+     cheaper than restating the measure on each. */
+  max-width: var(--container-measure);
 }
 
 .site-catalog {
@@ -206,6 +184,38 @@
 }
 
 /*
+ * The section grid, and the six cells in it.
+ *
+ * This class was on the docs index's markup and declared nowhere, which is the one
+ * failure mode this sheet's own header describes and this repository shipped anyway:
+ * a consumer does not run Tailwind, so a class a site writes and the design system
+ * does not use is not a class, it is a name. Six section cards stacked in one column
+ * at every width, and the class said `grid`.
+ *
+ * Two columns at the smallest tablet and three at `lg`, one below, because six
+ * cards in three columns is two rows of three and six cards in one column is a list
+ * of headings with a border. The gap is a grid gap rather than a margin on the cards
+ * so the rows keep their rhythm when a blurb wraps to three lines in one of them.
+ */
+.site-catalog__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+}
+
+@media (min-width: 40rem) {
+  .site-catalog__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .site-catalog__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/*
  * One section card, and the one place on this site a `var()` in a shorthand used to
  * erase a box. It named its hairline in a `border` shorthand and its fill in a
  * `background` shorthand over a custom property that only the generated variablesheet
@@ -215,7 +225,8 @@
  * longhand and every operand is a token prism declares in both modes of this pack.
  */
 .site-catalog__item {
-  display: block;
+  display: flex;
+  flex-direction: column;
   border-width: 1px;
   border-style: solid;
   border-color: var(--border);
@@ -282,7 +293,39 @@
 }
 
 .site-blog-list__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.875rem;
   margin: 0;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+/*
+ * The tags, as a row of words rather than a list glued together with separators.
+ *
+ * The line used to read `2026-09-21 · nexus · kanban · feedback`: a date, a
+ * separator, and then every tag joined by another one, so a three-tag post carried
+ * three glyphs on one line and the tags read as fragments of a sentence. A middot is
+ * punctuation a screen reader announces and a sighted reader parses as content, and
+ * the design system's own strip Block makes the same argument about the same glyph.
+ * Two things on one line need one thing between them, and the gap is that thing.
+ */
+.site-blog-list__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.625rem;
+}
+
+.site-blog-list__tag {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border);
+  border-radius: calc(var(--radius) * 0.6);
+  padding: 0.0625rem 0.375rem;
   color: var(--muted-foreground);
 }
 

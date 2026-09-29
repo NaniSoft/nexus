@@ -58,6 +58,9 @@ describe('the site has no client code', () => {
       'app/layout.tsx',
       'app/not-found.tsx',
       'app/page.tsx',
+      'app/robots.ts',
+      'app/sitemap.ts',
+      'components/site-chrome.tsx',
       'components/status-note.tsx',
       'lib/landing-content.ts',
       'lib/mdx-components.ts',
@@ -69,7 +72,14 @@ describe('the site has no client code', () => {
     ]);
   });
 
-  it('carries no use client directive', () => {
+  it('carries no use client directive, and nothing new was added to get there', () => {
+    // The chrome is composed per page rather than declared in the root layout, so a
+    // header can mark the page the reader is on. That is the one change this
+    // repository has made that a reader might have expected to cost a client
+    // boundary, and it did not: a server render is handed the route it is rendering,
+    // so `aria-current` is a prop rather than something the browser has to be asked
+    // for. `components/site-chrome.tsx` is in the list above and is still a server
+    // component, which is the whole of the answer.
     const offenders = files.filter((file) => /^\s*['"]use client['"]/m.test(readFileSync(file, 'utf8')));
     expect(offenders, `a client boundary in ${offenders.join(', ')}`).toEqual([]);
   });

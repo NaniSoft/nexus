@@ -3,57 +3,68 @@
 // Every string here traces to the factory's design record, and none of it is a
 // capability claim about software that does not exist: the honesty law (in
 // development, present tense) is carried by the ticker, the build-order ledger, and
-// the hero's nuance line.
+// the closing band.
 //
-// **The data is shaped by what the design system takes, and that is the only thing
-// this change did to it.** The words are byte for byte the words the old landing
-// rendered; what moved is which field holds a word and which component reads it. A
-// section is an index and a label because `SectionHeading` takes an index and a
-// title; a stage is a title and a body because `FeatureGrid01` takes those, and its
-// ordinal is rendered from the position, so the step numbers this file used to carry
-// are now derived and the two agree because the list has not been reordered; the
-// build order's row is a name, a tier and the published word, because the ledger
-// draws the tier as a dot and prints the word.
+// **The copy was cut, not restyled.** The words are the factory's, and the claims
+// are the same claims; what changed is how much of each one the page says out loud.
+// A section title that used to carry its own argument after an em-dash now carries
+// the argument in the section's description, where it applies to the whole section
+// rather than to half a line of a heading. A lede that ran to three lines beside a
+// two-line headline now runs to two. An arrow glyph that sat in front of each of the
+// five standing facts is gone, because a fact that has to be prefixed to be read is
+// a label rather than a fact. Every rule of the tone is the same rule: the page
+// should be able to say something in fewer words, and a page that cannot is a page
+// that has not decided what it is for.
 //
-// Nothing was rewritten, and `scripts/content-parity-expectations.json` is where
-// every string that did not survive the change of shape is recorded with the reason
-// it had nowhere to go.
+// Three things did not move. The five stages of the loop and the four guarantees
+// under them are the argument, and they are still five and four. The eight
+// capabilities and the eight parts are the design's substance, and both sets are
+// still whole. The build-order ledger is the honesty law, and every row of it still
+// says what it said.
+//
+// **No em-dash, no arrow, no middle dot.** A dash used as punctuation is the single
+// most recognisable tell of a page that was written by something rather than by
+// someone, and this page's whole claim is that a person is in the loop. The
+// standing facts are bare phrases and the separators are the gaps between them.
 
 export const HERO = {
-  eyebrow: 'nanisoft · nexus',
   title: 'Software that builds software.',
-  lede:
-    'Nexus is the Agent Factory. A coding agent takes a GitHub issue and returns a reviewed, merged pull request — one issue, one fresh container, one reviewed change.',
-  nuance:
-    'NaniSoft’s sites are built by agent development today. Nexus is the engine that makes that repeatable.',
+  lede: 'A coding agent takes a GitHub issue and returns a reviewed, merged pull request. One issue, one fresh container.',
   primaryCta: { label: 'Follow the build', href: '/blog' },
   secondaryCta: { label: 'Read the docs', href: '/docs' },
 } as const;
 
-/** The standing facts, as one line of short phrases under the thesis. */
+/**
+ * The standing facts, as one line of short phrases under the thesis.
+ *
+ * Five phrases and no separators. The strip is read as a list because it is a
+ * `ul` with an accessible name, so a reader is told how many there are before the
+ * first one, and the phrases can therefore be phrases rather than `key → value`
+ * pairs. "In active development" is the fact; what the key would have been is
+ * obvious from the sentence above it.
+ */
 export const TICKER = [
-  'status → in active development',
-  'design → complete, documented here',
-  'loop → issue to reviewed pull request',
-  'feedback rounds → max three',
-  'release → none yet',
+  'In active development',
+  'Design complete, documented here',
+  'Issue to reviewed pull request',
+  'Three feedback rounds, maximum',
+  'No release yet',
 ] as const;
 
 /**
  * The name the ticker's region gets.
  *
- * The strip is a `<ul>` with an accessible name and no heading of its own, and the
- * design system requires the name. There is no published string that names a status
- * strip, and this migration may not invent one, so it takes the one name the page
- * already publishes above its own thesis. A screen reader hears the site's own name
- * and then five phrases, which is an honest description of what the region is.
+ * The strip is a `ul` with an accessible name and no heading of its own, and the
+ * design system requires the name. The strip is the place this site says where the
+ * factory stands, so the region is named for that, and a screen reader hears what
+ * the line of phrases is before it hears the phrases.
  */
-export const TICKER_LABEL = HERO.eyebrow;
+export const TICKER_LABEL = 'Where Nexus stands';
 
 /** 01, the loop. */
 export const LOOP = {
-  index: '01',
-  label: 'The loop — issue to reviewed pull request',
+  label: 'The loop',
+  lede: 'One issue in, one reviewed pull request out. A person decides at the review stage.',
   /** The five stages, in the order the work runs. The ordinals are rendered from the position. */
   stages: [
     {
@@ -62,7 +73,7 @@ export const LOOP = {
     },
     {
       title: 'Container',
-      body: 'A fresh Docker worker starts from the project’s image. Nothing carries over.',
+      body: 'A fresh Docker worker starts from the project’s own image. Nothing carries over.',
     },
     {
       title: 'Build',
@@ -77,25 +88,35 @@ export const LOOP = {
       body: 'Approval merges the pull request. A feedback timeout merges rather than holding.',
     },
   ],
-  /** The loop's guarantees. */
-  notes: [
-    {
-      title: 'One issue, one fresh container',
-      body: 'No cache, no shared working tree, no state from a previous run — or from another project.',
-    },
-    {
-      title: 'Three rounds, then the loop closes',
-      body: 'A ticket that comes back three times is an issue that needs rewriting, not a fourth container.',
-    },
-    {
-      title: 'Auto-merge on approval or timeout',
-      body: 'Review is where work waits for a decision, not where it is parked.',
-    },
-    {
-      title: 'Nothing ends in silence',
-      body: 'Rejected and escalated tickets render on the board, where the people watching are already looking.',
-    },
-  ],
+  /**
+   * The loop's guarantees, as a titled section of their own.
+   *
+   * They were a `dl` with no heading, floating under the card grid above them, and
+   * four points that arrive with no name read as an afterthought to whatever was
+   * above. A title is the whole fix: the same four points, now a section a reader
+   * can point at.
+   */
+  notes: {
+    label: 'What the loop guarantees',
+    items: [
+      {
+        title: 'One issue, one fresh container',
+        body: 'No cache, no shared working tree, and no state from a previous run or from another project.',
+      },
+      {
+        title: 'Three rounds, then the loop closes',
+        body: 'A ticket that comes back three times is an issue that needs rewriting, not a fourth container.',
+      },
+      {
+        title: 'Auto-merge on approval or timeout',
+        body: 'Review is where work waits for a decision, not where it is parked.',
+      },
+      {
+        title: 'Nothing ends in silence',
+        body: 'Rejected and escalated tickets render on the board, where the people watching are already looking.',
+      },
+    ],
+  },
 } as const;
 
 /**
@@ -103,7 +124,7 @@ export const LOOP = {
  *
  * The stage bodies are a sentence each and a node mark is a name, so the figure
  * takes the clause that says who does the work rather than the sentence that
- * explains it. The full sentence is a card in section 01, one scroll away.
+ * explains it. The full sentence is a card in the section above, one scroll away.
  */
 const LOOP_FIGURE_NOTES = [
   'a repository',
@@ -113,13 +134,21 @@ const LOOP_FIGURE_NOTES = [
   'shipped',
 ] as const;
 
-/** The observer, which reads the loop and does not change it. */
+/**
+ * The observer, which reads the loop and does not change it.
+ *
+ * It sits a quarter of the way down rather than at the top of the canvas. At the
+ * top it was the only thing in the upper half of the drawing, so the figure that
+ * claims to show a five-stage loop was half empty, and the emptiness read as a
+ * layout accident rather than as a lane nobody is standing in. A person reading
+ * the board is close to the review stage, not at the far end of a field.
+ */
 const LOOP_OBSERVER = {
   id: 'watchers',
   name: 'watchers',
   note: 'the board',
   x: 3 / 4,
-  y: 0.1,
+  y: 0.25,
 } as const;
 
 /**
@@ -128,8 +157,8 @@ const LOOP_OBSERVER = {
  * The same five stages `LOOP.stages` names, in the same order, read as a graph
  * rather than as a numbered list. The two are not redundant: the list is the
  * argument and the graph is the mechanism, and a reader who wants to know what a
- * stage does scrolls to section 01 while a reader who wants to know that there
- * are five of them sees the rail in the first screen.
+ * stage does scrolls to the section below while a reader who wants to know that
+ * there are five of them sees the rail in the first screen.
  *
  * Every string here is the site's own and every one already existed above, so
  * the figure introduces no claim. The node names are the stage titles, the notes
@@ -164,18 +193,27 @@ export const LOOP_FIGURE = {
   ],
   aria:
     'The build loop as five stages on one rail: issue, container, build, review and merge, with a marker travelling between them. A watcher reads the review stage without changing it.',
+  /**
+   * The panel the figure sits in.
+   *
+   * The state was `live`, which the design system draws as a success dot beside a
+   * word, and the word was the site's own. Together they said a system is
+   * updating now, on a page whose ledger two sections down says implementation has
+   * not started. `neutral` is the state that says nothing, and the figure beside
+   * it is a diagram of a designed loop rather than a readout of a running one,
+   * which is what it is.
+   */
   panel: {
-    label: 'the loop, running',
-    mode: 'live',
+    label: 'the build loop',
     footnote:
-      'The five stages the factory runs, and the order it runs them in. The marker is the walk an issue takes. The observer is the board, which watches and does not touch.',
+      'The five stages, in the order an issue runs them. The marker is the walk it takes.',
   },
 } as const;
 
 /** 02, what is inside. Eight entries, all from the design. */
 export const INSIDE = {
-  index: '02',
   label: 'What’s inside',
+  lede: 'The capabilities the design commits to, and the two rules that close the loop.',
   features: [
     {
       title: 'MAF orchestration',
@@ -183,40 +221,39 @@ export const INSIDE = {
     },
     {
       title: 'Per-issue worker containers',
-      body: 'Every issue builds in a fresh Docker container from its project’s own image.',
+      body: 'Every issue builds in a fresh Docker container from its own project image.',
     },
     {
       title: 'Kanban swimlanes',
-      body: 'Backlog → Frontier → In Progress → Review → Done, with rejected and escalated states off the flow.',
+      body: 'Backlog, Frontier, In Progress, Review, Done. Rejected and escalated sit off the flow.',
     },
     {
       title: 'Human feedback loop',
-      body: 'Approve, request changes, or reject — on a board that auto-refreshes at port 5000.',
+      body: 'Approve, request changes, or reject, on a board that auto-refreshes at port 5000.',
     },
     {
       title: 'Multi-project round-robin',
-      body: 'A directory of factories/*.yaml, served in rotation, no project blocking another.',
+      body: 'A directory of factories/*.yaml, served in rotation, with no project blocking another.',
     },
     {
       title: 'Observability',
-      body: 'Structured logs, metrics for builds and rounds, bounded retries, dead-letter escalation.',
+      body: 'Structured logs, build and round metrics, bounded retries, dead-letter escalation.',
     },
     {
       title: 'Testing gates',
-      body: 'Unit, Testcontainers integration, end-to-end, and chaos — the failure path is tested, not hoped for.',
+      body: 'Unit, Testcontainers integration, end to end, and chaos. The failure path is tested, not hoped for.',
     },
     {
       title: 'Security posture',
-      body: 'Token scopes at the narrowest that works, secrets in the environment, rootless Docker.',
+      body: 'Token scopes at the narrowest that work, secrets in the environment, rootless Docker.',
     },
   ],
 } as const;
 
 /** 03, how it is built. The parts it stands on, and the four it builds itself. */
 export const STACK = {
-  index: '03',
-  label: 'How it’s built — compose, don’t fork',
-  lede: 'The factory stands on proven parts and builds four things of its own: the orchestrator, the config loader, the Kanban service, and the merge pipeline. Everything else is composition.',
+  label: 'How it’s built',
+  lede: 'The factory stands on proven parts and builds four of its own: the orchestrator, the config loader, the Kanban service, and the merge pipeline.',
   /** Proven parts the factory stands on. */
   parts: [
     { name: 'Microsoft Agent Framework', role: 'orchestration runtime' },
@@ -225,7 +262,7 @@ export const STACK = {
     { name: 'Docker', role: 'worker containers' },
     { name: 'Docker Compose', role: 'deployment' },
     { name: 'Testcontainers', role: 'integration testing' },
-    { name: 'GitHub', role: 'issues in · pull requests out' },
+    { name: 'GitHub', role: 'issues in, pull requests out' },
     { name: '.NET', role: 'orchestrator runtime' },
   ],
   /** The four things Nanisoft builds itself. */
@@ -245,11 +282,10 @@ export const STACK = {
     },
     {
       name: 'The merge pipeline',
-      blurb: 'Opens and merges the pull request — the factory’s one recognised output.',
+      blurb: 'Opens and merges the pull request, the factory’s one recognised output.',
     },
   ],
-  caption:
-    'The factory composes proven parts and builds four things of its own. Nothing here is a claim about a release — it is the design’s bill of materials.',
+  caption: 'What the factory is made of. None of it is a claim about a release.',
 } as const;
 
 /**
@@ -263,9 +299,8 @@ export const STACK = {
  * are the factory's.
  */
 export const BUILD_ORDER = {
-  index: '04',
-  label: 'The build order — where it actually stands',
-  lede: 'What the factory is made of, in the order it gets built — and where each piece actually stands.',
+  label: 'Where it stands',
+  lede: 'What the factory is made of, in the order it gets built, and where each piece is today.',
   rows: [
     {
       name: 'The design',
@@ -277,10 +312,10 @@ export const BUILD_ORDER = {
       name: 'Project configuration schema',
       status: 'planned',
       statusLabel: 'specified',
-      detail: 'YAML per project in factories/ — repo, keys, LLM provider, worker image.',
+      detail: 'YAML per project in factories/: repo, keys, LLM provider, worker image.',
     },
     {
-      name: 'Issue → work item',
+      name: 'Issue to work item',
       status: 'planned',
       statusLabel: 'specified',
       detail: 'The poller, and the conversion that puts every issue in Backlog.',
@@ -307,11 +342,11 @@ export const BUILD_ORDER = {
       name: 'Observability and error handling',
       status: 'planned',
       statusLabel: 'specified',
-      detail: 'Structured logs, metrics, retries, and dead-letter escalation rendered on the board.',
+      detail: 'Structured logs, metrics, retries, and dead-letter escalation on the board.',
     },
   ],
   caption:
-    'Design is complete and documented here. Implementation is specified and sequenced, and has not started. There are no dates on this site — the blog follows the build.',
+    'Design is complete and documented here. Implementation is specified and sequenced, and has not started.',
 } as const;
 
 /**
@@ -322,15 +357,23 @@ export const BUILD_ORDER = {
  * a colour the directory does not hold.
  */
 export const PLATFORM = {
-  index: '05',
-  label: 'Built on Nexus — one platform, one factory',
-  lede:
-    'Nexus is the core of the platform. Atlas, AlphaLens, and Prism are built on top of it — and Prism is the design language all of them wear.',
+  label: 'Built on Nexus',
+  lede: 'Nexus is the core of the platform. Atlas, AlphaLens, and Prism are built on top of it.',
   products: ['atlas', 'alphalens', 'prism'],
   caption:
-    'Read the platform story in the honest tense: agent development built the products you can visit today. Nexus is the engine designed to make that repeatable, one factory serving every project.',
+    'Read that in the honest tense: agent development built the products you can visit today, and Nexus is the engine to make it repeatable.',
 } as const;
 
+/**
+ * The one ask.
+ *
+ * Both actions are anchors, and that is the one rendered change the whole migration
+ * exists to make: the old page passed a destination to a component that rendered a
+ * button, so the page's primary action was announced as a command that navigated
+ * nothing. The two labels are the same two words the hero and the About page use for
+ * the same two destinations, because a page that says "Read the docs" at the top and
+ * "Read the design docs" at the bottom has published two names for one door.
+ */
 export const FINAL_CTA = {
   title: 'Nexus is in active development.',
   primaryCta: { label: 'Follow the build', href: '/blog' },
@@ -347,7 +390,6 @@ export const FINAL_CTA = {
    * around in a stylesheet: `secondary` is a value the block's own action type already
    * offers, so this is the block used as it is declared.
    */
-  secondaryCta: { label: 'Read the design docs', href: '/docs', variant: 'secondary' },
-  footnote:
-    'No signup, no waitlist. The design is public, the build is public, and the release gets announced here.',
+  secondaryCta: { label: 'Read the docs', href: '/docs', variant: 'secondary' },
+  footnote: 'The design and the build are both public. There is no release to announce yet.',
 } as const;

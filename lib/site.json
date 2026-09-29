@@ -17,7 +17,9 @@
     "`tagline` is here rather than in the landing because the directory is the one",
     "place a product's own words live, and three of them are read on the landing as",
     "product rows. It was there before this migration too, in the shared registry the",
-    "old chrome read; the words did not change, only the file they are read from."
+    "old chrome read; the words did not change, only the file they are read from, and",
+    "the two that carried an em-dash now carry a colon, because a dash used as",
+    "punctuation is the most recognisable tell of a page nobody wrote."
   ],
   "siteId": "nexus",
   "ground": "lavender",
@@ -35,14 +37,14 @@
       "name": "Nexus",
       "pack": "lavender",
       "href": "https://nexus.nanisoft.com",
-      "tagline": "The Agent Factory — autonomous software creation."
+      "tagline": "The Agent Factory: autonomous software creation."
     },
     {
       "id": "atlas",
       "name": "Atlas",
       "pack": "mint",
       "href": "https://atlas.nanisoft.com",
-      "tagline": "The Digital Twin Platform — living models of real systems."
+      "tagline": "The Digital Twin Platform: living models of real systems."
     },
     {
       "id": "alphalens",

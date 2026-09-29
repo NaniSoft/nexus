@@ -11,13 +11,21 @@
     "destination its own corpus gets wrong.",
     "",
     "A line in this file that stated a rule would be the defect the file exists to",
-    "end, because a rule held in five repositories is five rules that will disagree."
+    "end, because a rule held in five repositories is five rules that will disagree.",
+    "",
+    "`gates` is a list of names the kit ships, and a name it does not ship is an error",
+    "rather than a silent skip: `hidden-state` was missing here for a release and the",
+    "one law about a CSS-authored hidden state was therefore unenforced on a site whose",
+    "own stylesheet is checked for it by hand. `token-read` is deliberately not in the",
+    "list, because it is a law the `stylesheet-ownership` gate enforces rather than a",
+    "gate of its own, and naming a law as a gate is how a list stops meaning anything."
   ],
   "gateKit": 1,
   "gates": [
     "pin",
     "retired-line",
     "stylesheet-ownership",
+    "hidden-state",
     "links",
     "pack-boundary",
     "runtime-token-read"

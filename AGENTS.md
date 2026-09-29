@@ -13,7 +13,7 @@ Part of the five-site Nanisoft web platform (www + nexus + atlas + alphalens + p
 - A Block takes data and content as props.
 - A consumer cannot write a Prism utility class: the consumer does not run Tailwind, so a utility exists in the emitted sheet only if a Prism component already uses it. Anything this site needs for itself goes in `app/globals.css` as a site class.
 - Two attributes on `<html>`, from `lib/site.ts`: `data-pack` for the ground and `class="dark"` for the mode. A blocking `PrismThemeScript` in `<head>` applies a stored choice before first paint and is the only writer of the theme's origin.
-- A pack boundary is an attribute on an element: it repoints that pack's colour **and** its corner radius beneath it, and it wears the mode of the nearest ancestor carrying `.dark`. `scripts/pack-map.json` is the map, `scripts/pack-regions.mjs` names a region from the DOM, and the gate checks the map from the built export in both modes.
+- A pack boundary is an attribute on an element: it repoints that pack's colour **and** its corner radius beneath it, and it wears the mode of the nearest ancestor carrying `.dark`. `scripts/pack-map.json` is the map, `scripts/pack-regions.mjs` names a region from the DOM, and the gate checks the map from the built export in both modes. A region is named after the structure the catalogue publishes, never after a number the page prints.
 
 ## What is enforced, and where the words live
 
@@ -22,12 +22,12 @@ The laws are not in this file. They are the failure messages of the gates in
 cannot be declined here. The four repositories that run them share the programs and
 hold none of the wording.
 
-This site's own halves are in `prism-gates.json` and the two files it names.
+This site's own halves are in `prism-gates.json` and the three files it names.
 
-`pnpm check` still runs this repository's own copies of those gates, because the
-package version this site pins does not carry `gates/` yet. `pnpm check:prism-gates`
-is the command that does, and it fails until the release lands; replacing the `check`
-chain with it is a release-gated sweep rather than a choice.
+`pnpm check` runs the gate kit and then this repository's own docs-tree gate, and the
+repository's own copies of the kit's gates are gone. The pinned package carries
+`gates/` and reports zero findings across seven gates, so a run of `pnpm check` is a
+statement about the design system rather than about a fork of it.
 
 ## What is site content and why
 
@@ -38,11 +38,18 @@ Two things on this site are the site's own composition rather than catalogue ite
 
 The blog list keeps its own design, and that is exactly why blog lists stay site content.
 
+A third thing is site content in a smaller way: the chrome. `components/site-chrome.tsx` composes the header, the `<main>` and the footer, and each page renders it with the page it is serving, because a root layout is not told its own pathname and a header that cannot be told cannot mark the reader's place. That is a server render reading its own route, not a client boundary, and `test/server-only.test.ts` is what holds it at zero.
+
 ## Wayfinding
 
 This file is this repository's own instructions. `README.md` is what the site is
 and how it is built and deployed. `prism-gates.json` is this site's half of the
-cross-repository contract, and it holds only what this site knows.
+cross-repository contract, and it holds only what this site knows. The site's own
+words hold two rules that are worth stating once here and are checked by reading a
+diff: no em-dash in anything this site authors, and one name per destination, so
+`/docs` is "Read the docs" wherever it is a call to action and "Docs" wherever it is a
+navigation label. The published corpus under `content/` still carries the dash it was
+written with, and `README.md` records that as outstanding rather than done.
 
 ## Stack
 

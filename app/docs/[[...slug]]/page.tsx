@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { DocsShell } from '@nanisoft/prism-ui/pages';
 
+import { SiteChrome } from '@/components/site-chrome';
 import { StatusNote } from '@/components/status-note';
 import { getMdxComponents } from '@/lib/mdx-components';
 import { docsSource } from '@/lib/source';
@@ -31,14 +32,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: 'Docs',
       description:
         'Concepts, architecture, configuration, operations, guides, and reference for the Agent Factory.',
+      alternates: { canonical: '/docs' },
     };
   }
   const page = docsSource.getPage(slug);
   if (!page) return {};
-  return { title: page.data.title, description: page.data.description };
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    alternates: { canonical: page.url },
+  };
 }
 
-/** The six docs sections, for the `/docs` index. */
+/**
+ * The six docs sections, for the `/docs` index.
+ *
+ * The blurbs are one line each and they are the reader's whole route into 27
+ * documents, so each one names what the section covers rather than how interesting
+ * it is. Three of them used to end in a clause behind an em-dash, which is the same
+ * trick the section titles were using and the same reason it is not used here.
+ */
 const SECTIONS = [
   {
     title: 'Concepts',
@@ -97,15 +110,24 @@ const SHELL_LABELS = {
  * encodes this site's information architecture. So the copy, the six blurbs and the
  * starting point are site content over site classes, and the twenty-seven documents
  * behind them are the design system's own screen.
+ *
+ * The grid is the site's own class because the catalogue ships no section catalogue.
+ * It is declared in `app/globals.css` with the same three-longhand treatment every
+ * box in that sheet gets, and it used to be declared nowhere: `.site-catalog__grid`
+ * was on this markup and not in the sheet, so six section cards stacked in one column
+ * at every width, and the class named a grid that did not exist.
+ *
+ * The eyebrow above the title is gone. It read "nanisoft · nexus — docs", which is the
+ * header's wordmark with a separator on each side and this page's own name again, so
+ * three elements of one fact above a heading that already says what the page is.
  */
 function DocsIndex(): ReactElement {
   return (
     <div className="site-catalog">
-      <p className="site-eyebrow">nanisoft · nexus — docs</p>
       <h1 className="site-catalog__title">Nexus documentation</h1>
       <p className="site-catalog__lede">
-        The Agent Factory: what it is, how it is built, and how to work with it. Six sections, each
-        tracing to the design.
+        The Agent Factory: what it is, how it is built, and how to work with it. Six
+        sections, each tracing to the design.
       </p>
       <StatusNote />
       <div className="site-catalog__grid">
@@ -126,7 +148,13 @@ function DocsIndex(): ReactElement {
 export default async function DocsPage({ params }: PageProps): Promise<ReactElement> {
   const { slug } = await params;
 
-  if (!slug) return <DocsIndex />;
+  if (!slug) {
+    return (
+      <SiteChrome current="/docs">
+        <DocsIndex />
+      </SiteChrome>
+    );
+  }
 
   const page = docsSource.getPage(slug);
   if (!page) notFound();
@@ -134,18 +162,20 @@ export default async function DocsPage({ params }: PageProps): Promise<ReactElem
   const MDX = page.data.body;
 
   return (
-    <DocsShell
-      title={page.data.title}
-      description={page.data.description}
-      nav={toPrismTree(docsSource.getPageTree().children)}
-      toc={page.data.toc ? toContents(page.data.toc) : undefined}
-      currentHref={page.url}
-      {...SHELL_LABELS}
-    >
-      <div className="site-prose-table">
-        <StatusNote />
-        <MDX components={getMdxComponents()} />
-      </div>
-    </DocsShell>
+    <SiteChrome current="/docs">
+      <DocsShell
+        title={page.data.title}
+        description={page.data.description}
+        nav={toPrismTree(docsSource.getPageTree().children)}
+        toc={page.data.toc ? toContents(page.data.toc) : undefined}
+        currentHref={page.url}
+        {...SHELL_LABELS}
+      >
+        <div className="site-prose-table">
+          <StatusNote />
+          <MDX components={getMdxComponents()} />
+        </div>
+      </DocsShell>
+    </SiteChrome>
   );
 }

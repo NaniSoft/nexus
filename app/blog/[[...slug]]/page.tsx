@@ -4,11 +4,12 @@ import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { BlogPostPage } from '@nanisoft/prism-ui/pages';
 
+import { SiteChrome } from '@/components/site-chrome';
 import { StatusNote } from '@/components/status-note';
 import { getMdxComponents } from '@/lib/mdx-components';
 import { blogSource } from '@/lib/source';
 
-// Optional catch-all: `/blog` renders the reverse-chchronological index,
+// Optional catch-all: `/blog` renders the reverse-chronological index,
 // `/blog/<slug>` the post. The optional root keeps the static export
 // satisfiable; drafts are excluded from params, the index, and prev/next —
 // they cannot be reached.
@@ -35,12 +36,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!slug) {
     return {
       title: 'Blog',
-      description: 'Notes from building the Agent Factory — the design, the loop, and the build as it happens.',
+      description: 'Notes from building the Agent Factory: the design, the loop, and the build as it happens.',
+      alternates: { canonical: '/blog' },
     };
   }
   const page = blogSource.getPage(slug);
   if (!page) return {};
-  return { title: page.data.title, description: page.data.description };
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    alternates: { canonical: page.url },
+  };
 }
 
 /** The two words the post's trail renders above the neighbouring posts' titles. */
@@ -55,16 +61,23 @@ const TRAIL_LABELS = { previous: 'Previous', next: 'Next' } as const;
  * keep this site's own list, and the post screen behind each title is the design
  * system's own Page, which owns the byline, the date in both its display and its
  * machine form, and the trail to the neighbouring posts.
+ *
+ * Two things changed and neither is the design. The eyebrow above the title read
+ * "nanisoft · nexus — blog", the same three elements of one fact the docs index used
+ * to carry, and it is gone. The meta line under each post read as a date, then a
+ * middle dot, then every tag joined by another one, so a three-tag post carried three
+ * separators on one line and the line read as a sentence with a date in it. The date
+ * and the tags are now two rows in one band, with the gap between them doing the work
+ * a glyph was doing, and a tag is a tag rather than a fragment of a list.
  */
 function BlogIndex(): ReactElement {
   const posts = published();
   return (
     <div className="site-catalog">
-      <p className="site-eyebrow">nanisoft · nexus — blog</p>
       <h1 className="site-catalog__title">The build log</h1>
       <p className="site-catalog__lede">
-        Notes from building the Agent Factory — the thesis, the architecture, the feedback loop, and
-        the build as it happens.
+        Notes from building the Agent Factory: the thesis, the architecture, the feedback
+        loop, and the build as it happens.
       </p>
       <ul className="site-blog-list">
         {posts.map((post) => (
@@ -73,9 +86,17 @@ function BlogIndex(): ReactElement {
               {post.data.title}
             </Link>
             <p className="site-blog-list__description">{post.data.description}</p>
-            <p className="site-mono site-blog-list__meta">
+            <p className="site-blog-list__meta">
               <time dateTime={post.data.date}>{post.data.date}</time>
-              {post.data.tags.length > 0 && <span> · {post.data.tags.join(' · ')}</span>}
+              {post.data.tags.length > 0 && (
+                <span className="site-blog-list__tags">
+                  {post.data.tags.map((tag) => (
+                    <span className="site-blog-list__tag" key={tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </span>
+              )}
             </p>
           </li>
         ))}
@@ -87,7 +108,13 @@ function BlogIndex(): ReactElement {
 export default async function BlogPage({ params }: PageProps): Promise<ReactElement> {
   const { slug } = await params;
 
-  if (!slug) return <BlogIndex />;
+  if (!slug) {
+    return (
+      <SiteChrome current="/blog">
+        <BlogIndex />
+      </SiteChrome>
+    );
+  }
 
   const page = blogSource.getPage(slug);
   if (!page || page.data.draft) notFound();
@@ -101,21 +128,23 @@ export default async function BlogPage({ params }: PageProps): Promise<ReactElem
   const MDX = page.data.body;
 
   return (
-    <BlogPostPage
-      title={page.data.title}
-      description={page.data.description}
-      date={page.data.date}
-      dateTime={page.data.date}
-      tags={page.data.tags.map((label) => ({ label }))}
-      trailLabels={TRAIL_LABELS}
-      trailLabel="Build log"
-      previous={previous && { title: previous.data.title, href: previous.url }}
-      next={next && { title: next.data.title, href: next.url }}
-    >
-      <StatusNote />
-      <div className="site-prose-table">
-        <MDX components={getMdxComponents()} />
-      </div>
-    </BlogPostPage>
+    <SiteChrome current="/blog">
+      <BlogPostPage
+        title={page.data.title}
+        description={page.data.description}
+        date={page.data.date}
+        dateTime={page.data.date}
+        tags={page.data.tags.map((label) => ({ label }))}
+        trailLabels={TRAIL_LABELS}
+        trailLabel="Build log"
+        previous={previous && { title: previous.data.title, href: previous.url }}
+        next={next && { title: next.data.title, href: next.url }}
+      >
+        <StatusNote />
+        <div className="site-prose-table">
+          <MDX components={getMdxComponents()} />
+        </div>
+      </BlogPostPage>
+    </SiteChrome>
   );
 }

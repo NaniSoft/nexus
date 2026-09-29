@@ -7,50 +7,75 @@ Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, on
 - **Live**: https://nexus.nanisoft.com (Custom Domain, auto-created on deploy)
 - **Pack**: `lavender` is the ground, on the document element, and it does not change. Four other packs are on marks: the header's product switcher carries `sky`, `lavender`, `mint`, `blush` and `peach`, and the landing's products section carries the three its rows name. That is the whole five-pack layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
 - **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest (jsdom + Testing Library) · Cloudflare Workers
-- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.7.0, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. There is no local component and no client runtime: every page is a server component, so the site ships no JavaScript of its own
+- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.10.2, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. There is no local component and no client runtime: every page is a server component, so the site ships no JavaScript of its own
 
 ## What ships
 
-- **Landing** (`/`) — the thesis as the page's `h1` with two real links under it, then the five standing facts as one line, then five numbered sections: **the loop** (five stages, then the four guarantees under them) · **what's inside** (the eight capabilities) · **how it's built** (the eight composed parts, then the four built in house) · **the build order** (the status ledger, one tier and one published word per row) · **built on Nexus** (Atlas, AlphaLens and Prism, each row a mark in that product's own pack and a whole-row link to its live site). It closes on a filled call to action.
-- **Docs** (`/docs`) — this site's own section index over `content/docs/`, then the design system's documentation screen for the twenty-seven documents behind it: the Introduction plus six sections, Concepts, Architecture, Configuration, Operations, Guides and Reference, each a folder with its own `meta.json`. Every one of those pages carries a navigation rail of all twenty-seven, a contents rail of its own headings where it has any, and a pager derived from the tree rather than passed in.
-- **Blog** (`/blog`) — the four launch posts over `content/blog/`, folder-per-post with a required ISO `date`, optional `tags` and `draft` (drafts never export), reverse-chronological. The index is this site's own composition and this site's own CSS, because the four blog lists in this family are four deliberate designs and the design system deliberately ships none. Each post is the design system's blog post Page, which owns the byline, the date in both its display and its machine form, and the trail to the neighbouring posts.
-- **About** (`/about`) — the product's story: what the factory is for, what it is made of, and the honest tense of where it stands.
-- **Not found** — the design system's not-found Page: the code as the page's heading, the sentence under it, and two ways out.
+- **Landing** (`/`) — the thesis as the page's `h1` with two real links under it and the loop drawn beside it, then the five standing facts as one line, then six sections: **the loop** (five stages, then the four guarantees under them) · **what's inside** (the eight capabilities) · **how it's built** (the eight composed parts, then the four built in house) · **where it stands** (the status ledger, one tier and one published word per row) · **built on Nexus** (Atlas, AlphaLens and Prism, each row a mark in that product's own pack and a whole-row link to its live site). It closes on a filled call to action. No band carries a number above its heading: the five stages are numbered because five stages in an order are a sequence, and the eight capabilities are not, because eight capabilities are a set
+- **Docs** (`/docs`) — this site's own section index over `content/docs/`, then the design system's documentation screen for the twenty-seven documents behind it: the Introduction plus six sections, Concepts, Architecture, Configuration, Operations, Guides and Reference, each a folder with its own `meta.json`. Every one of those pages carries a navigation rail of all twenty-seven, a contents rail of its own headings where it has any, and a pager derived from the tree rather than passed in
+- **Blog** (`/blog`) — the four launch posts over `content/blog/`, folder-per-post with a required ISO `date`, optional `tags` and `draft` (drafts never export), reverse-chronological. The index is this site's own composition and this site's own CSS, because the four blog lists in this family are four deliberate designs and the design system deliberately ships none. Each post is the design system's blog post Page, which owns the byline, the date in both its display and its machine form, and the trail to the neighbouring posts
+- **About** (`/about`) — the product's story: what the factory is for, what it is made of, and the honest tense of where it stands
+- **Not found** — the design system's not-found Page: the code as the page's heading, the sentence under it, and two ways out
+- **Crawler files** — `app/sitemap.ts` and `app/robots.ts` emit `sitemap.xml` and `robots.txt` from the same loaders the pages are built from, so a page that exists is a row. Every route also declares its own canonical, and the document declares the social cards once
 
-The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the standing facts say `release → none yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
+The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the standing facts say `No release yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
+
+## The chrome is composed per page, and that is not a client boundary
+
+`components/site-chrome.tsx` holds the header, the `<main>` and the footer, and each page
+renders it with a `current` prop. The chrome used to live in the root layout, which is
+rendered once per route and handed no pathname, so the header could never mark the page
+a reader was on: the switcher carried `aria-current="page"` and the site's own three
+destinations carried nothing at all. Moving the chrome down one level is the whole of
+that fix and it costs no JavaScript, because a server render is handed the route it is
+rendering. `test/server-only.test.ts` holds the tree at zero client modules and names
+`components/site-chrome.tsx` in the list it reads, so the next person to add a `'use
+client'` has to argue with that file first.
+
+Two things about the bar are the design system's and are stated there rather than here:
+the switcher sits at the right-hand end because it is composed through the Block's
+`actions` slot, and it is sticky because a nine-band page should keep its only
+persistent route back to the docs. `scripts/pack-regions.mjs` names the switcher's
+region from the switcher's own slot, so the pack map did not move when the bar did.
 
 ## How it is put together
 
 ```
-app/layout.tsx        the document: two theme attributes, the boot script, the chrome
+app/layout.tsx        the document: two theme attributes, the boot script, the site's own metadata
 app/page.tsx          the landing, composed from catalogue items and nothing else
-app/globals.css       253 lines: the two section indexes, the status note, the table hairline
+app/globals.css       the two section indexes, the status note, the table hairline
 app/about/page.tsx    a page header, the prose at the measure, a fact list, three links
 app/not-found.tsx     the not-found Page
+app/sitemap.ts        the map a crawler is given, built from the corpus
+app/robots.ts         what a crawler is told
 app/blog/…            the blog index (site's own) and the blog post (the catalogue's)
 app/docs/…            the section index (site's own) and the documentation screen (the catalogue's)
+components/site-chrome.tsx  the header, the main, the footer, and the current page
 lib/site.json         the ground, the default mode, the product directory
 lib/site.ts           those facts, typed by the design system's pack vocabulary
 lib/landing-content.ts every word of the landing, as data
 lib/to-prism-tree.ts  the content pipeline's page tree, as the documentation Page's data
-scripts/              the five gates, the pack map, the parity expectations, the browser lane
+scripts/              the gates, the pack map, the parity expectations, the browser lane
 ```
 
-Three things are worth knowing before changing anything here.
+Four things are worth knowing before changing anything here.
 
 **A consumer cannot write a design-system utility class.** The emitted stylesheet is
 compiled from the design system's own source, so a utility exists in it only if a
 Prism component uses it. `mb-12` is safe; a utility Prism happens not to use would do
 nothing and say nothing. Anything this site needs for itself goes in `app/globals.css`
-as a site class.
+as a site class. The corollary is the one this repository shipped a defect of:
+`.site-catalog__grid` was on the docs index and declared nowhere, and because a
+consumer does not run Tailwind, a class with no declaration is a name rather than a
+style. Six section cards stacked in one column while the markup said grid.
 
 **The site stylesheet owns almost nothing.** It must not declare the page ground, the
-body ink, a focus outline or a hairline colour on a selector with no class in it, and it
-must not carry a `:focus` rule at all: the design system's base layer is layered and this
+body ink, a focus outline or a hairline colour on a selector with no class in it, and
+it must not carry a `:focus` rule at all: the design system's base layer is layered and this
 sheet is not, so a bare-element rule here wins the cascade whatever the cascade then does
 with it. Three rules were deleted rather than mapped for exactly that reason, and two more
-were repaired with explicit longhands, because a shorthand with one dead operand erases
-the whole declaration rather than repainting it, and that is how a box loses both its edge
+were repaired with explicit longhands, because a shorthand with one dead operand erases the
+whole declaration rather than repainting it, and that is how a box loses both its edge
 and its fill without anything throwing. That last sentence is the reason the `token-read`
 gate exists; the rule is the failure message, and when `pnpm check` is red the message says
 which of these it was and why it matters.
@@ -63,7 +88,10 @@ encoding its section index in its corner radius. All five light grounds are the 
 white and the five dark grounds span about three steps of near-neutral, so a section
 ground buys almost nothing and costs a shape change. The map says where two regions may
 carry a second pack; the gate says the count and the identifiers, in both modes, and a
-third region fails the build.
+third region fails the build. One of those two regions is named `landing.products`,
+after the Block that draws the rows, because the other reading of it was an ordinal the
+page printed above its own heading, and a page that renumbers itself would then have
+renamed a region a gate was holding it to.
 
 ## Develop
 
@@ -91,8 +119,8 @@ floors. Every one of those is data.
 | `check:docs-tree` | The documentation tree, from the built export: twenty-seven pages across seven sections, a rail of all twenty-seven on every one of them, a pager whose two halves are the tree's own neighbours, and a contents rail whose every fragment names a heading the same document emits. This one is this site's, not the kit's. |
 | `pin` | The design system is an exact version, and the token package is the component package's dependency rather than this site's. |
 | `retired-line` | No trace of the retired component library. The lockfile is read as a graph. |
-| `stylesheet-ownership` | This site's sheet owns no surface the design system owns, and takes no `color-mix()` over a `var()`. |
-| `token-read` | Every custom property this sheet reads is declared. A read that resolves to nothing is not a wrong colour; it is no declaration at all. This is the assertion that was measured here first, and it is why the other three sites run it too. |
+| `stylesheet-ownership` | This site's sheet owns no surface the design system owns, and takes no `color-mix()` over a `var()`. It also carries the `token-read` law: every custom property this sheet reads is declared. A read that resolves to nothing is not a wrong colour; it is no declaration at all. This is the assertion that was measured here first, and it is why the other three sites run it too. |
+| `hidden-state` | No rule in this site's sheet hides anything, because a CSS-authored hidden state needs an escapable condition and there is no runtime here to escape it. It was missing from this site's half of the contract for a release, and the kit now runs it. |
 | `links` | Every internal destination and every in-page fragment resolves to something this site emits. |
 | `pack-boundary` | The pack map, from the built export, in both modes: the region set, the identifiers, a boundary on a mark and nowhere else, and each boundary's own pack resolved against the published token contract. |
 | `runtime-token-read` | No token is read at runtime, because a read resolves once and a resolved value does not follow the cascade. |
@@ -128,7 +156,29 @@ declared in `scripts/content-parity-expectations.json` with the reason it was a
 rendering change and not a copy change, and a declaration that matched nothing was
 itself a finding. The permanent successor asks a question that is true of every future
 build rather than of one migration: does a reader who follows a link on this site arrive
-somewhere.
+somewhere. The file of expectations is kept because it records what the sweep found,
+and it is not run by anything.
+
+## The site's own voice
+
+Two rules hold the words on this site, and both are checkable by reading a diff.
+
+**No em-dash.** A dash used as punctuation is the most recognisable sign of a page
+that was written by something rather than by someone, and this page's whole claim is
+that a person is in the loop. The landing, the About page, the 404, the standing
+status note, the docs section blurbs, the post descriptions, the `<title>` and every
+meta description are free of them. The published corpus under `content/` is not: the
+body prose of twenty-seven documents and four posts still carries the dash it was
+written with, and rewriting several hundred sentences of technical prose is a
+different piece of work from fixing a hero, so it is recorded here as outstanding
+rather than half-done. A dash in a code span or a table of the corpus is not prose and
+is not what this rule is about.
+
+**One name per door.** `/docs` is "Read the docs" in the hero, in the closing band and
+on the About page, and "Docs" in the header and the footer, which are two different
+things: a navigation label and a call to action. `/blog` is "Follow the build" in all
+three. The footer publishes the repository once, in a column, rather than as a column
+link and a social link at once.
 
 ## Deploy
 

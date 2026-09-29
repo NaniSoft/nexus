@@ -6,13 +6,16 @@ import { FactList } from '@nanisoft/prism-ui/components/fact-list';
 import { Prose } from '@nanisoft/prism-ui/components/prose';
 import { Section, SectionHeading } from '@nanisoft/prism-ui/components/section';
 
+import { SiteChrome } from '@/components/site-chrome';
+
 // The product's story, not the team's: what Nexus is for, what it is made of, and
 // the honest tense of where it stands. Company-level copy stays on www.
 
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Nexus is the Agent Factory — NaniSoft’s autonomous software-creation engine. What it is, what it is made of, and where it stands.',
+    'Nexus is NaniSoft’s Agent Factory. What it is, what it is made of, and where it stands.',
+  alternates: { canonical: '/about' },
 };
 
 /** The three facts the page states as a list, as the design system states a fact list. */
@@ -27,74 +30,96 @@ const FACTS = [
   },
   {
     label: 'Scope',
-    value: 'Generic — one factory serves every project configured in factories/.',
+    value: 'Generic. One factory serves every project configured in factories/.',
   },
+] as const;
+
+/**
+ * The three ways off this page, and they are the same three words the landing and
+ * the header use for the same two destinations. A page that offers "Read the docs"
+ * here and "Read the design docs" there has published two names for one door, and
+ * the third is the repository, which is the only destination on this site that is
+ * not about the product.
+ */
+const OUT = [
+  { label: 'Read the docs', href: '/docs' },
+  { label: 'Follow the build', href: '/blog' },
+  { label: 'This site’s repository', href: 'https://github.com/NaniSoft/nexus' },
 ] as const;
 
 export default function AboutPage(): ReactElement {
   return (
-    <Section>
-      <SectionHeading
-        as="h1"
-        align="left"
-        eyebrow="nanisoft · nexus — about"
-        title="The factory, not another assistant."
-      />
-      <Prose className="site-measure">
-        <p>
-          Nexus is NaniSoft&rsquo;s Agent Factory: an autonomous software-creation engine that
-          orchestrates multiple AI agents, harnesses, planning, code generation, testing, validation,
-          and product assembly. It takes a GitHub issue as its input and returns a reviewed, merged
-          pull request as its output. One issue, one fresh container, one reviewed change.
-        </p>
+    <SiteChrome current="/about">
+      <Section>
+        {/*
+          No eyebrow. It read "nanisoft · nexus — about", which is the header's
+          brand lockup with a separator on each side and the page's own name again,
+          three elements of the same fact. The heading below it is the page's
+          argument and needs nothing standing over it.
+        */}
+        <SectionHeading as="h1" align="left" title="The factory, not another assistant." />
+        <Prose className="site-measure">
+          <p>
+            Nexus is NaniSoft&rsquo;s Agent Factory: an autonomous software-creation engine
+            that orchestrates multiple AI agents, harnesses, planning, code generation,
+            testing, validation, and product assembly. It takes a GitHub issue as its
+            input and returns a reviewed, merged pull request as its output. One issue,
+            one fresh container, one reviewed change.
+          </p>
 
-        <p>
-          It exists because of a gap we kept running into. Agent-driven development already produces
-          real software — the five Nanisoft sites you can visit were built by a person directing a
-          coding agent, repository by repository. What it did not produce was repeatability. Every run
-          started with a hand-built environment, a prompt standing in for a specification, and a diff
-          reviewed in a terminal. The capability was real; the factory around it was not.
-        </p>
+          <p>
+            It exists because of a gap we kept running into. Agent-driven development
+            already produces real software. The five Nanisoft sites you can visit were
+            built by a person directing a coding agent, repository by repository. What
+            it did not produce was repeatability. Every run started with a hand-built
+            environment, a prompt standing in for a specification, and a diff reviewed
+            in a terminal. The capability was real; the factory around it was not.
+          </p>
 
-        <p>
-          Nexus is the factory. It watches configured repositories, gives every issue its own
-          container, lets <a href="/docs/concepts/orchestration">OpenCode and code-server</a> work the
-          issue inside it, and puts the result on a{' '}
-          <a href="/docs/concepts/kanban-and-the-human-feedback-loop">Kanban board</a> where a human
-          approves it, asks for changes, or rejects it. Approval merges. Rejection closes the ticket.
-          Three rounds of feedback is the ceiling — after that the loop closes rather than spinning.
-        </p>
-      </Prose>
+          <p>
+            Nexus is the factory. It watches configured repositories, gives every issue
+            its own container, lets{' '}
+            <a href="/docs/concepts/orchestration">OpenCode and code-server</a> work the
+            issue inside it, and puts the result on a{' '}
+            <a href="/docs/concepts/kanban-and-the-human-feedback-loop">Kanban board</a>{' '}
+            where a human approves it, asks for changes, or rejects it. Approval merges.
+            Rejection closes the ticket. Three rounds of feedback is the ceiling, and
+            after that the loop closes rather than spinning.
+          </p>
+        </Prose>
 
-      <FactList className="site-about__facts" facts={FACTS} />
+        <FactList className="site-about__facts" facts={FACTS} />
 
-      <Prose className="site-measure">
-        <p>
-          Nexus is the core of the platform story: Atlas, AlphaLens, and Prism are built on top of it,
-          and Prism is the design language all of them wear. Read that in the honest tense — agent
-          development built the products you can visit today, and Nexus is the engine designed to make
-          that repeatable without a person in the middle of every step.
-        </p>
+        <Prose className="site-measure">
+          <p>
+            Nexus is the core of the platform story: Atlas, AlphaLens, and Prism are
+            built on top of it, and Prism is the design language all of them wear. Read
+            that in the honest tense. Agent development built the products you can visit
+            today, and Nexus is the engine designed to make that repeatable without a
+            person in the middle of every step.
+          </p>
 
-        <p>
-          The factory is in active development. The design is complete and documented; implementation
-          is specified and sequenced, and has not started. There are no dates here and nothing to
-          install — the design is public, the build is public, and the release gets announced on the
-          blog when it happens.
-        </p>
-      </Prose>
+          <p>
+            The factory is in active development. The design is complete and documented.
+            Implementation is specified and sequenced, and has not started. There are no
+            dates here and nothing to install, and the release gets announced on the blog
+            when it happens.
+          </p>
+        </Prose>
 
-      <div className="site-about__links">
-        <CtaLink href="/docs" variant="outline">
-          Read the docs →
-        </CtaLink>
-        <CtaLink href="/blog" variant="outline">
-          Follow the build →
-        </CtaLink>
-        <CtaLink href="https://github.com/NaniSoft/nexus" variant="outline" newTab>
-          This site&rsquo;s repository →
-        </CtaLink>
-      </div>
-    </Section>
+        <div className="site-about__links">
+          {OUT.map((link) => (
+            <CtaLink
+              key={link.href}
+              href={link.href}
+              variant="outline"
+              newTab={link.href.startsWith('https')}
+            >
+              {link.label} →
+            </CtaLink>
+          ))}
+        </div>
+      </Section>
+    </SiteChrome>
   );
 }

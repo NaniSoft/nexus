@@ -1,9 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { SiteFooter } from '@nanisoft/prism-ui/blocks/site-footer';
-import { SiteHeader } from '@nanisoft/prism-ui/blocks/site-header';
-
 import HomePage from '@/app/page';
 import { PRODUCTS, SITE_PRODUCT } from '@/lib/site';
 import map from '@/scripts/pack-map.json';
@@ -29,19 +26,20 @@ import map from '@/scripts/pack-map.json';
  * background: the element was there and the reader saw nothing. The evidence is
  * `scripts/check-cascade.mjs`, which resolves the painted colour of each disc in a
  * real browser in both modes.
+ *
+ * The page is rendered through the site's own chrome rather than a hand-assembled
+ * header, `main` and footer, because the chrome is where the boundaries live. This
+ * file used to write its own `<SiteHeader products={PRODUCTS}>` while the site
+ * rendered a different one, so the reader here and the page being published were two
+ * compositions; the switcher has since moved out of the `products` prop and into the
+ * `actions` slot, and a test written against a hand-assembled bar would not have
+ * noticed that it was testing a bar nobody ships. The landing renders the chrome
+ * itself, so this renders the landing and nothing around it.
  */
 const MARK_SLOT = 'product-mark';
 
 function wholePage() {
-  const { container } = render(
-    <>
-      <SiteHeader product={SITE_PRODUCT} products={PRODUCTS} navLabel="Site" productsLabel="Site" />
-      <main>
-        <HomePage />
-      </main>
-      <SiteFooter product={SITE_PRODUCT} />
-    </>,
-  );
+  const { container } = render(<HomePage />);
   return container;
 }
 
@@ -50,28 +48,29 @@ function wholePage() {
  *
  * The same rule the built-export gate uses, so a region that is named differently here
  * and there is a difference one of the two readers would have to explain: a mark in the
- * switcher, a mark in a brand lockup, and a mark inside a band named by the ordinal
- * that band publishes.
+ * switcher, a mark in a brand lockup, and a mark inside the block that draws the
+ * platform rows. A boundary belonging to none of those is `unnamed`, which no entry
+ * in the map may name, so a mark outside the three regions fails here rather than
+ * being counted towards one that happens to match.
+ *
+ * The last of those used to be named after the ordinal its own band printed above its
+ * heading, so the map held `landing.05` and the gate would have failed the moment the
+ * page stopped numbering its sections, which is the wrong reason for a pack gate to
+ * fail.
  */
 function boundaries(container: HTMLElement) {
-  return [...container.querySelectorAll('[data-pack]')].map((element) => {
-    const section = element.closest('main section');
-    const ordinal = section
-      ? [...section.querySelectorAll('span, p, div > *')]
-          .map((candidate) => (candidate.textContent ?? '').trim())
-          .find((text) => /^\d{2}$/.test(text))
-      : undefined;
-    return {
-      pack: element.getAttribute('data-pack') ?? '',
-      region: element.closest('[data-slot="product-switcher"]')
-        ? 'header.switcher'
-        : element.closest('header')
-          ? 'header.brand'
-          : element.closest('footer')
-            ? 'footer.brand'
-            : `landing.${ordinal ?? 'unnumbered'}`,
-    };
-  });
+  return [...container.querySelectorAll('[data-pack]')].map((element) => ({
+    pack: element.getAttribute('data-pack') ?? '',
+    region: element.closest('[data-slot="product-switcher"]')
+      ? 'header.switcher'
+      : element.closest('header')
+        ? 'header.brand'
+        : element.closest('footer')
+          ? 'footer.brand'
+          : element.closest('[data-slot="product-grid"]')
+            ? 'landing.products'
+            : 'unnamed',
+  }));
 }
 
 describe('the pack map', () => {

@@ -22,11 +22,18 @@
     "multiset of packs each one carries, so a boundary added by accident is a finding",
     "in both readers. `secondPackRegions` is the rule restated, and it is asserted as",
     "well as derived: a page that grows a third region carrying a second pack fails",
-    "the build."
+    "the build.",
+    "",
+    "The region names come from the structure the catalogue publishes, which is the",
+    "same rule `scripts/pack-regions.mjs` states. One of them used to be named after",
+    "the ordinal its own band printed above its heading, so the map depended on a",
+    "number the page put there for a reader and the gate read for a machine. The page",
+    "no longer prints an ordinal, and the region is named `landing.products` after the",
+    "Block that draws the rows."
   ],
   "ground": "lavender",
   "defaultMode": "dark",
-  "secondPackRegions": ["header.switcher", "landing.05"],
+  "secondPackRegions": ["header.switcher", "landing.products"],
   "regions": {
     "header.switcher": {
       "why": "This site is one of five members of a product set, and a set that tells five products apart is the reason five packs are on one page at all. Four of the five are not the ground; the fifth is this site, whose own mark is the pack the page is painted in.",
@@ -40,8 +47,8 @@
       "why": "The same lockup, in the footer. A ground is stable for the life of a page, and a footer that wore a different hue from the page it closes would be a second claim about the same thing.",
       "packs": ["lavender"]
     },
-    "landing.05": {
-      "why": "A product row's mark is that product's own hue, and it is the one claim on this page a reader makes a decision from: which product is this, and does its colour mean anything. The mark is a fully rounded disc, so the boundary moves nothing about its shape. The region is named by the ordinal the band publishes, so the map names it with a string a reader of the page can see. This band is the second of the two: the old page drew the same three products as cards with a hand-written dot that carried no background at all, so the reader saw three names and no marks.",
+    "landing.products": {
+      "why": "A product row's mark is that product's own hue, and it is the one claim on this page a reader makes a decision from: which product is this, and does its colour mean anything. The mark is a fully rounded disc, so the boundary moves nothing about its shape. The region is named by the Block that draws the rows rather than by the ordinal the band used to print, so a page that renumbers its sections does not silently rename a region the gate holds it to. This band is the second of the two: the old page drew the same three products as cards with a hand-written dot that carried no background at all, so the reader saw three names and no marks.",
       "packs": ["mint", "blush", "peach"]
     }
   }
