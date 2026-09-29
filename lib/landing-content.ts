@@ -137,18 +137,21 @@ const LOOP_FIGURE_NOTES = [
 /**
  * The observer, which reads the loop and does not change it.
  *
- * It sits a quarter of the way down rather than at the top of the canvas. At the
- * top it was the only thing in the upper half of the drawing, so the figure that
- * claims to show a five-stage loop was half empty, and the emptiness read as a
- * layout accident rather than as a lane nobody is standing in. A person reading
- * the board is close to the review stage, not at the far end of a field.
+ * It is drawn above the middle of the rail rather than above the review stage, and
+ * the reason is geometry rather than semantics. The figure's canvas is a fixed
+ * sixteen-by-nine and the graph fits its own box into it, so a drawing with one row
+ * of nodes collapses into a thin band with more dead canvas than line, and a
+ * drawing with one node off the rail on the right leaves the whole top left of the
+ * panel empty. A node above the middle fills the top of the box, leaves two corners
+ * rather than one hole, and still reads as what it is: something above the loop,
+ * looking down at it.
  */
 const LOOP_OBSERVER = {
   id: 'watchers',
   name: 'watchers',
   note: 'the board',
-  x: 3 / 4,
-  y: 0.25,
+  x: 1 / 2,
+  y: 0.08,
 } as const;
 
 /**
@@ -160,16 +163,20 @@ const LOOP_OBSERVER = {
  * stage does scrolls to the section below while a reader who wants to know that
  * there are five of them sees the rail in the first screen.
  *
- * Every string here is the site's own and every one already existed above, so
- * the figure introduces no claim. The node names are the stage titles, the notes
- * are the clause naming each stage's actor, and the aria sentence is the loop's
- * own label.
+ * The five stages are the drawing. The board is not a stage, so it carries no lane
+ * and no marker, and its edge is the indirect one: the board reads the review stage
+ * without changing it. A field node beside a rail is the second claim in the same
+ * picture, and it is placed where it fills the drawing rather than where it would be
+ * tidiest, because a picture whose second claim is half empty is a picture where the
+ * first one is hard to read.
  *
- * The `lane` on each stage is what makes this a sequence rather than a field,
- * and it is why the drawing carries a rail with a marker travelling it: the
- * order is visible as an order rather than inferred from left-to-right spacing.
- * The observer carries no lane, because it is not a stage, and its edge is
- * indirect, because the board reads the loop without changing it.
+ * Every string here is the site's own and every one already existed above, so the
+ * figure introduces no claim. The node names are the stage titles and the notes are
+ * the clause naming each stage's actor.
+ *
+ * The `lane` on each stage is what makes this a sequence rather than a field, and it
+ * is why the drawing carries a rail with a marker travelling it: the order is
+ * visible as an order rather than inferred from left-to-right spacing.
  */
 export const LOOP_FIGURE = {
   nodes: [
@@ -185,28 +192,29 @@ export const LOOP_FIGURE = {
     LOOP_OBSERVER,
   ],
   relations: [
-    { from: 'issue', to: 'container', carries: true },
-    { from: 'container', to: 'build', carries: true },
-    { from: 'build', to: 'review', carries: true },
-    { from: 'review', to: 'merge', carries: true },
+    ...LOOP.stages.slice(0, -1).map((stage, index) => ({
+      from: stage.title.toLowerCase(),
+      to: LOOP.stages[index + 1]?.title.toLowerCase() ?? '',
+      carries: true,
+    })),
     { from: 'watchers', to: 'review', indirect: true },
   ],
   aria:
-    'The build loop as five stages on one rail: issue, container, build, review and merge, with a marker travelling between them. A watcher reads the review stage without changing it.',
+    'The build loop as five stages on one rail: issue, container, build, review and merge, with a marker travelling between them in that order. A watcher reads the review stage without changing it.',
   /**
    * The panel the figure sits in.
    *
    * The state was `live`, which the design system draws as a success dot beside a
    * word, and the word was the site's own. Together they said a system is
    * updating now, on a page whose ledger two sections down says implementation has
-   * not started. `neutral` is the state that says nothing, and the figure beside
-   * it is a diagram of a designed loop rather than a readout of a running one,
-   * which is what it is.
+   * not started. `neutral` is the state that says nothing, and the figure beside it
+   * is a diagram of a designed loop rather than a readout of a running one, which is
+   * what it is.
    */
   panel: {
     label: 'the build loop',
     footnote:
-      'The five stages, in the order an issue runs them. The marker is the walk it takes.',
+      'The five stages an issue runs through, and the board above them, which watches and does not touch.',
   },
 } as const;
 
