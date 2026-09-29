@@ -98,6 +98,80 @@ export const LOOP = {
   ],
 } as const;
 
+/**
+ * One clause per stage: who acts, which is the part a node mark can carry.
+ *
+ * The stage bodies are a sentence each and a node mark is a name, so the figure
+ * takes the clause that says who does the work rather than the sentence that
+ * explains it. The full sentence is a card in section 01, one scroll away.
+ */
+const LOOP_FIGURE_NOTES = [
+  'a repository',
+  'fresh, every time',
+  'the agent works',
+  'a person decides',
+  'shipped',
+] as const;
+
+/** The observer, which reads the loop and does not change it. */
+const LOOP_OBSERVER = {
+  id: 'watchers',
+  name: 'watchers',
+  note: 'the board',
+  x: 3 / 4,
+  y: 0.1,
+} as const;
+
+/**
+ * The loop, as the figure the hero draws.
+ *
+ * The same five stages `LOOP.stages` names, in the same order, read as a graph
+ * rather than as a numbered list. The two are not redundant: the list is the
+ * argument and the graph is the mechanism, and a reader who wants to know what a
+ * stage does scrolls to section 01 while a reader who wants to know that there
+ * are five of them sees the rail in the first screen.
+ *
+ * Every string here is the site's own and every one already existed above, so
+ * the figure introduces no claim. The node names are the stage titles, the notes
+ * are the clause naming each stage's actor, and the aria sentence is the loop's
+ * own label.
+ *
+ * The `lane` on each stage is what makes this a sequence rather than a field,
+ * and it is why the drawing carries a rail with a marker travelling it: the
+ * order is visible as an order rather than inferred from left-to-right spacing.
+ * The observer carries no lane, because it is not a stage, and its edge is
+ * indirect, because the board reads the loop without changing it.
+ */
+export const LOOP_FIGURE = {
+  nodes: [
+    ...LOOP.stages.map((stage, index) => ({
+      id: stage.title.toLowerCase(),
+      name: stage.title.toLowerCase(),
+      note: LOOP_FIGURE_NOTES[index],
+      x: index / (LOOP.stages.length - 1),
+      y: 0.62,
+      lane: index,
+      emphasis: index === 2,
+    })),
+    LOOP_OBSERVER,
+  ],
+  relations: [
+    { from: 'issue', to: 'container', carries: true },
+    { from: 'container', to: 'build', carries: true },
+    { from: 'build', to: 'review', carries: true },
+    { from: 'review', to: 'merge', carries: true },
+    { from: 'watchers', to: 'review', indirect: true },
+  ],
+  aria:
+    'The build loop as five stages on one rail: issue, container, build, review and merge, with a marker travelling between them. A watcher reads the review stage without changing it.',
+  panel: {
+    label: 'the loop, running',
+    mode: 'live',
+    footnote:
+      'The five stages the factory runs, and the order it runs them in. The marker is the walk an issue takes. The observer is the board, which watches and does not touch.',
+  },
+} as const;
+
 /** 02, what is inside. Eight entries, all from the design. */
 export const INSIDE = {
   index: '02',

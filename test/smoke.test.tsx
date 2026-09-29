@@ -13,6 +13,7 @@ import {
   HERO,
   INSIDE,
   LOOP,
+  LOOP_FIGURE,
   PLATFORM,
   STACK,
   TICKER,
@@ -112,6 +113,44 @@ describe('the landing', () => {
       expect(link?.tagName).toBe('A');
       expect(link?.getAttribute('href')).toBe(cta.href);
     }
+  });
+
+  it('shows the loop running beside the thesis, and the running part is not a canvas', () => {
+    const container = renderLanding();
+    // The claim the hero makes is that this is a factory, so the figure beside the
+    // thesis is the factory: the same five stages section 01 lists, on one rail. The
+    // old page drew this on a canvas with a requestAnimationFrame loop, and the
+    // migration removed the drawing along with its two real defects. What came back
+    // is vector markup in the initial HTML, which is why this asserts on what the
+    // server rendered rather than on anything the browser had to run first.
+    const graph = container.querySelector('[data-slot="pulse-graph"]');
+    expect(graph, 'no figure beside the thesis').toBeTruthy();
+    expect(graph?.getAttribute('role')).toBe('img');
+    expect(graph?.getAttribute('aria-label')).toBe(LOOP_FIGURE.aria);
+
+    // Every stage is a node, drawn, and none of it waited for a script.
+    const nodes = [...container.querySelectorAll('[data-slot="pulse-graph-node"]')].map((node) =>
+      node.getAttribute('data-node'),
+    );
+    for (const stage of LOOP.stages) {
+      expect(nodes, 'the figure does not show the ' + stage.title + ' stage').toContain(
+        stage.title.toLowerCase(),
+      );
+    }
+
+    // The rail is the claim about order, and it is present at first paint.
+    expect(container.querySelector('[data-slot="pulse-graph-rail-line"]')).toBeTruthy();
+    expect(container.querySelector('[data-slot="pulse-graph-marker"]')).toBeTruthy();
+
+    // The motion is the design system's, named by its class rather than authored
+    // here: a site that wrote its own cycle would be a second source of truth for a
+    // decision Prism owns, and the one thing this page must not own.
+    expect(container.querySelector('.prism-ambient-travel')).toBeTruthy();
+
+    // And it is a drawing rather than a canvas, which is the whole of the
+    // difference: a canvas paints pixels it has already resolved, so a pack
+    // boundary landing above it would not re-ink it.
+    expect(container.querySelector('canvas')).toBeNull();
   });
 
   it('keeps every standing fact, the nuance, and all five loop stages with their captions', () => {
