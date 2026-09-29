@@ -1,0 +1,37 @@
+# Line endings are not a style preference here, they are a correctness one.
+#
+# The content tests in all four product sites read `.mdx` frontmatter with a
+# pattern that requires an LF, because that is what the files carry in the
+# repository. This repository had no `.gitattributes` and `core.autocrlf` is true
+# by default on Windows, so a checkout on a Windows machine turned every content
+# file into CRLF and the content tests failed on a tree nobody had edited. The
+# tests were right and the checkout was wrong; the fix is the one that makes the
+# checkout agree with the repository rather than the one that makes the test stop
+# looking.
+#
+# `text=auto` lets git detect what a file is and normalise it on the way in, which
+# is the only setting that is correct for a repository holding prose, source and
+# lockfiles together. The explicit lines below are the exceptions, and each has a
+# reason rather than a habit.
+#
+# MDX, Markdown and the two source trees are text and are normalised to LF. A
+# frontmatter block is line-oriented data before it is prose, and a consumer
+# reading it with a newline-anchored pattern is reading it as data.
+
+* text=auto
+
+*.mdx text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+
+# The lockfile is generated and is read as a graph by the consumer gate kit, which
+# parses it rather than grepping it. Normalising it would change bytes nobody
+# edited, and its integrity hashes are already the thing that gate is careful not
+# to text-scan.
+
+pnpm-lock.yaml -text

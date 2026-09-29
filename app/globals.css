@@ -78,25 +78,21 @@
 
 /* ---------- The landing elements this site owns ---------- */
 
-.site-hero__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 2.5rem;
+/* The hero's own vertical rhythm is the design system's, so the band that follows
+   it is the one place this page needs to say something about spacing. The nuance
+   line is a footnote to the thesis, not a section, and a section's worth of
+   padding above and below it would give it the weight of a claim. */
+.site-band--tight {
+  padding-block: 0 4rem;
 }
 
 .site-caption {
   max-width: var(--container-measure);
-  margin: 1.5rem auto 0;
+  margin: 0 auto;
   color: var(--muted-foreground);
   font-size: 0.875rem;
   line-height: 1.429;
   text-wrap: pretty;
-}
-
-.site-caption--nuance {
-  max-width: 46ch;
 }
 
 .site-measure {
