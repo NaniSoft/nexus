@@ -2,12 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { SiteFooter } from '@nanisoft/prism-ui/blocks/site-footer';
-import { SiteHeader } from '@nanisoft/prism-ui/blocks/site-header';
-import { ProductSwitcher } from '@nanisoft/prism-ui/components/product-switcher';
 
 import AboutPage from '@/app/about/page';
 import NotFound from '@/app/not-found';
 import HomePage from '@/app/page';
+import { COPY, NAV, SITES } from '@/lib/bar';
 import {
   BUILD_ORDER,
   FINAL_CTA,
@@ -332,19 +331,22 @@ describe('the about page', () => {
 
   it('marks itself as the page the reader is on', () => {
     const { container } = render(<AboutPage />);
-    // The switcher already carried `aria-current="page"` for this site's own member.
-    // The half that never did was this site's own navigation, and the half that never
-    // did was the header in the root layout, which is not told which page it is on.
-    const nav = container.querySelector('nav[aria-label="Site"]');
+    // This is the half that used to be missing and is the reason the chrome is
+    // composed per page rather than declared in the root layout: a server render is
+    // handed the route it is serving, so the current destination is a prop rather than
+    // something a client has to be asked for.
+    const nav = container.querySelector(`nav[aria-label="${COPY.nav}"]`);
     expect([...nav!.querySelectorAll('a')].map((a) => a.getAttribute('aria-current'))).toEqual([
       null,
       null,
       'page',
     ]);
-    const switcher = container.querySelector('nav[aria-label="Products"]');
-    expect(
-      [...switcher!.querySelectorAll('a[aria-current="page"]')].map((a) => a.getAttribute('href')),
-    ).toEqual(['https://nexus.nanisoft.com']);
+    // The family is one control rather than a row of marks, so there is no second
+    // `aria-current` in the bar to read. The control carries the current site's id
+    // instead, and the menu marks the member when it is opened.
+    const trigger = container.querySelector('[data-slot="site-navbar-sites-trigger"]');
+    expect(trigger?.getAttribute('aria-label')).toBe(COPY.sites);
+    expect(SITE_PRODUCT.id).toBe('nexus');
   });
 });
 
@@ -369,68 +371,80 @@ describe('the product this site is', () => {
 });
 
 describe('the chrome', () => {
-  it('carries this site\'s own three destinations, because a header with no nav is a valid header', () => {
-    // The design system's header takes its navigation as a prop and renders a brand
-    // lockup and nothing else when the prop is absent, so dropping the three
-    // destinations is a silent removal of the whole site's navigation. The
-    // content-parity comparison is what caught it: thirty-seven routes lost three lines
-    // of chrome and no other check in the repository said so.
-    const { container } = render(
-      <SiteHeader
-        product={SITE_PRODUCT}
-        products={PRODUCTS}
-        nav={[
-          { label: 'Docs', href: '/docs' },
-          { label: 'Blog', href: '/blog' },
-          { label: 'About', href: '/about' },
-        ]}
-        navLabel="Site"
-        productsLabel="Products"
-      />,
-    );
-    const nav = container.querySelector('nav[aria-label="Site"]');
-    expect(nav, 'the header carries no site navigation').toBeTruthy();
-    expect([...nav!.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual([
-      '/docs',
-      '/blog',
-      '/about',
-    ]);
-    // The switcher is a second landmark, so it needs a second name: a header with two
-    // navigation regions of one name is a header a reader navigating by landmark cannot
-    // tell apart.
-    expect(container.querySelector('nav[aria-label="Products"]'), 'the switcher takes the site navigation\'s name').toBeTruthy();
-    expect(
-      [...container.querySelectorAll('nav[aria-label="Products"] a')].map((a) => a.getAttribute('href')),
-    ).toEqual(PRODUCTS.map((product) => product.href));
-  });
-
-  it('marks the current page on the switcher, and the switcher is still a switcher', () => {
-    // The switcher moved out of the header's `products` prop and into its `actions`
-    // slot, which is the only change that puts this site's own three destinations
-    // ahead of a five-name product family instead of behind it. Composed by hand here
-    // because the header composes it for us in `components/site-chrome.tsx`.
-    const { container } = render(
-      <ProductSwitcher products={PRODUCTS} currentId={SITE_PRODUCT.id} label="Products" />,
-    );
-    expect(container.querySelector('[data-slot="product-switcher"]')).toBeTruthy();
-    const current = [...container.querySelectorAll('a[aria-current="page"]')];
-    expect(current).toHaveLength(1);
-    expect(current[0]?.getAttribute('href')).toBe('https://nexus.nanisoft.com');
-  });
-
-  it('puts this site\'s own destinations before the product set, and stays on the page', () => {
+  it("carries this site's own three destinations, because a bar with no nav is a valid bar", () => {
+    // The bar takes its navigation as a prop and renders a brand lockup and nothing
+    // else when the prop is absent, so dropping the three destinations is a silent
+    // removal of the whole site's navigation. The content-parity comparison is what
+    // caught it: thirty-seven routes lost three lines of chrome and no other check in
+    // the repository said so.
+    //
+    // The real page is rendered rather than a bar composed here, because a test that
+    // hand-assembles what it is testing stops testing it the moment the assembly is
+    // not what ships. That is not hypothetical: this file used to compose a
+    // `SiteHeader` with a product switcher, and when the site moved to `SiteNavbar` it
+    // kept asserting a switcher the page had stopped publishing.
     const { container } = render(<HomePage />);
-    const bar = container.querySelector('[data-slot="site-header"]');
-    expect(bar, 'the landing ships without a header').toBeTruthy();
+    const nav = container.querySelector(`nav[aria-label="${COPY.nav}"]`);
+    expect(nav, 'the bar carries no site navigation').toBeTruthy();
+    expect([...nav!.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual(
+      NAV.map((link) => link.href),
+    );
+  });
+
+  it('reaches the whole family from one control, and the control is named', () => {
+    // The set used to be a row of five marks at first paint and then a `nav` landmark
+    // of its own. It is now a single control at the right-hand end, and the family is
+    // behind it rather than above the fold. `aria-haspopup` is what tells a reader who
+    // cannot see the icon that pressing it opens something rather than navigating.
+    const { container } = render(<HomePage />);
+    const trigger = container.querySelector('[data-slot="site-navbar-sites-trigger"]');
+    expect(trigger, 'the bar reaches no other site').toBeTruthy();
+    expect(trigger!.getAttribute('aria-haspopup')).toBe('menu');
+    expect(trigger!.getAttribute('aria-label')).toBe(COPY.sites);
+    // Five members, and every one of them a different origin: a relative href would
+    // render as a working link and land on a 404.
+    expect(SITES).toHaveLength(5);
+    for (const site of SITES) {
+      if (site.id === SITE_PRODUCT.id) continue;
+      expect(site.href, `${site.id} does not leave this site`).toMatch(/^https:\/\//);
+    }
+  });
+
+  it('puts this site own destinations in the bar and the family behind a control', () => {
+    const { container } = render(<HomePage />);
+    const bar = container.querySelector('[data-slot="site-navbar"]');
+    expect(bar, 'the landing ships without a bar').toBeTruthy();
+    // The three destinations and the wordmark are the only links in the bar. The
+    // family used to be five more links here, and it is the reason this assertion
+    // exists: five external destinations above the fold, in the same row as the three
+    // pages a reader came to this site for.
     const order = [...bar!.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
-    // The three destinations come first, the product set after them, and the switcher
-    // no longer sits between the wordmark and the only links a reader can follow to
-    // learn something.
-    expect(order.slice(0, 3)).toEqual(['/', '/docs', '/blog']);
-    expect(order.indexOf('/about')).toBeLessThan(order.indexOf('https://www.nanisoft.com'));
-    // Sticky, because the landing is nine bands long and a header that scrolls away
-    // takes the reader's only way back to the docs with it.
+    expect(order).toEqual(['/', '/docs', '/blog', '/about']);
+    // Sticky, because the landing is nine bands long and a bar that scrolls away takes
+    // the reader's only way back to the docs with it.
     expect(bar!.getAttribute('class')).toContain('sticky');
+  });
+
+  it('has no colour chooser, because a ground is a property of the page', () => {
+    const { container } = render(<HomePage />);
+    // The Block offers a colour menu and this site does not ask for one. A reader who
+    // could repaint the ground would be on a page that is not this one, and a Block
+    // that shipped the control unasked would be offering it to all four consumers.
+    expect(container.querySelector('[data-slot="site-navbar-theme-trigger"]')).toBeNull();
+  });
+
+  it('opens search over a static index, because this site has no server', () => {
+    const { container } = render(<HomePage />);
+    const trigger = container.querySelector('[data-slot="site-navbar-search-trigger"]');
+    expect(trigger, 'the bar offers no way to search 27 documents').toBeTruthy();
+    expect(trigger!.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(trigger!.getAttribute('aria-label')).toBe(COPY.search);
+  });
+
+  it("names the mode control for the mode it moves to, and this site's default is dark", () => {
+    render(<HomePage />);
+    const toggle = screen.getByRole('button', { name: COPY.toLight });
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('groups the footer\'s destinations under the two names the site already used, once each', () => {

@@ -53,6 +53,7 @@ describe('the site has no client code', () => {
     // that matters: a file that is not in the list is a file no law here reaches.
     expect(files.map((file) => path.relative(ROOT, file).split(path.sep).join('/')).sort()).toEqual([
       'app/about/page.tsx',
+      'app/api/search/route.ts',
       'app/blog/[[...slug]]/page.tsx',
       'app/docs/[[...slug]]/page.tsx',
       'app/layout.tsx',
@@ -62,6 +63,7 @@ describe('the site has no client code', () => {
       'app/sitemap.ts',
       'components/site-chrome.tsx',
       'components/status-note.tsx',
+      'lib/bar.ts',
       'lib/landing-content.ts',
       'lib/mdx-components.ts',
       'lib/site.ts',

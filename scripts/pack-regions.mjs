@@ -9,26 +9,34 @@
  * different page.
  *
  * Regions are named by the structure the catalogue publishes rather than by a
- * selector invented for the gate: a mark inside the switcher is the switcher's, a
- * mark in a brand lockup is the lockup's, and a mark inside the block that draws
- * the platform rows is that band's. A mark in `<main>` that belongs to none of
- * those returns null rather than a guess, because a region the gate cannot name is
- * a region it cannot hold to `scripts/pack-map.json`, and a guess is worse than a
+ * selector invented for the gate: a mark in a brand lockup is the lockup's, a mark
+ * in the footer is the footer's, and a mark inside the block that draws the
+ * platform rows is that band's. A mark in `<main>` that belongs to none of those
+ * returns null rather than a guess, because a region the gate cannot name is a
+ * region it cannot hold to `scripts/pack-map.json`, and a guess is worse than a
  * finding.
  *
- * The third of those used to be named after the ordinal the band printed above its
+ * The last of those used to be named after the ordinal the band printed above its
  * own heading, which meant the map held the string `landing.05` and a page that
  * dropped a section number, added one, or renumbered silently renamed a region the
  * gate was holding it to. The page no longer prints an ordinal at all, and the
  * region is now named by the Block that draws the rows.
  *
+ * **The rule for the header's product switcher is gone, and the switcher with it.**
+ * The bar is the design system's `SiteNavbar` and the family's five sites are a menu
+ * inside it, so their marks are rendered when a reader opens the menu. This gate
+ * reads the emitted HTML of a static export, and a menu nobody has opened is not in
+ * it, so there is no boundary here to name. The rule was not deleted because the
+ * marks moved somewhere harmless: it was deleted because the marks are no longer on
+ * the page a reader receives without interacting with, which is the only page this
+ * gate reads.
+ *
  * Read by `pnpm check`. Nothing else imports it, and that is deliberate: this is a
  * declaration about one page, not a library.
  */
 export function regionOf(element) {
-  if (element.closest('[data-slot="product-switcher"]')) return 'header.switcher'
-  if (element.closest('header')) return 'header.brand'
-  if (element.closest('footer')) return 'footer.brand'
-  if (element.closest('main [data-slot="product-grid"]')) return 'landing.products'
-  return null
+  if (element.closest('header')) return 'header.brand';
+  if (element.closest('footer')) return 'footer.brand';
+  if (element.closest('main [data-slot="product-grid"]')) return 'landing.products';
+  return null;
 }

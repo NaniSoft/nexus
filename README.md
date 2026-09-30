@@ -5,9 +5,9 @@
 Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, one design language ([Prism](https://prism.nanisoft.com)).
 
 - **Live**: https://nexus.nanisoft.com (Custom Domain, auto-created on deploy)
-- **Pack**: `lavender` is the ground, on the document element, and it does not change. Four other packs are on marks: the header's product switcher carries `sky`, `lavender`, `mint`, `blush` and `peach`, and the landing's products section carries the three its rows name. That is the whole five-pack layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
+- **Pack**: `lavender` is the ground, on the document element, and it does not change. The only region of a page that carries a pack which is not the ground is the landing's products section, which carries the three its rows name. The family's five marks live in the bar's menu now, and a closed menu paints nothing: a reader at first paint sees one pack, and the second pack reaches them when they ask to leave. That is the whole layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
 - **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest (jsdom + Testing Library) · Cloudflare Workers
-- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.10.2, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. There is no local component and no client runtime: every page is a server component, so the site ships no JavaScript of its own
+- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.13.0, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. This repository authors no client module: every page is a server component, so the only JavaScript this site ships is the bar's own controls, and those are client components inside the pinned package rather than a boundary drawn here
 
 ## What ships
 
@@ -17,26 +17,47 @@ Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, on
 - **About** (`/about`) — the product's story: what the factory is for, what it is made of, and the honest tense of where it stands
 - **Not found** — the design system's not-found Page: the code as the page's heading, the sentence under it, and two ways out
 - **Crawler files** — `app/sitemap.ts` and `app/robots.ts` emit `sitemap.xml` and `robots.txt` from the same loaders the pages are built from, so a page that exists is a row. Every route also declares its own canonical, and the document declares the social cards once
+- **Search** (`/api/search`) — thirty-five entries as one JSON array, prerendered because the export has no server: the twenty-seven documents with their section as a breadcrumb, the four posts, and the four pages of this site's own. The bar's search control fetches it when it opens and filters in the browser, which is a static file and no request per keystroke. It is not in `sitemap.xml`, because a search index is not a page a reader navigates to
 
 The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the standing facts say `No release yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
 
-## The chrome is composed per page, and that is not a client boundary
+## The bar is the design system's, and this site composes it
 
-`components/site-chrome.tsx` holds the header, the `<main>` and the footer, and each page
-renders it with a `current` prop. The chrome used to live in the root layout, which is
-rendered once per route and handed no pathname, so the header could never mark the page
-a reader was on: the switcher carried `aria-current="page"` and the site's own three
+The bar is `@nanisoft/prism-ui/blocks/site-navbar`, and `components/site-chrome.tsx`
+holds it, the `<main>` and the footer, with each page rendering that chrome against
+the page it is serving. Three decisions belong to this site and the rest belong to the
+Block, so they are worth separating rather than describing as one thing.
+
+**The chrome is composed per page, and that is not a client boundary.** It used to
+live in the root layout, which is rendered once per route and handed no pathname, so
+the header could never mark the page a reader was on: the site's own three
 destinations carried nothing at all. Moving the chrome down one level is the whole of
-that fix and it costs no JavaScript, because a server render is handed the route it is
-rendering. `test/server-only.test.ts` holds the tree at zero client modules and names
-`components/site-chrome.tsx` in the list it reads, so the next person to add a `'use
-client'` has to argue with that file first.
+that fix and it costs no JavaScript this repository authors, because a server render is
+handed the route it is rendering. `test/server-only.test.ts` holds the tree at zero
+client modules and names `components/site-chrome.tsx` in the list it reads, so the next
+person to add a `'use client'` has to argue with that file first.
 
-Two things about the bar are the design system's and are stated there rather than here:
-the switcher sits at the right-hand end because it is composed through the Block's
-`actions` slot, and it is sticky because a nine-band page should keep its only
-persistent route back to the docs. `scripts/pack-regions.mjs` names the switcher's
-region from the switcher's own slot, so the pack map did not move when the bar did.
+**The family is a menu, and the mark is the reason.** The set used to be a row of five
+marks at first paint, which put four other packs above the fold of every page and gave
+`scripts/pack-map.json` a `header.switcher` region to police. It is now one control at
+the right-hand end, and the marks are drawn when a reader opens it. That is a real
+improvement and it is also a change in what a static export contains, so the pack map
+and the region resolver lost that region together rather than one at a time. The
+resolver still names two regions for the chrome, `header.brand` and `footer.brand`,
+because the wordmark is still on the page at first paint; the switcher's rule was not
+moved anywhere, it was deleted, and `test/pack-map.test.tsx` now expects one second-pack
+region instead of two. The bar is sticky because a nine-band page should keep its only
+persistent route back to the docs.
+
+**Search is a static index, because this site is a static export.** There is no server
+to ask, so `app/api/search/route.ts` prerenders an index of thirty-five entries: the
+twenty-seven documents with their section's declared title as a breadcrumb, the four
+posts, and four pages of this site's own. The dialog fetches it when it opens and
+filters in the browser. It is about 76 KB of prose and one request, and a search box
+that fetched per keystroke would have been the first runtime this site had. The bar's
+mode control is the one other piece of state, and it is the design system's: a stored
+choice applied by the same `PrismThemeScript` that was already in `<head>` before this
+migration.
 
 ## How it is put together
 
@@ -50,9 +71,11 @@ app/sitemap.ts        the map a crawler is given, built from the corpus
 app/robots.ts         what a crawler is told
 app/blog/…            the blog index (site's own) and the blog post (the catalogue's)
 app/docs/…            the section index (site's own) and the documentation screen (the catalogue's)
-components/site-chrome.tsx  the header, the main, the footer, and the current page
+app/api/search/route.ts  the search index, prerendered because the export has no server
+components/site-chrome.tsx  the bar, the main, the footer, and the current page
 lib/site.json         the ground, the default mode, the product directory
 lib/site.ts           those facts, typed by the design system's pack vocabulary
+lib/bar.ts            the bar's own data and every word it prints
 lib/landing-content.ts every word of the landing, as data
 lib/to-prism-tree.ts  the content pipeline's page tree, as the documentation Page's data
 scripts/              the gates, the pack map, the parity expectations, the browser lane
@@ -86,12 +109,15 @@ server-rendered boundary has no mode class of its own. So a boundary belongs on 
 rounded mark and nowhere else, and a page that put a second pack on a section would be
 encoding its section index in its corner radius. All five light grounds are the same
 white and the five dark grounds span about three steps of near-neutral, so a section
-ground buys almost nothing and costs a shape change. The map says where two regions may
+ground buys almost nothing and costs a shape change. The map says where a region may
 carry a second pack; the gate says the count and the identifiers, in both modes, and a
-third region fails the build. One of those two regions is named `landing.products`,
-after the Block that draws the rows, because the other reading of it was an ordinal the
+second region fails the build. The one region left is named `landing.products`, after
+the Block that draws the rows, because the other reading of it was an ordinal the
 page printed above its own heading, and a page that renumbers itself would then have
-renamed a region a gate was holding it to.
+renamed a region a gate was holding it to. The other region that once sat beside it is
+the family's menu, and it is not declared because a closed menu is not in the export
+the gate reads. That is a limit of the reader rather than a fact about the page, which
+is why the browser lane below is the half that can open it.
 
 ## Develop
 
@@ -175,7 +201,7 @@ rather than half-done. A dash in a code span or a table of the corpus is not pro
 is not what this rule is about.
 
 **One name per door.** `/docs` is "Read the docs" in the hero, in the closing band and
-on the About page, and "Docs" in the header and the footer, which are two different
+on the About page, and "Docs" in the bar and the footer, which are two different
 things: a navigation label and a call to action. `/blog` is "Follow the build" in all
 three. The footer publishes the repository once, in a column, rather than as a column
 link and a social link at once.

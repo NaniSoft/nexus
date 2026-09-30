@@ -38,7 +38,7 @@ Two things on this site are the site's own composition rather than catalogue ite
 
 The blog list keeps its own design, and that is exactly why blog lists stay site content.
 
-A third thing is site content in a smaller way: the chrome. `components/site-chrome.tsx` composes the header, the `<main>` and the footer, and each page renders it with the page it is serving, because a root layout is not told its own pathname and a header that cannot be told cannot mark the reader's place. That is a server render reading its own route, not a client boundary, and `test/server-only.test.ts` is what holds it at zero.
+A third thing is site content in a smaller way: the chrome. `components/site-chrome.tsx` composes the bar, the `<main>` and the footer, and each page renders it with the page it is serving, because a root layout is not told its own pathname and a bar that cannot be told cannot mark the reader's place. The bar itself is the design system's `SiteNavbar`, so this repository supplies data and copy and nothing else. That is a server render reading its own route, not a client boundary, and `test/server-only.test.ts` is what holds it at zero: the bar's menu, mode control and search dialog are client components inside the pinned package, not a boundary drawn here.
 
 ## Wayfinding
 

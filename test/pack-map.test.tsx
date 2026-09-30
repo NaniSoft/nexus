@@ -47,29 +47,33 @@ function wholePage() {
  * Every boundary on the page, with the region it belongs to.
  *
  * The same rule the built-export gate uses, so a region that is named differently here
- * and there is a difference one of the two readers would have to explain: a mark in the
- * switcher, a mark in a brand lockup, and a mark inside the block that draws the
- * platform rows. A boundary belonging to none of those is `unnamed`, which no entry
- * in the map may name, so a mark outside the three regions fails here rather than
- * being counted towards one that happens to match.
+ * and there is a difference one of the two readers would have to explain: a mark in a
+ * brand lockup, a mark in the footer, and a mark inside the block that draws the
+ * platform rows. A boundary belonging to none of those is `unnamed`, which no entry in
+ * the map may name, so a mark outside the three regions fails here rather than being
+ * counted towards one that happens to match.
  *
  * The last of those used to be named after the ordinal its own band printed above its
  * heading, so the map held `landing.05` and the gate would have failed the moment the
  * page stopped numbering its sections, which is the wrong reason for a pack gate to
  * fail.
+ *
+ * The switcher's rule is gone from both this copy and `scripts/pack-regions.mjs`, and
+ * not because the marks moved somewhere harmless: the family's five sites are a menu
+ * now, and a menu nobody has opened is not in the static export the gate reads. So the
+ * two readers agree on a smaller set rather than one of them quietly keeping a rule
+ * for an element the page stopped publishing.
  */
 function boundaries(container: HTMLElement) {
   return [...container.querySelectorAll('[data-pack]')].map((element) => ({
     pack: element.getAttribute('data-pack') ?? '',
-    region: element.closest('[data-slot="product-switcher"]')
-      ? 'header.switcher'
-      : element.closest('header')
-        ? 'header.brand'
-        : element.closest('footer')
-          ? 'footer.brand'
-          : element.closest('[data-slot="product-grid"]')
-            ? 'landing.products'
-            : 'unnamed',
+    region: element.closest('header')
+      ? 'header.brand'
+      : element.closest('footer')
+        ? 'footer.brand'
+        : element.closest('main [data-slot="product-grid"]')
+          ? 'landing.products'
+          : 'unnamed',
   }));
 }
 
@@ -96,13 +100,18 @@ describe('the pack map', () => {
     }
   });
 
-  it('has exactly two regions carrying a pack that is not the ground', () => {
+  it('has exactly one region carrying a pack that is not the ground', () => {
     const container = wholePage();
     const second = boundaries(container)
       .filter((boundary) => boundary.pack !== map.ground)
       .map((boundary) => boundary.region);
     expect([...new Set(second)].sort()).toEqual([...map.secondPackRegions].sort());
-    expect(new Set(second).size).toBe(2);
+    // One, not two. The second used to be `header.switcher`, which held the family's
+    // five marks: the ground repainted above the fold of every page, and the reader
+    // arriving at the docs for a work item was told they were somewhere else first.
+    // The family is a menu now, and a closed menu is not in the export this reads, so
+    // there is no second region to declare and no assertion to loosen.
+    expect(new Set(second).size).toBe(1);
   });
 
   it('puts every boundary on a mark, and the mark on a fully rounded shape', () => {

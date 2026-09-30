@@ -16,5 +16,8 @@ next-env.d.ts
 # local scratch - never committed
 .scratch/
 
+# local agent config - never committed
+.opencode/
+
 # misc
 .DS_Store
