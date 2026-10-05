@@ -125,6 +125,17 @@ export const LOOP = {
  * The stage bodies are a sentence each and a node mark is a name, so the figure
  * takes the clause that says who does the work rather than the sentence that
  * explains it. The full sentence is a card in the section above, one scroll away.
+ *
+ * **A clause here is also a width, and the width is the caller's.** `PulseGraph`
+ * prints each note centred under its own mark on a lane `LOOP_FIGURE_SPAN` below
+ * sets, and it says plainly that it cannot know whether two of a caller's labels
+ * will collide. `lib/figure` publishes the face's own advance as `MONO_ADVANCE`,
+ * 0.6 of the type size, so at the 12 units a note is drawn at one character is 7.2
+ * units wide and the two longest clauses that share a lane are `fresh, every time`
+ * at 17 and `the agent works` at 15: together 115.2 units of half-widths, which is
+ * what a lane has to be before those two can sit in it at all. That budget is the
+ * whole reason the geometry below is what it is, so a longer clause is a shorter
+ * span rather than a wider drawing.
  */
 const LOOP_FIGURE_NOTES = [
   'a repository',
@@ -135,23 +146,75 @@ const LOOP_FIGURE_NOTES = [
 ] as const;
 
 /**
+ * The figure's geometry, which is two numbers and the span between them.
+ *
+ * The canvas is a fixed sixteen-by-nine, and `PulseGraph` fits the caller's box into it
+ * with one uniform scale and no stretch, so neither number below is where anything lands
+ * on the page. They are a span: `fitPoints` takes the caller's own smallest and largest
+ * of each axis and maps them onto the fitted rectangle, so whichever node holds the
+ * smallest `y` renders at the top of that rectangle and whichever holds the largest
+ * renders at its foot, and the only number that changes the picture is the distance
+ * between the two.
+ *
+ * **The span was 0.54 and the three node notes printed over one another.** A fitted box
+ * is `min(roomX / spanX, roomY / spanY)`, and `spanX` is 1 because the five stages run
+ * the full width, so the lane pitch is `roomY / spanY / 4`. At 0.54 that is 180.25 /
+ * 0.54 / 4 = 83.4 units, against 115.2 units of half-widths for the widest adjacent
+ * pair: measured on the built export, `fresh, every time` and `the agent works` overlapped
+ * by 22.51 units, `the agent works` and `a person decides` by 18.82, and `a repository`
+ * and `fresh, every time` by 12.63.
+ *
+ * **What the drawing's width cannot buy, and what the panel's width cannot either.**
+ * `PulseGraph` holds the drawing at its own 640-unit coordinate space with `min-w-160`,
+ * and the panel it sits in is `Hero01`'s `lg:grid-cols-[5fr_6fr]` column, which measured
+ * 459px of container at 1024 and 529px from 1152 up. The container therefore carries
+ * `640 - holder` of horizontal scroll at every one of those widths whatever the span is:
+ * 181px at 1024 and 111px from 1152 up, measured identically at 0.54 and at the 0.36
+ * below. That part is not this page's to remove. What the span does decide is how much
+ * of the drawing falls inside the window a reader sees before touching it, and at 0.54
+ * all of it did: the ink ran from canvas 113.5 to 510.0, inside 529. So the old figure
+ * never needed scrolling, and it also never fit its own labels.
+ *
+ * `0.36` puts the lane pitch at 180.25 / 0.36 / 4 = 125.17 units: 9.97 clear of the
+ * 115.2 the widest adjacent pair needs, which is more than the 7 units of `INK_CLEARANCE`
+ * the design system keeps between two pieces of ink in one of its own drawings, and 2.97
+ * beyond that rule rather than sitting on it. It is the largest round span that keeps
+ * every note clear by that standard. The cost is that the ink now runs to canvas 593.4,
+ * which is 64.4 units past the 529px edge at 1440 and 134.4 past the 459px edge at 1024,
+ * so the fifth stage is off the panel at those widths and reachable by the scroll that
+ * was always there.
+ *
+ * **Why not the span that shows all five and stops there.** A lane of 112.45 is what
+ * keeps `shipped` inside 529px, and against Prism's own 7.2 units a character that is
+ * legible at the platform measured here and overprinting on every platform that is not:
+ * Menlo and SF Mono advance 0.6em and Consolas 0.5525em, so a lane sized on Consolas
+ * collides on a Mac. A label collision is a rendering bug and a clipped stage is a scroll,
+ * and a scroll is the cheaper of the two at every width.
+ *
+ * Nothing was deleted to buy any of it: the same five stages, the same five notes in the
+ * same words and the same relation from the board to the review stage, on the same 640 x
+ * 360 canvas in the same panel.
+ */
+const LOOP_STAGE_Y = 0.62;
+const LOOP_FIGURE_SPAN = 0.36;
+const LOOP_OBSERVER_Y = LOOP_STAGE_Y - LOOP_FIGURE_SPAN;
+
+/**
  * The observer, which reads the loop and does not change it.
  *
  * It is drawn above the middle of the rail rather than above the review stage, and
- * the reason is geometry rather than semantics. The figure's canvas is a fixed
- * sixteen-by-nine and the graph fits its own box into it, so a drawing with one row
- * of nodes collapses into a thin band with more dead canvas than line, and a
- * drawing with one node off the rail on the right leaves the whole top left of the
- * panel empty. A node above the middle fills the top of the box, leaves two corners
- * rather than one hole, and still reads as what it is: something above the loop,
- * looking down at it.
+ * the reason is geometry rather than semantics. A drawing with one row of nodes
+ * collapses into a thin band with more dead canvas than line, and a drawing with one
+ * node off the rail on the right leaves the whole top left of the panel empty. A node
+ * above the middle fills the top of the box, leaves two corners rather than one hole,
+ * and still reads as what it is: something above the loop, looking down at it.
  */
 const LOOP_OBSERVER = {
   id: 'watchers',
   name: 'watchers',
   note: 'the board',
   x: 1 / 2,
-  y: 0.08,
+  y: LOOP_OBSERVER_Y,
 } as const;
 
 /**
@@ -185,7 +248,7 @@ export const LOOP_FIGURE = {
       name: stage.title.toLowerCase(),
       note: LOOP_FIGURE_NOTES[index],
       x: index / (LOOP.stages.length - 1),
-      y: 0.62,
+      y: LOOP_STAGE_Y,
       lane: index,
       emphasis: index === 2,
     })),

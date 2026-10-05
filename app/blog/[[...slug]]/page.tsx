@@ -4,9 +4,11 @@ import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { BlogPostPage } from '@nanisoft/prism-ui/pages';
 
+import { PostDate } from '@/components/post-date';
 import { SiteChrome } from '@/components/site-chrome';
 import { StatusNote } from '@/components/status-note';
 import { getMdxComponents } from '@/lib/mdx-components';
+import { displayDate, isoDate } from '@/lib/post-date';
 import { blogSource } from '@/lib/source';
 
 // Optional catch-all: `/blog` renders the reverse-chronological index,
@@ -69,6 +71,13 @@ const TRAIL_LABELS = { previous: 'Previous', next: 'Next' } as const;
  * separators on one line and the line read as a sentence with a date in it. The date
  * and the tags are now two rows in one band, with the gap between them doing the work
  * a glyph was doing, and a tag is a tag rather than a fragment of a list.
+ *
+ * **The date is two strings on both screens, and it used to be one on both.** This
+ * index printed the frontmatter's own value as the text of its `time` element, and the
+ * post Page below was handed that same value as both its display date and its
+ * `dateTime`. `lib/post-date.ts` is where the pair now lives, and
+ * `components/post-date.tsx` is the element this index prints, so the two halves of the
+ * claim can be asserted against a render rather than read off a source file.
  */
 function BlogIndex(): ReactElement {
   const posts = published();
@@ -87,7 +96,7 @@ function BlogIndex(): ReactElement {
             </Link>
             <p className="site-blog-list__description">{post.data.description}</p>
             <p className="site-blog-list__meta">
-              <time dateTime={post.data.date}>{post.data.date}</time>
+              <PostDate value={post.data.date} />
               {post.data.tags.length > 0 && (
                 <span className="site-blog-list__tags">
                   {post.data.tags.map((tag) => (
@@ -132,8 +141,8 @@ export default async function BlogPage({ params }: PageProps): Promise<ReactElem
       <BlogPostPage
         title={page.data.title}
         description={page.data.description}
-        date={page.data.date}
-        dateTime={page.data.date}
+        date={displayDate(page.data.date)}
+        dateTime={isoDate(page.data.date)}
         tags={page.data.tags.map((label) => ({ label }))}
         trailLabels={TRAIL_LABELS}
         trailLabel="Build log"

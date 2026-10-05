@@ -61,11 +61,13 @@ describe('the site has no client code', () => {
       'app/page.tsx',
       'app/robots.ts',
       'app/sitemap.ts',
+      'components/post-date.tsx',
       'components/site-chrome.tsx',
       'components/status-note.tsx',
       'lib/bar.ts',
       'lib/landing-content.ts',
       'lib/mdx-components.ts',
+      'lib/post-date.ts',
       'lib/site.ts',
       'lib/source.ts',
       'lib/to-prism-tree.ts',
@@ -119,8 +121,12 @@ describe('the site has no client code', () => {
   it('reads no custom property the design system does not declare', () => {
     // The dead-alias shape, as an assertion over the whole sheet rather than over the
     // two rules that were known to be broken. Every `var(--name)` in this sheet must
-    // name a property the emitted stylesheet declares, or the property the sheet
-    // declares, or one of the two the site owns by an argument stated at the read.
+    // name a property the emitted stylesheet declares, or a property the sheet itself
+    // declares. There is no third list and no allowance any more: this sheet used to
+    // read `--font-inter`, the variable a `next/font` call put on the document element
+    // at build time, and a custom property nothing on disk declares is exactly the
+    // shape this law is about, so exempting it here would have been exempting the
+    // defect from its own assertion.
     //
     // Comments are blanked first, for the same reason the gate blanks them: a comment
     // that names a property in order to say it resolves to nothing is prose about a
@@ -134,10 +140,7 @@ describe('the site has no client code', () => {
     const emitted = new Set(
       names(readFileSync(path.join(ROOT, 'node_modules', '@nanisoft', 'prism-ui', 'dist', 'styles.css'), 'utf8')),
     );
-    // `--font-inter` is the class next/font puts on the document element at build
-    // time, so it is declared by the build and not by a stylesheet on disk.
-    const supplied = new Set(['--font-inter']);
-    const dead = [...read].filter((name) => !owned.has(name) && !emitted.has(name) && !supplied.has(name));
+    const dead = [...read].filter((name) => !owned.has(name) && !emitted.has(name));
     expect(dead, `a custom property this sheet reads and nothing declares: ${dead.join(', ')}`).toEqual([]);
   });
 });

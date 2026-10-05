@@ -58,34 +58,47 @@
  */
 
 /*
- * The one thing this sheet declares that is not a site class: the design system's
- * first family, supplied.
+ * The document is a column, and `main` is the part of it that grows.
  *
- * prism's emitted sheet declares `--font-sans: Inter, ui-sans-serif, system-ui, ...`
- * and ships no font file, so the first entry is a name nothing resolves to and every
- * page on the site renders in the platform's UI face. This supplies the file the token
- * already names and repeats prism's own fallback list verbatim behind it, so the design
- * system's intent is unchanged and only its first entry becomes real.
+ * `main` used to be padded to a whole viewport instead, which is a sticky footer
+ * stated backwards. Measured on `/404` at 1440 by 900: the bar is 57px, `main`
+ * resolves to 900px, and the footer's top edge lands at 957px, so the page whose
+ * only job is to offer a way out keeps that way 57px below the fold. `/docs` and
+ * `/blog` carry 200px to 290px of the same dead space above their footers. A document
+ * at least one viewport tall, with `main` growing into whatever the bar and the footer
+ * do not use, puts the footer's bottom edge on the viewport's bottom edge instead, and
+ * leaves a page taller than the viewport entirely alone. The landing was never short
+ * enough for the old rule to bite, which is why nine bands of it went unread as the
+ * same page.
  *
- * It is a custom property rather than a `font-family` on a bare element on purpose:
- * a site stylesheet must not declare `font-family` on a selector with no class in it,
- * because prism's base is layered and this sheet is not. A token is not that.
+ * **The cascade was read rather than assumed.** The design system's own `body` rule
+ * sits inside `@layer base` of `@nanisoft/prism-ui/styles.css`, and this sheet is
+ * unlayered, so a bare-element rule here outranks it at any specificity: the old
+ * class rule was never in competition with anything, and neither is this one. Prism
+ * declares four properties on `body` in that layer, `background-color`, `color`,
+ * `font-family` and `-webkit-font-smoothing`, and none of the three below. The seven
+ * a bare element may not declare here are exactly the seven Prism's base layer
+ * declares, and `display`, `flex-direction` and `min-height` are none of them.
  *
- * The family itself is not this site's to choose. Prism declares Inter as the first
- * family of its own token and four repositories render from it, so this site supplies
- * the file rather than selecting the face, and a redesign of the landing does not get
- * to be the place a shared design system gets a new typeface.
+ * `<body>` has three children that participate in layout, in this order: the bar, the
+ * `main` and the footer. Next's placeholder `<div hidden>` and its `<script>` tags
+ * are `display: none` from the browser's own sheet and neither this one nor Prism's
+ * touches them, so neither is a flex item and neither takes a line of the column.
  */
-
-:root {
-  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
+/*
+ * `1 0 auto` rather than `1`: a shrink factor of 1 against a zero basis would let a
+ * page taller than the viewport be compressed to fit the column, and `auto` rather
+ * than an omitted basis so nothing here depends on `min-height: auto` resolving to a
+ * content floor.
+ */
 .site-main {
-  /* Keeps the footer below the fold on a short page. Layout, so it is a class rule
-     and not a bare-element one, and it competes with nothing prism declares. */
-  min-height: 100dvh;
+  flex: 1 0 auto;
 }
 
 /* ---------- The standing status note, the docs' one honesty device ---------- */
@@ -235,9 +248,31 @@
   background-color: var(--card);
 }
 
+/*
+ * The hover is a wash, because a 1px repaint of a hairline is not an affordance.
+ *
+ * The card used to answer a pointer by changing `border-color` from `--border` to
+ * `--primary` and nothing else. That is a one-pixel change whose two values sit 1.79:1
+ * apart in this pack's light mode (`#bc97e7` against `#dfdde2`), on an edge that is
+ * itself 1.35:1 against the card behind it, so the whole of the answer to "which card
+ * am I on" was a hairline resolving by less than a fifth of a contrast step.
+ *
+ * `--accent` is the in-family precedent and the design system's own answer for every
+ * hover it draws: every nav link, every button and the mark on this site's own bar use
+ * `hover:bg-accent`, and the sibling company's identity links do the same. The card's own
+ * border is left where it is, at rest and on hover, so the card keeps its own edge and
+ * the wash is what moves. The strength of the wash is the design system's choice and not
+ * a number this site sets; what this site does own is that the ink survives it, and in
+ * this pack it does in both modes: light is `#2f2d31` on `#f2e8ff` at 11.53:1 for the
+ * title and `#5c5960` on `#f2e8ff` at 5.82:1 for the blurb, against 13.63:1 and 6.88:1
+ * at rest. Dark is `#edecf0` on `#50316f` at 8.88:1 and `#ccc9d0` on `#50316f` at
+ * 6.38:1, against 11.59:1 and 8.33:1 at rest. Four ratios read off the emitted sheet
+ * rather than out of a browser, `test/site-sheet.test.tsx` asserts them, and
+ * `scripts/check-cascade.mjs` resolves the same pair in a real one.
+ */
 .site-catalog__item:hover {
   text-decoration: none;
-  border-color: var(--primary);
+  background-color: var(--accent);
 }
 
 .site-catalog__item strong {
@@ -331,7 +366,27 @@
 
 /* ---------- The About page's fact list and its way out ---------- */
 
+/*
+ * The fact list, held to the measure of the prose it interrupts.
+ *
+ * It is the one box on the About page that ignored the reading measure. `Section` is
+ * a `max-w-page` column and `FactList` is `w-full`, so the list took the full 1152px
+ * while the prose above and below it is held at `--container-measure` by
+ * `.site-measure`, which measured 672px. Its rows are `justify-between` with a 24px
+ * gap, so the widest row put `Orchestration` at x=177 and its definition against
+ * x=1265: 950px of empty track between a term and the sentence that defines it, and
+ * two left edges on the page that do not agree with each other. A definition list
+ * whose halves are a screen apart is read as two columns of unrelated text.
+ *
+ * The same token the prose beside it already reads, rather than a number here, so the
+ * two cannot drift: if the design system's measure moves, both move.
+ *
+ * Nothing about the list's own arrangement changed. Its rows, its hairlines, its
+ * `dt`/`dd` pairing and its type are `FactList`'s, and the list is still the widest
+ * thing on the page at the size where the widest definition needs the room.
+ */
 .site-about__facts {
+  max-width: var(--container-measure);
   margin: 2.5rem 0;
 }
 

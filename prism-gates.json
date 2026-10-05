@@ -32,10 +32,7 @@
   ],
   "stylesheet-ownership": {
     "sheets": ["app/globals.css"],
-    "minDeclarations": 20,
-    "supplied": {
-      "--font-inter": "declared by next/font at build time as a class on the document element"
-    }
+    "minDeclarations": 20
   },
   "links": {
     "outDir": "out",

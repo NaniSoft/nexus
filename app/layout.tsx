@@ -1,4 +1,3 @@
-import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -45,25 +44,17 @@ export const metadata: Metadata = {
   },
 };
 
-// The design system's own first family, and the only font file this site loads.
+// The typeface is the design system's, and this file loads none.
 //
-// `--font-sans` in prism's emitted sheet reads `Inter, ui-sans-serif, system-ui, ...`.
-// Naming a family is not shipping it, so a site that loads nothing renders in the
-// platform's UI face, which is the one face a design system never means by its first
-// choice. The fallback list prism declares is kept verbatim behind this one, so
-// nothing about the design system's intent changes; the only difference is that its
-// first entry is now a file rather than a name.
-//
-// The typeface is not this site's to choose. The design system declares Inter as the
-// first family of its own token, and a site that substituted a different file would be
-// overriding a decision four repositories share, in the one repository whose job is
-// to publish the design rather than to argue with it. The file is therefore supplied,
-// not selected.
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
+// `@nanisoft/prism-ui/styles.css` ships the four `@font-face` rules and the woff2
+// binaries behind them beside the `--font-sans` token that names Inter, so importing
+// the one stylesheet is importing the face. This site used to supply its own Inter
+// through `next/font/google` back when the pinned package shipped none, and the
+// supply outlived its reason: it downloaded 214 KB of a typeface the design system
+// already ships, and it needed the `:root { --font-sans: ... }` override in
+// `app/globals.css` to be the family that won, which is a second answer to a
+// question the design system already answers. Both are gone. Nothing downstream of
+// this import loads Inter.
 
 /**
  * The document: the two theme attributes, one blocking script, and the page.
@@ -87,22 +78,19 @@ const inter = Inter({
  * navigating by landmark cannot tell apart. The header's own navigation is the "Site"
  * its footer already groups under, and the switcher is the set of products it moves
  * between.
+ *
+ * **The attributes are the only thing spread on `<html>`, and nothing beside them
+ * names a `className`.** `themeAttributes()` returns the mode as `className`, and a
+ * spread does not merge with a named prop: whichever is written last wins outright, so
+ * a second `className` on this element silently replaces the mode class or is
+ * silently replaced by it, and neither is an error at build. This site lost its font
+ * to exactly that race once, when the font's own class was written here and the mode
+ * took it. Nothing else needs a `className` on the document element now, so the
+ * element carries the spread and nothing else.
  */
-// The theme's two attributes, and the font's one class name, are both a `className`.
-// `themeAttributes` returns `className` for the mode, and a spread after a named prop
-// replaces it rather than merging it, so writing `className={inter.variable}` and then
-// spreading the attributes drops the font class and keeps the mode. The page then
-// renders in the platform's UI face with no error anywhere: the woff2 subsets are
-// preloaded, the `@font-face` rules ship, and the class that declares
-// `--font-inter` is on no element, so `--font-sans` is invalid at computed-value time
-// and the whole first family of the design system resolves to nothing. That is the
-// same failure the dead-alias assertion in the stylesheet-ownership gate in `@nanisoft/prism-ui/gates`
-// is about, arrived at from the other end, and the gate checks it from the export.
-export const HTML_CLASS = [inter.variable, THEME_ATTRIBUTES.className].filter(Boolean).join(' ');
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" {...THEME_ATTRIBUTES} className={HTML_CLASS} suppressHydrationWarning>
+    <html lang="en" {...THEME_ATTRIBUTES} suppressHydrationWarning>
       <head>
         {/* Before paint, on the same attributes the server rendered: a stored choice
             is applied and a stored value that no longer parses is left in place, so

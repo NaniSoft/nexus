@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@nanisoft/prism-ui':
-        specifier: 0.13.0
-        version: 0.13.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: 0.16.1
+        version: 0.16.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       fumadocs-core:
         specifier: ^16.15.12
         version: 16.15.12(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.3.0)(lucide-react@0.545.0(react@19.3.0))(next@16.3.5(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@10.2.2)(zod@4.6.5)
@@ -717,14 +717,17 @@ packages:
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
 
-  '@nanisoft/prism-tokens@0.10.0':
-    resolution: {integrity: sha512-fhpvSuiSZqSm+BlSFBPWXS4nVipLOMk4Js9zW0r1CkcXuuKQ/RTkL+qMsNip/Ob5TTODgeqCW87jCGA/bzyppg==}
+  '@nanisoft/prism-tokens@0.16.0':
+    resolution: {integrity: sha512-1gMRtQT0sw9NOoi43dWwFNYP4MI053mPfPYZyopvxWPQ0r6KZBSYtmUnR/JQccCBOoiwRJ5KnkD/Mn1yNChPWw==}
     engines: {node: '>=22.14.0'}
 
-  '@nanisoft/prism-ui@0.13.0':
-    resolution: {integrity: sha512-L7CnRBeEaCMEajYmdjTIqJkWv3xS5P09i+8NtNCySdodBkV7RVYGU+je5G2zI9hhuc/9zfgspb08N54rZ9BNAw==}
+  '@nanisoft/prism-ui@0.16.1':
+    resolution: {integrity: sha512-zUDF04uHL10ZL3Ez8Fedtx4PvS0t/bLMWJOuDuuVcyELHD15ucVhtY+AALkftvektg7HCMqis0u5WaE6r5njAg==}
     engines: {node: '>=22.14.0'}
     hasBin: true
+    peerDependencies:
+      react: ^19.2.0
+      react-dom: ^19.2.0
 
   '@next/env@16.3.5':
     resolution: {integrity: sha512-NWEXVDMqoEo0ktmU6u0sE2Vg0LOcsD7NnOTJNo3/fEaTfsg+F1bMIxuDmQbda4e3yTIQwVdUREF2yIuMOusKtg==}
@@ -2900,22 +2903,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nanisoft/prism-tokens@0.10.0': {}
+  '@nanisoft/prism-tokens@0.16.0': {}
 
-  '@nanisoft/prism-ui@0.13.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@nanisoft/prism-ui@0.16.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@base-ui/react': 1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@nanisoft/prism-tokens': 0.10.0
+      '@nanisoft/prism-tokens': 0.16.0
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       lucide-react: 0.545.0(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
       tailwind-merge: 3.7.0
     transitivePeerDependencies:
       - '@date-fns/tz'
       - '@types/react'
       - date-fns
-      - react
-      - react-dom
 
   '@next/env@16.3.5': {}
 

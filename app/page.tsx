@@ -6,6 +6,7 @@ import { Hero01 } from '@nanisoft/prism-ui/blocks/hero-01';
 import { InstrumentPanel01 } from '@nanisoft/prism-ui/blocks/instrument-panel-01';
 import { LogoStrip01 } from '@nanisoft/prism-ui/blocks/logo-strip-01';
 import { NoteGrid01 } from '@nanisoft/prism-ui/blocks/note-grid-01';
+import { ProcessFlow01 } from '@nanisoft/prism-ui/blocks/process-flow-01';
 import { ProductGrid01 } from '@nanisoft/prism-ui/blocks/product-grid-01';
 import { StackGrid01 } from '@nanisoft/prism-ui/blocks/stack-grid-01';
 import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
@@ -68,9 +69,11 @@ import { product } from '@/lib/site';
  * a prop these blocks do not expose. A number above a heading is only meaningful
  * beside the heading it counts, and a reader arriving at `03` from a search result
  * has no idea what three was counting. What the numbers were actually carrying is
- * still there: the five stages are numbered, because five stages in an order is a
- * sequence, and the eight capabilities are not, because eight capabilities are a set
- * and a number on a card would claim otherwise.
+ * still there, and it is now the design system's own continuity mechanism rather than
+ * a prop: the flow draws `01` to `05` down the five stages because a wrapped sequence
+ * is only legible if a reader who lands on stage four can see that it continues
+ * stage three, and the eight capabilities carry nothing because eight capabilities
+ * are a set.
  *
  * **One band carries a second pack, and it is in `scripts/pack-map.json`.** The three
  * product rows in the last section, and the header's switcher. Every one of those
@@ -80,12 +83,69 @@ import { product } from '@/lib/site';
  * 0.5rem to 1rem, so a section wearing another pack would put that section's
  * index into its corner radius.
  *
- * **Two gaps remain, both filed, neither worked around silently.** `ProcessRail01`
- * admits two, three or four steps and refuses five in the type, and the loop has five,
- * so the stages are a numbered feature grid (prism#107). `FeatureGrid01`'s card titles
- * are not headings, so the loop and the capability grid lose their `h3`s and the
- * page's outline is shallower than it should be (prism#109).
+ * **Nine bands and nine shapes, and the one thing that made two of them the same is
+ * gone.** Every band on this page is a `max-w-page` column with a left-aligned
+ * `SectionHeading` on the design system's own `py-16 sm:py-24`, and six of the nine carry
+ * that padding as the identical class string. That frame is not this site's to change:
+ * `Section` owns it and every Block composes it, so a band cannot leave it without
+ * restyling a catalogue item. What was inside the frame was, and that is the only lever
+ * a consumer has. Measured on the built export at 1440 before the repair: three bands
+ * drawing twenty-five identical `[data-slot="card"]` boxes (five loop stages, eight
+ * capabilities, eight stack parts and four in-house parts), a fourth drawing four
+ * hairline notes, a five-row-worth ledger of seven, and three marked product rows. The
+ * loop's five stages and the eight capabilities were in the same two-column grid of
+ * 532.00px tracks. Read as a page that is one section repeated six times, which is what
+ * bland is when a stylesheet is not at fault.
+ *
+ * The lever is spent once, on the loop: five stages in an order are a sequence, and a
+ * sequence five long cannot be a rail (`ProcessRail01` holds two, three or four and a
+ * five-element array is a compile error, deliberately) and should not be a
+ * grid of cards. `ProcessFlow01` is the shape the catalogue draws a wrapping sequence
+ * in, and its own note says why it exists: a rail that quietly dropped a stage to fit a
+ * width would be a diagram of a process that is not the process. So the loop stopped
+ * being five cards and became five stages on a thread, and the 532.00px of empty track
+ * that used to sit beside a bordered "Merge" card is now 363.00px of unwritten track
+ * with no box in it or around anything near it. The nine bands now draw nine different
+ * families: a split hero, a strip, a flow, a definition list, a two-column card grid, a
+ * four-column survey grid, a ledger, marked rows, and a filled panel.
+ *
+ * **Three gaps remain, all recorded, none worked around silently.** `NoteGrid01` puts
+ * four notes in three columns at `lg`, so the fourth sits beside an empty 341.33px
+ * track above `sm`'s two, against the Block's own note that four notes is the
+ * comfortable case. `StackGrid01` draws its eight parts and its four in-house parts as
+ * two grids of the same 263.00px shape, which is the Block's own arrangement and not a
+ * composition, and its type floors are being lifted in the package. And
+ * `FeatureRows01` was measured and rejected for the eight capabilities
+ * rather than used for them: a row with no media still renders `lg:grid-cols-2`, so
+ * eight of them would put eight empty 512.00px tracks beside eight copy columns, which is
+ * the defect being repaired eight times over instead of once.
+ *
+ * None of the three is filed upstream, and this repository does not file them: a consumer
+ * holds data, and an issue filed from here would name a Block's arrangement in a
+ * repository that has never read this page.
  */
+
+/**
+ * The flow's own two layout props, and the arithmetic that chose them.
+ *
+ * Five stages divide by nothing but one, so every column count leaves a partial last
+ * line, and the count is therefore a choice between which partial line is least empty
+ * rather than a way of avoiding one. At 1440 the container is `min(1440, 72rem) - 2 x
+ * 2rem` = 1088px, and the flow separates its columns by the single pixel the Block
+ * calls a thread rather than by a gap. Three columns leave a last line of two stages
+ * beside 363.00px of unwritten track; two leave one stage beside 544.50px; four leave
+ * one beside 816.75px. Three is the smallest of the three, it is the Block's own
+ * default, and it is the only one of them whose first line holds three stages rather
+ * than two or four. The unwritten track is not a void a card could have sat in: the
+ * flow draws no box around any stage, so the last line is two more stages on a thread
+ * rather than two cards and a hole.
+ *
+ * `finalLabel` names the state the flow ends in. The loop's last stage is Merge, and
+ * `merged` is the word for the state rather than for the stage, which is the whole of
+ * what the prop is for.
+ */
+const LOOP_FLOW_COLUMNS = 3;
+const LOOP_FLOW_FINAL_LABEL = 'merged';
 
 export default function Landing(): ReactElement {
   return (
@@ -115,12 +175,12 @@ export default function Landing(): ReactElement {
       <LogoStrip01 items={[...TICKER]} label={TICKER_LABEL} />
 
       {/* The loop. Five stages, in order, and the four guarantees under them. */}
-      <FeatureGrid01
+      <ProcessFlow01
         title={LOOP.label}
         description={LOOP.lede}
-        variant="bare"
-        numbered
-        features={LOOP.stages.map((stage) => ({ title: stage.title, body: stage.body }))}
+        columns={LOOP_FLOW_COLUMNS}
+        finalLabel={LOOP_FLOW_FINAL_LABEL}
+        stages={LOOP.stages.map((stage) => ({ name: stage.title, description: stage.body }))}
       />
       <NoteGrid01
         title={LOOP.notes.label}

@@ -93,21 +93,64 @@ describe('the landing', () => {
     const container = renderLanding();
     // Five bands used to open with a bare `01` through `05` pushed through the
     // `eyebrow` prop. What those numbers were actually carrying survives in the one
-    // place it belongs: the five stages of the loop are numbered, because five stages
-    // in an order are a sequence, and the eight capabilities are not, because eight
-    // capabilities are a set.
+    // place it belongs, and it is now the design system's own continuity mechanism:
+    // the five stages of the loop are numbered because five stages in an order are a
+    // sequence, and nothing else on the page is, because the eight capabilities are a
+    // set and a number on one would claim otherwise.
     const ordinals = [...container.querySelectorAll('main section span')]
       .filter((node) => /^\d{2}$/.test(node.textContent?.trim() ?? ''))
-      // A stage's own number is the sequence being claimed, and it belongs on the card.
+      // A stage's own number is the sequence being claimed, and it belongs on the stage.
+      .filter((node) => !node.closest('[data-slot="process-stage"]'))
+      // A card's number would claim the card is part of a sequence. None is.
       .filter((node) => !node.closest('[data-slot="card"]'));
     expect(ordinals, 'a bare number is printed above a section heading').toEqual([]);
-    const cards = [...container.querySelectorAll('[data-slot="card"]')];
-    const numbered = cards.filter((card) => /^\d{2}$/.test(card.textContent?.trim().slice(0, 2) ?? ''));
+    const numberedCards = [...container.querySelectorAll('[data-slot="card"]')].filter((card) =>
+      /^\d{2}$/.test(card.textContent?.trim().slice(0, 2) ?? ''),
+    );
     expect(
-      numbered.map((card) => card.querySelector('[data-slot="card-title"]')?.textContent?.trim()),
-      'only the five stages of the loop are numbered, because only they are a sequence',
+      numberedCards.length,
+      'a card carries a number, which claims the set of cards is a sequence',
+    ).toBe(0);
+
+    // The five that remain, on the five stages, in order, and named by the markup
+    // rather than by a position this test infers: a flow is a wrapped sequence, and
+    // the ordinal is what tells a reader who lands on stage four that it continues
+    // stage three at whatever column count their width resolves to.
+    const stages = [...container.querySelectorAll('[data-slot="process-stage"]')];
+    expect(stages, 'the loop is not drawn as a flow of stages').toHaveLength(LOOP.stages.length);
+    expect(stages.map((stage) => stage.getAttribute('data-ordinal'))).toEqual(
+      LOOP.stages.map((_stage, index) => String(index + 1).padStart(2, '0')),
+    );
+    // The flow puts the ordinal in its own row above the name, so the name and the
+    // body are the first two spans the stage owns directly rather than descendants
+    // at any depth. Read as the direct children they are, because the `01` and the
+    // `merged` on the last stage are siblings of each other inside that row and a
+    // descendant selector picks those up instead.
+    const owned = (stage: Element) =>
+      [...stage.children].filter((child) => child.tagName === 'SPAN');
+    expect(
+      owned(stages[0] as Element).map((span) => span.textContent?.trim()),
+      'a stage draws its name and its body, in that order',
+    ).toEqual([LOOP.stages[0]?.title, LOOP.stages[0]?.body]);
+    expect(
+      stages.map((stage) => owned(stage)[0]?.textContent?.trim()),
+      'the flow draws the five stages in the order the loop runs them',
     ).toEqual(LOOP.stages.map((stage) => stage.title));
-    expect(cards.length).toBe(LOOP.stages.length + INSIDE.features.length + STACK.parts.length + STACK.own.length);
+    // The state the loop ends in, named on the last stage and on no other, which is what
+    // makes `finalLabel` a state rather than a sixth label beside a fifth stage.
+    const terminal = stages.map((stage) => owned(stage).length).join(',');
+    expect(
+      [...container.querySelectorAll('main span')].filter(
+        (span) => span.textContent?.trim() === 'merged',
+      ).length,
+      `the terminal state is not named exactly once, on the last stage (stages carry ${terminal} spans each)`,
+    ).toBe(1);
+
+    // The five stages are no longer cards, so the page carries twenty boxes rather
+    // than twenty-five, and the two card grids that are left are the capability set
+    // and the stack survey.
+    const cards = [...container.querySelectorAll('[data-slot="card"]')];
+    expect(cards.length).toBe(INSIDE.features.length + STACK.parts.length + STACK.own.length);
   });
 
   it('is composed from catalogue items, and every one of them is identifiable in the markup', () => {
@@ -120,6 +163,8 @@ describe('the landing', () => {
     for (const slot of [
       'logo-strip',
       'note-grid',
+      'process-flow',
+      'process-stage',
       'stack-grid',
       'status-ledger',
       'product-grid',
