@@ -1,45 +1,64 @@
 ---
 title: Reviewing agent work on the Kanban
-description: The three decisions, what to read before making one, and how the three-round ceiling changes the conversation.
+description: The three decisions, what to read before making one, and how the three-round ceiling and the auto-merge setting change the conversation.
 ---
 
 Reviewing is the factory's human job. A build arrives in **Review** with its
-diff and its build results, and you make one of three decisions. Everything
-else about the role follows from taking that seriously.
+diff and its build results, and you make one of three decisions. Everything else
+about the role follows from taking that seriously.
 
 ## What is in front of you
 
-A Review ticket carries what happened, not a summary of it: the files that
-changed, the commands that ran, and the outcomes of the project's own tests —
-all produced inside [the container that built
-it](/docs/architecture/worker-container-lifecycle).
+A Review ticket carries what happened, not a summary of it.
+
+**The diff**, as git wrote it, generated on the host from the tree the round
+left. One section per file, the first open and the rest folded, with git's own
+text underneath each one **unchanged** — so you can hold the card against your own
+`git diff` and get the same bytes. Beside it, what the round's container recorded
+about itself: the files its own git saw, the commands it ran, what each returned,
+and the round's log if it produced nothing readable.
+
+Two things on the card are worth reading deliberately, because a card that
+distinguishes them is telling you something a card that does not is not:
+
+- **"the round ran to completion and changed nothing"** versus **"the round's own
+  command did not succeed"**. Same untouched disk, opposite claims about the
+  round — the first is a real outcome, the second is a round that stopped.
+- **How much was left off** when the change was very large. A diff that stops
+  without saying how much it stopped at is indistinguishable from a diff of a
+  smaller change, so the card counts the files and lines it did not render and
+  says where the whole of it is on this machine.
 
 Read the tests first. The factory runs the project's suite, so a green run is
-evidence, but it is evidence about what the project already tests. A change
-with no test touching it is unverified no matter how green the run is.
+evidence, but it is evidence about what the project already tests. A change with
+no test touching it is unverified no matter how green the run is.
 
-Then read the diff as a whole. Agent work fails in characteristic ways — a
-change that solves the issue in one place while quietly breaking an assumption
-somewhere else, or a fix that adds a special case where the codebase already has
-an abstraction.
-Whole-diff reading is what catches those.
+Then read the diff as a whole. Agent work fails in characteristic ways — a change
+that solves the issue in one place while quietly breaking an assumption somewhere
+else, or a fix that adds a special case where the codebase already has an
+abstraction. Whole-diff reading is what catches those.
 
 ## The three decisions
 
 **Approve** merges. Do it when the diff answers the issue and you would have
 merged it from a colleague. Approval is a signature on the change, not a
-thank-you to the factory.
+thank-you to the factory — and it is not complete until a merge actually lands.
+If the merger could not carry it out, the ticket ends up in Escalated with your
+approval on the record, which is the honest answer rather than a Done that
+happened to nobody.
 
 **Request changes** sends the ticket back with your feedback attached and
-consumes one of the three rounds. Write the feedback as you would for a
-colleague's pull request: specific, actionable, and pointed at the change
-rather than the agent. "This is wrong" costs a round and produces another
-guess; "this path drops the error case — the caller in X assumes it is set"
-produces a fix.
+consumes one of the three rounds. **Write the feedback as you would for a
+colleague's pull request**: specific, actionable, and pointed at the change
+rather than the agent. "This is wrong" costs a round and produces another guess;
+"this path drops the error case — the caller in X assumes it is set" produces a
+fix. Your words are the next round's brief, which is why a request for changes
+with nothing to say is refused: the brief *is* the decision.
 
 **Reject** ends the ticket. Use it when the issue itself turns out to be wrong,
 duplicated, or not worth the remaining rounds. Rejection is not a judgement on
-the build; it is the decision that the work should not continue.
+the build; it is the decision that the work should not continue, and it is
+**final** — nothing the factory does brings it back.
 
 ## Three rounds, so spend them well
 
@@ -48,15 +67,27 @@ exists so that disagreement terminates. It also changes what good feedback
 looks like: three rounds is enough to steer a build that is close, and not
 enough to design something by committee through the board.
 
-If you are asking for changes a second time, stop and consider whether the
-issue was buildable. If it was not, the honest move is
-[reject and rewrite](/docs/guides/writing-an-issue-the-factory-can-build#the-ceiling-is-a-feature)
+When the third round comes back, the ticket **escalates** — it parks for a human
+rather than merging. Escalation is not a dead end: the board still offers you
+approve and reject there, and those are the only two ways out.
+
+If you are asking for changes a second time, stop and consider whether the issue
+was buildable. If it was not, the honest move is
+[reject and write a better issue](/docs/guides/writing-an-issue-the-factory-can-build#the-ceiling-is-a-feature)
 rather than a third round aimed at a target that keeps moving.
 
 ## The auto-merge threshold
 
-Tickets left in **Review** past the feedback threshold merge without you. That
-is the factory's answer to a review queue nobody is reading, and it is worth
-understanding before you rely on it: Review is a place where work is waiting
-for a decision, not a place where it is safely parked. A ticket you are not
-ready to decide is a ticket to reject or to approve.
+**Out of the box, a ticket in Review waits for you however long it takes.**
+Auto-merge is a factory-level setting and its default is **off**, so nothing ships
+unattended until an operator deliberately turns it on.
+
+When it is on, a ticket left in Review past the threshold is merged rather than
+holding the pipeline, and the board shows the threshold, shows that the mode is
+live, and puts the moment *that card* would ship on the card itself. Read that
+before you rely on it: Review is a place where work is waiting for a decision,
+not a place where it is safely parked.
+
+The asymmetry is worth carrying with you: **ignoring a work item merges it, while
+actively rejecting one protects the repository.** The timeout path is the more
+dangerous of the two, which is why the board says so beside the threshold.

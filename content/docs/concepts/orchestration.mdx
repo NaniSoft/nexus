@@ -1,41 +1,48 @@
 ---
 title: Orchestration
-description: The Microsoft Agent Framework coordinates the factory's agents; OpenCode does the coding inside each worker container.
+description: A hand-rolled deterministic state machine that owns the factory's policy; OpenCode does the coding inside each worker container.
 ---
 
 Orchestration is what turns a queue of work items into running builds. Nexus
-orchestrates with the **Microsoft Agent Framework** (MAF) through its .NET SDK,
-and does the coding with **OpenCode**.
+orchestrates with a **deterministic state machine** and does the coding with
+**OpenCode**.
 
-## Why an agent framework at all
+## No agent framework in the loop
 
-A factory run is not one agent doing one thing. A run involves planning the
-change, making it, checking it, and reporting on it — and the factory runs many
-of them at once, across many projects, with retries and timeouts around each.
-Coordinating that by hand-rolled glue is where ad hoc agent work becomes
-unmaintainable. MAF supplies the orchestration primitives: agents as
-first-class objects, structured handoffs between them, and a runtime that owns
-concurrency and failure.
+There is deliberately **no Microsoft Agent Framework** here, and the reason is
+worth stating rather than leaving as an absence.
 
-Nexus is a **generic** factory — the same orchestrator serves every configured
-project, and no project's logic lives in the orchestrator itself. Project
-differences enter as configuration, not as code.
+A framework would put host-side agents in the loop: objects with a runtime that
+owns their concurrency, handoff, and failure. This factory has no host-side
+agents. Every decision the factory makes is a state transition over a work item
+in a store, and every one of them is decided by the same code path whether a
+container was started, a reviewer's click arrived, or a heartbeat asked the
+machine to look again. An agent in that position would make the factory's
+behaviour depend on a model's judgement about what to do next — and the whole
+guarantee the design makes is that a reviewer knows what the factory will do.
 
-## The .NET SDK
+So the orchestrator is a hand-rolled state machine, stepped rather than driven.
+One step applies at most one transition. Nothing sleeps, defers, or times out
+in the loop: the 90-minute round timeout is a comparison against an injectable
+clock rather than a timer, which is what makes it testable at all.
 
-The orchestrator is a .NET service. The .NET SDK is what binds MAF's agent
-abstractions to the rest of the factory: the config loader, the GitHub poller,
-the container worker, the Kanban service, and the merger all sit in the same
-runtime, which is what makes their contracts ordinary method calls rather than
-network guesses.
+## One process, ordinary method calls
 
-## NOpenCode and OpenCode
+The orchestrator is part of a single .NET process. The config loader, the issue
+poller, the container runtime, the Kanban board, and the merger all sit in the
+same runtime, which is what makes their contracts ordinary method calls rather
+than network guesses.
 
-**OpenCode** is the coding agent that works inside the worker container.
-**NOpenCode** is the .NET integration that connects it to the orchestrator: the
-orchestrator hands a work item to NOpenCode, NOpenCode drives OpenCode inside
-the container, and the result — files changed, commands run, tests' outcomes —
-comes back as structured data the orchestrator can act on.
+## The agent seam
+
+The orchestrator does not reach into a container to run commands. It hands a
+work item to **`NOpenCode`** — one call is one round — and `NOpenCode` drives
+**OpenCode** inside the worker container and returns a result. What came back is
+derived by *observing* the container, not by believing the agent: files changed
+from git, commands from a recording wrapper, outcomes from exit codes.
+
+The orchestrator consumes those results and updates the work item. It never
+learns what a container is.
 
 That boundary is deliberate. The orchestrator knows about work items, rounds,
 and pull requests. OpenCode knows about repositories and code. Neither needs to
@@ -50,7 +57,15 @@ the same way every time:
 - which project's configuration applies;
 - when a worker container starts, and what happens when it exits;
 - whether the result goes to Review, back to the build, or to escalation;
-- when the feedback round counter closes the loop.
+- when the round counter closes the loop.
 
 Those decisions are the factory's actual policy. They are written down in
 [Architecture — orchestration layer](/docs/architecture/orchestration-layer).
+
+## What it holds no opinion about
+
+Factory behaviour — the round ceiling, the timeouts, the merge policy, the retry
+strategy — is **code, not configuration**. Identical for every project. The one
+deliberate exception is auto-merge, which is a factory-level setting with a
+default of **off**, so a work item waits in Review until a human decides unless
+an operator turns the timeout on deliberately.

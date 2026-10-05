@@ -1,48 +1,75 @@
 ---
 title: Worker-container lifecycle
-description: Start, checkout, build, test, report, teardown — the six stages of one build attempt, and what happens when a stage fails.
+description: Start, fetch, build, test, report, teardown — the six stages of one round, and what happens when a stage fails midway.
 ---
 
-A worker container exists for exactly one build attempt. Its life has six
-stages, and each stage has a defined failure.
+A worker container exists for exactly one round. Its life has six stages, and
+each stage has a defined failure.
 
 ## The stages
 
 **1. Start.** The orchestrator asks the Docker runtime for a container from the
-project's configured image. Nothing is restored: no cache from a previous run,
-no working tree from another project. If the image cannot be pulled or the
-container cannot start, the failure is transient-class and goes to
+project's configured image, addressed **by name** rather than by id. Nothing is
+restored: no cache from a previous run, no working tree from another project. If
+the image cannot be pulled or the container cannot start, the failure is
+transient-class and goes to
 [retry](/docs/architecture/observability-and-error-handling#retries).
 
-**2. Checkout.** The container fetches the configured repository at the issue's
-base. The work item's project determines the repository; there is nothing else
-to resolve.
+**2. Fetch.** The container clones the configured repository at the issue's base.
+It fetches it **over the network** rather than being given a host path, because a
+mount is a path from untrusted agent-written code to the factory host. A
+repository with no commits has nothing to clone, and the clone fails — see
+[the factories/ layout](/docs/configuration/the-factories-layout).
 
 **3. Build.** OpenCode works the issue inside the container, driven through
-NOpenCode: read the repository, plan the change, edit. code-server provides the
-editing environment — toolchain, runner, debugger.
+NOpenCode: read the repository, plan the change, edit.
 
 **4. Test.** The project's own tests run inside the same container, on the same
 tree the build produced. The factory does not decide what "tested" means; the
-project's configuration and its existing scripts do.
+repository's own scripts do. The round's brief tells the agent that, which is why
+it is told to record its shell work through the image's own wrapper.
 
-**5. Report.** Files changed, commands run, and test outcomes come back as
-structured results. The work item moves to **Review** with those results
-attached — the reviewer sees what happened, not a summary of it.
+**5. Report.** The round's own exit code is recorded, and the container writes one
+result file — files changed, commands run and what each returned, the agent's
+optional note, and the start commit the diff is measured from. The host lifts it
+out with `docker cp`, generates the diff from the tree with git, and moves the
+work item to **Review**.
 
-**6. Teardown.** The container is removed. Whether the attempt succeeded,
-failed, or was cancelled, nothing survives to affect the next run.
+**6. Teardown.** The container is removed. Whether the round succeeded, failed,
+was cancelled, or the agent never ran, the removal happens **in a teardown path
+rather than on the success path** — a container that outlives its round is what
+makes "nothing survives a round" untrue.
+
+The removal is addressed by name, on a token nobody can cancel, for two reasons:
+a name is known before the container exists, so a `create` whose own output was
+lost can still be undone; and a round is very often torn down *because* its token
+was cancelled, so handing that token to the removal would make the one operation
+that must happen the one operation that could not.
 
 ## Failure in the middle
 
-A stage that fails does not leave a half-alive environment behind. The
-container is torn down as part of the failure path, the work item records where
-it stopped, and the board shows the ticket in the state that reflects it —
-retrying, failed, or escalated. The next attempt, if there is one, starts from
-stage 1 in a new container.
+A stage that fails does not leave a half-alive environment behind. The container
+is removed as part of the failure path, the work item records where it stopped,
+and the board shows the ticket in the state that reflects it — retrying, failed,
+or escalated.
+
+**A round that did not run to completion is not a round that changed nothing.**
+Its own exit code says whether it finished, and a round whose agent was refused
+before it began reports the same untouched disk as one that chose to change
+nothing. The board distinguishes them, because the first is a false claim about a
+round that never started and the second is a real outcome.
 
 ## Concurrency
 
-Containers are independent, so the factory's concurrency is a container budget
-rather than a lock. Builds from different projects run side by side; the
-round-robin loop decides what gets the next free slot.
+Containers are independent, so the factory's concurrency is a **container
+budget** rather than a lock. Builds from different projects run side by side; the
+round-robin loop decides what gets the next free slot, and the budget is enforced
+in exactly one place so nothing can spend a container the loop cannot see.
+
+## The tree that stays
+
+The round's working tree is lifted out to the host and **kept**, because the host
+has to be able to reach the round's commit once the container is gone — the host
+pushes, and the container cannot. That is also what the reviewer judges: the diff
+on the card is `git diff` run on this host against this tree, which is why the
+board's diff exists even for a round that wrote no result file at all.

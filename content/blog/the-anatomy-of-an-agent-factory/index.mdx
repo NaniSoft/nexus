@@ -18,7 +18,7 @@ and the reason each seam sits where it sits.
 | Config loader | Reads and validates `factories/*.yaml`. |
 | Issue poller | Reads open issues; converts each to a work item. |
 | Orchestrator + workers | Starts containers, drives the build, tracks rounds. |
-| Kanban service | Holds board state, serves the board on port 5000. |
+| Kanban service | Serves the board on port 5000. It holds no state of its own. |
 | Merger | Opens and merges the pull request on approval. |
 
 The seams between them are deliberately boring. The poller knows GitHub and
@@ -31,18 +31,25 @@ Boring seams are what make the factory **generic**. Adding a project is a YAML
 file in `factories/`, because no component has to learn anything about a
 project to serve it.
 
-## The orchestrator: Microsoft Agent Framework on .NET
+## The orchestrator: a state machine, not a framework
 
 A factory run is not one agent doing one thing. It is planning, building,
 checking, and reporting — many times over, concurrently, across many projects,
 with retries and timeouts around each. Coordinating that with hand-rolled glue
 is precisely where ad hoc agent work becomes unmaintainable.
 
-So the factory does not hand-roll it. The orchestration layer is a .NET service
-built on the **Microsoft Agent Framework**, which supplies agents as
-first-class objects, structured handoffs between them, and a runtime that owns
-concurrency and failure. The factory's job is deciding what the agents are and
-what their outputs mean; the framework's job is sequencing them.
+It is worth being precise about what was hand-rolled and why, because an earlier
+version of this post said the orchestration layer was built on an agent
+framework, and it is not. **There is no host-side agent and no agent framework
+in the loop.** The orchestrator is a deterministic state machine over a work item
+in a store, and every decision it makes is the same code path whether a
+container started, a reviewer's click arrived, or a heartbeat asked the machine
+to look again.
+
+The argument is the same one the rest of this post makes about every other seam:
+an agent in the position of "decide what happens next" would make the factory's
+behaviour depend on a model's judgement, and the guarantee a reviewer relies on
+is that they know what the factory will do.
 
 The .NET SDK is also what binds the factory together. Config loader, poller,
 worker, board, merger — one runtime, so their contracts are ordinary method
@@ -95,13 +102,15 @@ cancellation alike.
 Work items are persisted once, and the board reads the same records the
 orchestrator writes — no board-side copy to drift. The board serves on port
 5000 with auto-refresh, five swimlanes (Backlog → Frontier → In Progress →
-Review → Done) and two terminal states off the flow: rejected and escalated.
+Review → Done) and two states off the flow: rejected, which is final, and
+escalated, which parks for a human and still offers approve and reject.
 
 The loop's rules live in the orchestrator, and they are the part worth arguing
-about rather than the parts worth admiring: three feedback rounds maximum, and
-merge on approval or on feedback timeout. We will take those on in the next
-post, because they are the difference between a factory and a very expensive
-way of generating diffs.
+about rather than the parts worth admiring: three feedback rounds maximum — and
+on exhaustion the ticket **escalates rather than merging** — and merge on
+approval, with a feedback timeout that can merge once an operator turns it on.
+We will take those on in the next post, because they are the difference between
+a factory and a very expensive way of generating diffs.
 
 ## What is not here
 
@@ -112,5 +121,5 @@ worth having — that a project is a file, and the factory behaves the same for
 all of them.
 
 The full architecture is in [the docs](/docs/architecture/system-overview),
-including the failure paths: retries for transient failures, dead-letter
+including the failure paths: bounded retries for transient failures, parking
 escalation for everything else, and a board that renders both.

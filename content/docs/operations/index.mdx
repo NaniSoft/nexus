@@ -1,18 +1,22 @@
 ---
 title: Operations
-description: Running the factory and trusting it — deployment with Docker Compose, and the testing strategy behind each layer.
+description: Running the factory and trusting it — deployment with Docker Compose, and the testing strategy behind each claim.
 ---
 
 Operations covers the two things a factory has to get right to be worth
 running: standing it up, and knowing its output is good.
 
 - **[Deployment](/docs/operations/deployment)** — Docker Compose, one
-  deployment serving every configured project, and the environment the
-  factory's secrets live in.
-- **[Testing strategy](/docs/operations/testing-strategy)** — unit,
-  Testcontainers integration, end-to-end, and chaos: four layers, each answering
-  a question the layer below cannot.
+  deployment serving every configured project, the machine-only limit, and the
+  daemon deviation named in the file.
+- **[Testing strategy](/docs/operations/testing-strategy)** — one application
+  seam for policy, real adapters beneath it, and the requirements of a service
+  reproduced rather than recorded.
 
-Both pages describe the design. The factory has not shipped, so there is no
-runbook here and no upgrade path — that is deliberate, and
-[the status note](/docs/introduction#status) explains what the docs are instead.
+The testing page is the more important of the two to read skeptically. It names
+what the suite cannot reach as well as what it can, because a strategy that only
+lists its strengths is a strategy nobody can rely on.
+
+There is no runbook and no upgrade path yet, because there is no release to
+upgrade from. That is deliberate, and
+[the status note](/docs/introduction#status) says what the docs are instead.

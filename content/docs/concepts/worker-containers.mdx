@@ -1,26 +1,27 @@
 ---
 title: Worker containers
-description: Every issue gets a fresh Docker container running code-server and OpenCode — isolated, disposable, and identical every time.
+description: Every round gets a fresh Docker container — isolated, disposable, and identical every time, with no port and no host path.
 ---
 
 A **worker container** is the Docker container the factory starts for a single
-work item. It is the shop floor: the place where the issue's code is actually
-built and tested.
+round. It is the shop floor: the place where the issue's code is actually built
+and tested.
 
 ## What runs inside
 
 Two things, and they are the pair the design is built around:
 
-- **code-server** — VS Code in the browser,
-  running inside the container. It gives the run a real editing environment: the
-  project's language tooling, its test runner, its debugger.
+- **code-server** — VS Code in the browser, running inside the container. It
+  gives the run a real editing environment: the project's language tooling, its
+  test runner, its debugger.
 - **OpenCode** — the coding agent that works the issue. It reads the
   repository, plans, edits files, and runs commands inside the container.
 
-The two are integrated through **NOpenCode**, the .NET integration the
-orchestrator uses to drive OpenCode from outside the container's lifetime.
+The two are integrated through **`NOpenCode`**, the seam the orchestrator uses to
+drive OpenCode from outside the container's lifetime. One call is one round, and
+one round is one result.
 
-## Why one container per issue
+## Why one container per round
 
 Isolation is the point, and it buys four things.
 
@@ -35,21 +36,47 @@ project's work or the factory host.
 build issues from several projects at once without the runs contending for one
 working tree.
 
-**Honest teardown.** When a run ends — success, rejection, or crash — the
+**Honest teardown.** When a run ends — success, failure, or cancellation — the
 container goes with it. Nothing lingers to make the next run's behaviour
 mysterious.
+
+## The container's contract
+
+A round crosses the container boundary in exactly two directions, and that is the
+whole of its interface with the outside:
+
+- **in**, over the network: the round fetches the repository itself. The
+  container is given **no host path**, because a mount would be a path from
+  untrusted agent-written code to the factory host.
+- **out**, as **one file** the host lifts with `docker cp` — the structured
+  result. The container's log is the other channel, and it carries live
+  progress.
+
+And one property is enforced on the host side rather than trusted from the
+image: the round command is created with no `-p`, no `-v` and no `--mount`. A
+worker container **publishes no inbound port and mounts nothing**.
+
+## Credentials, and the asymmetry
+
+A round holds **no credential capable of writing to a remote**. The project's
+GitHub key is read on the *host*, by the merger, after the container is gone, so
+a confused, injected or compromised agent has nothing it could push with.
+
+The LLM credential is the other case, and it does go in: the agent cannot reach
+a provider without one. It is scoped to one project, lives for one round's
+container, and is never logged.
 
 ## The image
 
 The image a project's workers start from is named in that project's
 configuration, so each repository gets an environment that matches its own
-toolchain rather than one image that pretends to fit everything. Building and
-distributing that image is part of configuring a project — see
-[Configuration](/docs/configuration/the-configuration-model).
+toolchain rather than one image that pretends to fit everything. The base image
+carries no toolchain of its own beyond git and the two tools named above;
+building and publishing a project's image is part of configuring the project —
+see [Configuration](/docs/configuration/the-configuration-model).
 
 ## Lifecycle
 
-The container's whole life is one build attempt: start, check out, build, test,
-report, stop. [Architecture](/docs/architecture/worker-container-lifecycle)
-walks that sequence stage by stage, including what happens when a stage fails
-midway.
+The container's whole life is one round: start, fetch, build, test, report, tear
+down. [Architecture](/docs/architecture/worker-container-lifecycle) walks that
+sequence stage by stage, including what happens when a stage fails midway.

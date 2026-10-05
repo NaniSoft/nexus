@@ -273,8 +273,29 @@ describe('the landing', () => {
     }
     // The words are the factory's and the tiers are the design system's, and they are
     // two fields because they are two claims.
-    expect(screen.getAllByText('complete')).toHaveLength(1);
-    expect(screen.getAllByText('specified')).toHaveLength(BUILD_ORDER.rows.length - 1);
+    //
+    // The counts moved when the ledger did. It used to be one row `complete` and six
+    // `specified`, which was true while the factory was a design and a plan; it is one
+    // row `complete` — the design, which is what that word means — and six `running`,
+    // which is the honest count once the factory takes an issue to a merged pull
+    // request. Asserted by number rather than by name because the numbers are the claim:
+    // a ledger that quietly reverted half its rows to `planned` would still render every
+    // row's own words and pass a test that only checked they were present.
+    const byLabel = new Map<string, number>();
+    for (const row of BUILD_ORDER.rows) {
+      byLabel.set(row.statusLabel, (byLabel.get(row.statusLabel) ?? 0) + 1);
+    }
+    for (const [label, count] of byLabel) {
+      expect(screen.getAllByText(label), `${count} row(s) claim ${label}`).toHaveLength(count);
+    }
+    // The design is complete and everything below it runs. A row claiming to be merely
+    // specified, when a real run merged a real pull request, is the one thing this
+    // ledger must not say.
+    // `queryAllByText` rather than `getAllByText`: the assertion is that nothing is
+    // there, and the getting form throws when there is nothing, which is a failure
+    // message about the query rather than about the ledger.
+    expect(screen.queryAllByText('specified')).toHaveLength(0);
+    expect(screen.queryAllByText('planned')).toHaveLength(0);
     for (const row of BUILD_ORDER.rows) {
       const rendered = document.querySelector(`[data-slot="status-ledger-row"][data-status="${row.status}"]`);
       expect(rendered, `no ledger row with the ${row.status} tier`).toBeTruthy();

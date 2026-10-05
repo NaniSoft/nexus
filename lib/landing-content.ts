@@ -44,10 +44,10 @@ export const HERO = {
  * obvious from the sentence above it.
  */
 export const TICKER = [
-  'In active development',
-  'Design complete, documented here',
+  'Running, end to end',
   'Issue to reviewed pull request',
-  'Three feedback rounds, maximum',
+  'Three feedback rounds, then it escalates',
+  'Auto-merge off by default',
   'No release yet',
 ] as const;
 
@@ -85,7 +85,7 @@ export const LOOP = {
     },
     {
       title: 'Merge',
-      body: 'Approval merges the pull request. A feedback timeout merges rather than holding.',
+      body: 'Approval merges the pull request from the host. On the third round it escalates instead.',
     },
   ],
   /**
@@ -104,12 +104,12 @@ export const LOOP = {
         body: 'No cache, no shared working tree, and no state from a previous run or from another project.',
       },
       {
-        title: 'Three rounds, then the loop closes',
-        body: 'A ticket that comes back three times is an issue that needs rewriting, not a fourth container.',
+        title: 'Three rounds, then it escalates',
+        body: 'A ticket that comes back three times parks for a human. It is never merged over an objection.',
       },
       {
-        title: 'Auto-merge on approval or timeout',
-        body: 'Review is where work waits for a decision, not where it is parked.',
+        title: 'Auto-merge off by default',
+        body: 'Approval merges. A timeout can merge, once an operator turns it on deliberately.',
       },
       {
         title: 'Nothing ends in silence',
@@ -224,12 +224,12 @@ export const INSIDE = {
   lede: 'The capabilities the design commits to, and the two rules that close the loop.',
   features: [
     {
-      title: 'MAF orchestration',
-      body: 'The Microsoft Agent Framework drives the factory’s agents, on .NET. OpenCode is reached through NOpenCode.',
+      title: 'One deterministic loop',
+      body: 'A hand-rolled state machine owns the factory’s policy. OpenCode is reached through NOpenCode.',
     },
     {
       title: 'Per-issue worker containers',
-      body: 'Every issue builds in a fresh Docker container from its own project image.',
+      body: 'Every issue builds in a fresh Docker container from its own project image. No host path, no published port.',
     },
     {
       title: 'Kanban swimlanes',
@@ -237,7 +237,7 @@ export const INSIDE = {
     },
     {
       title: 'Human feedback loop',
-      body: 'Approve, request changes, or reject, on a board that auto-refreshes at port 5000.',
+      body: 'Approve, request changes, or reject, on a board that auto-refreshes at port 5000 and shows the diff.',
     },
     {
       title: 'Multi-project round-robin',
@@ -245,15 +245,15 @@ export const INSIDE = {
     },
     {
       title: 'Observability',
-      body: 'Structured logs, build and round metrics, bounded retries, dead-letter escalation.',
+      body: 'Structured logs, build and round metrics, bounded retries, and escalation onto the board.',
     },
     {
       title: 'Testing gates',
-      body: 'Unit, Testcontainers integration, end to end, and chaos. The failure path is tested, not hoped for.',
+      body: 'One application seam for policy, real containers and real repositories beneath it. The failure path is tested.',
     },
     {
       title: 'Security posture',
-      body: 'Token scopes at the narrowest that work, secrets in the environment, rootless Docker.',
+      body: 'Token scopes at the narrowest that work, and the write token never inside a worker container.',
     },
   ],
 } as const;
@@ -264,7 +264,6 @@ export const STACK = {
   lede: 'The factory stands on proven parts and builds four of its own: the orchestrator, the config loader, the Kanban service, and the merge pipeline.',
   /** Proven parts the factory stands on. */
   parts: [
-    { name: 'Microsoft Agent Framework', role: 'orchestration runtime' },
     { name: 'OpenCode', role: 'coding agent' },
     { name: 'code-server', role: 'in-container editing' },
     { name: 'Docker', role: 'worker containers' },
@@ -278,7 +277,7 @@ export const STACK = {
   own: [
     {
       name: 'The orchestrator',
-      blurb: 'A .NET service on MAF that owns the round state machine and the round-robin loop.',
+      blurb: 'A deterministic state machine that owns the round transitions and the round-robin loop.',
     },
     {
       name: 'The config loader',
@@ -286,7 +285,7 @@ export const STACK = {
     },
     {
       name: 'The Kanban service',
-      blurb: 'Board state, auto-refresh, and the three decisions, on port 5000.',
+      blurb: 'The diff, the round count and the three decisions on port 5000. It holds no state of its own.',
     },
     {
       name: 'The merge pipeline',
@@ -318,43 +317,43 @@ export const BUILD_ORDER = {
     },
     {
       name: 'Project configuration schema',
-      status: 'planned',
-      statusLabel: 'specified',
-      detail: 'YAML per project in factories/: repo, keys, LLM provider, worker image.',
+      status: 'live',
+      statusLabel: 'running',
+      detail: 'YAML per project in factories/: repo, worker image, LLM model, two key names.',
     },
     {
       name: 'Issue to work item',
-      status: 'planned',
-      statusLabel: 'specified',
+      status: 'live',
+      statusLabel: 'running',
       detail: 'The poller, and the conversion that puts every issue in Backlog.',
     },
     {
       name: 'Container build worker',
-      status: 'planned',
-      statusLabel: 'specified',
-      detail: 'A fresh container per issue, code-server and OpenCode inside, results reported back.',
+      status: 'live',
+      statusLabel: 'running',
+      detail: 'A fresh container per round, OpenCode inside, one result file lifted out.',
     },
     {
       name: 'Kanban and the feedback loop',
-      status: 'planned',
-      statusLabel: 'specified',
-      detail: 'Five swimlanes at port 5000, three decisions, three rounds, auto-merge on timeout.',
+      status: 'live',
+      statusLabel: 'running',
+      detail: 'Five swimlanes at port 5000, the diff on the card, three decisions, three rounds.',
     },
     {
       name: 'Multi-project round-robin',
-      status: 'planned',
-      statusLabel: 'specified',
+      status: 'live',
+      statusLabel: 'running',
       detail: 'Every configured project served in rotation, without blocking another’s pipeline.',
     },
     {
       name: 'Observability and error handling',
-      status: 'planned',
-      statusLabel: 'specified',
-      detail: 'Structured logs, metrics, retries, and dead-letter escalation on the board.',
+      status: 'live',
+      statusLabel: 'running',
+      detail: 'Structured logs, metrics, bounded retries, and escalation onto the board.',
     },
   ],
   caption:
-    'Design is complete and documented here. Implementation is specified and sequenced, and has not started.',
+    'Every row is running. There is still no release to install, and the board binds to this machine only.',
 } as const;
 
 /**

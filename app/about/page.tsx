@@ -22,11 +22,11 @@ export const metadata: Metadata = {
 const FACTS = [
   {
     label: 'Orchestration',
-    value: 'Microsoft Agent Framework on .NET; OpenCode reached through NOpenCode.',
+    value: 'A deterministic state machine on .NET; OpenCode reached through NOpenCode.',
   },
   {
     label: 'Workers',
-    value: 'One fresh Docker container per issue, from the project’s own image.',
+    value: 'One fresh Docker container per round, from the project’s own image. No host path, no published port.',
   },
   {
     label: 'Scope',
@@ -60,11 +60,9 @@ export default function AboutPage(): ReactElement {
         <SectionHeading as="h1" align="left" title="The factory, not another assistant." />
         <Prose className="site-measure">
           <p>
-            Nexus is NaniSoft&rsquo;s Agent Factory: an autonomous software-creation engine
-            that orchestrates multiple AI agents, harnesses, planning, code generation,
-            testing, validation, and product assembly. It takes a GitHub issue as its
-            input and returns a reviewed, merged pull request as its output. One issue,
-            one fresh container, one reviewed change.
+            Nexus is NaniSoft&rsquo;s Agent Factory: a software-creation engine that takes a
+            GitHub issue as its input and returns a reviewed, merged pull request as its
+            output. One issue, one fresh container, one reviewed change.
           </p>
 
           <p>
@@ -77,14 +75,15 @@ export default function AboutPage(): ReactElement {
           </p>
 
           <p>
-            Nexus is the factory. It watches configured repositories, gives every issue
-            its own container, lets{' '}
-            <a href="/docs/concepts/orchestration">OpenCode and code-server</a> work the
-            issue inside it, and puts the result on a{' '}
+            Nexus is the factory. It watches configured repositories, gives every
+            accepted issue its own container, lets{' '}
+            <a href="/docs/concepts/orchestration">OpenCode</a> work the issue inside it,
+            and puts the change on a{' '}
             <a href="/docs/concepts/kanban-and-the-human-feedback-loop">Kanban board</a>{' '}
-            where a human approves it, asks for changes, or rejects it. Approval merges.
-            Rejection closes the ticket. Three rounds of feedback is the ceiling, and
-            after that the loop closes rather than spinning.
+            where a human reads the diff and approves it, asks for changes, or rejects
+            it. Approval merges. Rejection closes the ticket. Three rounds of feedback
+            is the ceiling, and on exhaustion the ticket escalates to a human rather
+            than merging or spinning.
           </p>
         </Prose>
 
@@ -100,10 +99,10 @@ export default function AboutPage(): ReactElement {
           </p>
 
           <p>
-            The factory is in active development. The design is complete and documented.
-            Implementation is specified and sequenced, and has not started. There are no
-            dates here and nothing to install, and the release gets announced on the blog
-            when it happens.
+            The factory runs. It is deployed with Docker Compose, its board is at
+            127.0.0.1:5000, and it has taken a real issue on a real repository all the
+            way to a merged pull request. There is no release to install yet, and no
+            dates here; the release gets announced on the blog when it happens.
           </p>
         </Prose>
 

@@ -1,19 +1,20 @@
 ---
 title: Configuration schema reference
-description: Every concern the design-stage configuration model carries — design intent, not a frozen contract.
+description: The fixed six-value schema every project file uses, what each field is for, and what it deliberately does not carry.
 ---
 
-This is the **configuration model** — the design's statement of what a project
-tells the factory. It is documented as a design-stage model:
+This is the **schema**: the exact set of values a project file carries and the
+exact names they have.
 
-- there is no versioned schema to validate against yet, and no released loader;
-- field **names** below are illustrative where the design has not fixed them —
-  the concern each field serves is the stable part;
-- nothing here is a contract between releases, because there are no releases.
+**The field names are fixed, not illustrative.** They are what the loader reads,
+what validation is written against, and what a project file has to say. A file
+using a different name does not validate, and a file carrying a field beyond
+this set is **refused rather than ignored** — which is the whole point of naming
+the schema here.
 
 ## Top level
 
-| Field | Type | Required | Concern |
+| Field | Type | Required | What it fixes |
 | --- | --- | --- | --- |
 | `name` | string | yes | The project's identity on the factory. Used by the board to group and filter tickets. |
 | `repo` | mapping | yes | Where issues are polled from and pull requests are opened. See [Repository](#repository). |
@@ -28,18 +29,18 @@ factory's, identical everywhere. See
 
 ## Repository
 
-| Field | Type | Required | Concern |
+| Field | Type | Required | What it fixes |
 | --- | --- | --- | --- |
-| `url` | string (Git URL) | yes | The Git repository the issue poller reads and the merger opens pull requests against. |
+| `url` | string | yes | An absolute `http` or `https` URL. The repository the issue poller reads and the merger opens pull requests against. |
 
 One repository per project. A second repository is a second file in
 [`factories/`](/docs/configuration/the-factories-layout).
 
 ## Worker
 
-| Field | Type | Required | Concern |
+| Field | Type | Required | What it fixes |
 | --- | --- | --- | --- |
-| `image` | string (image reference) | yes | The Docker image every worker container for this project starts from. |
+| `image` | string | yes | The Docker image every worker container for this project starts from. |
 
 The image carries the project's toolchain, so its tests can run inside the
 container that built the change. Building and publishing it is part of
@@ -48,43 +49,56 @@ describes the constraints the image has to satisfy on the host.
 
 ## LLM
 
-| Field | Type | Required | Concern |
+| Field | Type | Required | What it fixes |
 | --- | --- | --- | --- |
-| `provider` | string | yes | Which LLM provider this project's build agents use. |
+| `model` | string | yes | A full `provider/model` reference, such as `anthropic/claude-sonnet-4-5`. |
 
-Per project, deliberately: provider choice is a project's own cost and
-capability decision, and a factory-wide default would make one project's choice
-every project's bill.
+A **full reference, not a bare provider**, and the reason is mechanical: the
+provider prefix is how the factory knows which canonical environment variable
+the provider's own tooling reads, and it re-emits the key under that name. A
+reference naming a provider the factory does not know is refused at load rather
+than sending the agent a credential nothing will use.
+
+Per project, deliberately: model choice is a project's own cost and capability
+decision, and a factory-wide default would make one project's choice every
+project's bill.
 
 ## Keys
 
-| Field | Type | Required | Concern |
+| Field | Type | Required | What it fixes |
 | --- | --- | --- | --- |
-| `github` | string (env var name) | yes | The variable holding the project's GitHub token. Scoped to the narrowest set the factory needs. |
-| `llm` | string (env var name) | yes | The variable holding the project's model credential. |
+| `github` | string | yes | The **name** of the environment variable holding the project's GitHub token. |
+| `llm` | string | yes | The **name** of the environment variable holding the project's model credential. |
 
 Values are **names of environment variables**, never the secrets themselves —
 see [secrets and token scopes](/docs/configuration/secrets-and-token-scopes).
+
+The two are not treated alike, and the difference is structural rather than a
+policy someone has to remember: the GitHub name is read **on the host, by the
+merger, after the round's container is gone**, so no worker container ever holds
+a credential capable of writing to a remote. The LLM credential does go into the
+round's container, because the agent cannot reach a provider without one — it is
+scoped to one project and dies with one round.
+
 Project files stay committable, and rotation is an environment change.
 
 ## Worked example
 
 ```yaml
-# factories/atlas.yaml — design-stage illustration.
 name: atlas
 
 repo:
   url: https://github.com/NaniSoft/atlas
 
 worker:
-  image: nexus-worker-atlas
+  image: ghcr.io/nanisoft/atlas-worker:1
 
 llm:
-  provider: PROVIDER
+  model: anthropic/claude-sonnet-4-5
 
 keys:
-  github: GITHUB_TOKEN
-  llm: LLM_API_KEY
+  github: ATLAS_GITHUB_TOKEN
+  llm: ATLAS_ANTHROPIC_API_KEY
 ```
 
 ## What the schema does not carry
@@ -93,3 +107,17 @@ No agent prompts, no per-issue overrides, no board configuration, no plugin
 list. Each of those would move factory policy into project configuration, and
 the factory's promise — that a project is a file, and the factory behaves the
 same for all of them — depends on that line holding.
+
+It also carries **no `disabled` flag**, and that is a decision rather than an
+oversight. It is why this repository commits no project file at all: a file in
+`factories/` is *served*, not sampled, so an example that lived there would be a
+repository the factory polls and merges into. The examples live outside the
+directory the loader reads — see [the factories/ layout](/docs/configuration/the-factories-layout).
+
+## A repository with no commits
+
+Not buildable, and deliberately so. A round clones the base and diffs against
+the commit it started from; an empty repository has no such commit, and the
+clone fails. **The first commit is a human's** — the factory will not mint one,
+because that is a different act from answering a project's first issue. A
+greenfield owner pushes a README before adding the project file.
