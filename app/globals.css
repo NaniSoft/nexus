@@ -179,13 +179,39 @@ body {
   padding: 4rem 1.5rem 6rem;
 }
 
+/*
+ * The index heading, and the scale it reads.
+ *
+ * This was a second display scale invented for this sheet:
+ * `clamp(1.875rem, 3.6vw, 2.75rem)`, which resolves to 44px at 1440 and 30px at 390.
+ * Every other h1 in the family is the design system's own step, `text-5xl sm:text-6xl`,
+ * which resolves to 60px and 48px. So the two indexes on this site — the documentation
+ * section index and the blog list, which both come from this class — carried a heading
+ * smaller than the h1 of every page they link to, and the reader's eye stepped *up* on
+ * click, off a list whose own heading was the smallest on the site.
+ *
+ * So the scale is Prism's step rather than a larger clamp: `--text-5xl` is 3rem and
+ * `--text-6xl` is 3.75rem, both with a declared line-height of 1, and `sm` is 40rem.
+ * The 20 documents behind this index are the design system's own screen, so their h1 is
+ * the reference this one has to agree with rather than the other way round.
+ *
+ * The leading moves from 1.2 to the token's own 1 with it, which shortens the box by
+ * 0.2em, so the 4px beneath the title now sits against a tighter gap than it did. That is
+ * the display leading the rest of the family uses and it is deliberate, not a leftover.
+ */
 .site-catalog__title {
   margin: 0 0 0.25rem;
-  font-size: clamp(1.875rem, 3.6vw, 2.75rem);
+  font-size: var(--text-5xl);
   font-weight: 600;
   letter-spacing: -0.025em;
-  line-height: 1.2;
+  line-height: 1;
   text-wrap: balance;
+}
+
+@media (min-width: 40rem) {
+  .site-catalog__title {
+    font-size: var(--text-6xl);
+  }
 }
 
 .site-catalog__lede {
