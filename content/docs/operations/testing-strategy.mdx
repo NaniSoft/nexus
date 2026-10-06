@@ -1,67 +1,113 @@
 ---
 title: Testing strategy
-description: Unit, Testcontainers integration, end-to-end, and chaos tests — four layers, each answering a question the one below cannot.
+description: Policy against adapter — one application seam, real adapters, and the requirements of a service reproduced rather than recorded.
 ---
 
 A factory that builds software has to be more trustworthy than the software it
-builds. Its testing strategy has four layers, and the layers are ordered by the
-question each one answers.
+builds. Its testing strategy has one seam, two adapter layers, and a named cost.
 
-## Unit — is each piece correct alone?
+## Policy — one application seam
 
-Unit tests cover the pieces that make decisions in isolation: configuration
-loading and validation, issue-to-work-item conversion, the feedback state
-machine, and retry and dead-letter logic.
+The real factory is started **in-process**, with three things substituted and
+everything else real:
 
-These are the tests that make the factory's policy cheap to change. The round
-ceiling, the auto-merge threshold, and escalation all live in code that can be
-exercised without a container, a repository, or a model — which is exactly what
-lets those rules be adjusted deliberately rather than nervously.
+- **`IClock`**, because the 48-hour auto-merge and the 90-minute round timeout
+  are otherwise untestable — and the auto-merge is the most dangerous behaviour
+  in the system;
+- the **agent seam**, one call of which is one round, so the orchestrator's
+  entire policy is tested against it and Docker never appears;
+- the **GitHub seam**, one seam covering both polling and merging rather than two
+  seams for the same boundary.
 
-## Integration — do the pieces work against the real thing?
+Through that single seam, with no container and no network, these are tested for
+real: configuration loading and validation, work item creation and idempotence,
+the whole state machine including the exhaustion path, the round ceiling, the
+48-hour merge, escalation and parking, rejection, retry classification,
+round-robin across projects, the container budget, the heartbeat, persistence,
+and the board's own HTTP surface.
 
-Integration tests use **Testcontainers** to run the real dependencies: a worker
-container that actually starts, an actual build inside it, results actually
-reported back.
+There are no sleeps anywhere and no shared state between tests. Time moves on
+the fake clock and the machine is stepped, so a test that would otherwise take
+90 minutes of wall clock takes no time at all.
 
-This is the layer that catches what unit tests cannot see. A container that
-starts but has no toolchain, an image that resolves locally but not in the
-deployment environment, a results payload that parses but is missing the field
-the reviewer needs — all of these look fine in a unit test and fail here.
+**Note what this makes unit and end-to-end the same tests.** The top seam is
+end-to-end by construction, which is why this page describes two layers rather
+than the four folders (unit / integration / end-to-end / chaos) the design
+originally named.
 
-The GitHub-facing path is integrated too: issue polling and work-item
-conversion against the GitHub API, mocked where determinism matters and real
-where the API's actual shape is the thing under test.
+## Adapters — the real thing
 
-## End-to-end — does the loop close?
+Above that seam are the components a fake cannot stand in for, because what is
+under test is the thing they talk to.
 
-End-to-end tests walk a work item through the whole factory: issue in, build,
-review decision, merge. Two flows are the design's load-bearing ones, and both
-are covered:
+**The worker adapter** runs a real container against the real image: that the
+image starts, that its toolchain is actually present, that a round really runs,
+that the result file really comes back. What runs inside is a **deterministic
+script** rather than a model — one that changes a file, runs a passing command,
+runs a failing one, leaves a scratch file, writes a note, and commits — because
+an LLM is not what is under test, and a test that needs one is a test of the API
+key. These tests are separated and **skipped with the reason** on a machine with
+no Docker daemon or no worker image.
 
-- **approve → merge** — the factory's happy path, end to end;
-- **two or more configured projects** — round-robin order, non-blocking
-  workers, and a fresh container per issue regardless of project.
+**The GitHub adapter** runs the client against the API's actual shape. **The
+merger** runs against a real bare repository on the machine, because a push that
+half-succeeded is a property of a remote and asserting it against a stub would
+be asserting the stub. What cannot be covered without a token is HTTPS
+authentication, which is why the credential is tested where it is decided — the
+header and the child's environment — rather than there.
 
-The multi-project flow is the one that would catch the factory quietly
-becoming single-project: every guarantee in
-[multi-project processing](/docs/concepts/multi-project-processing) is asserted
-here rather than assumed.
+## The known cost, and what contains it
 
-## Chaos — what happens when the world misbehaves?
+A single high seam with everything faked **can pass while an adapter is quietly
+broken**. That is the trade for testing policy without a container, and it is
+contained deliberately rather than assumed away.
 
-Chaos tests inject failure deliberately: a container that dies mid-build, an
-API that starts erroring, a worker that never reports.
+Three requirements of the *services* are therefore **reproduced** rather than
+recorded, because a fake written to agree with the code cannot catch them:
 
-What they assert is the failure path from
-[observability and error handling](/docs/architecture/observability-and-error-handling):
-retries fire where the failure is transient, they stop where it is not,
-terminal failures escalate, and escalated tickets show up on the board. The
-design's promise is that nothing ends in silence — chaos tests are how that
-promise is checked rather than hoped for.
+- GitHub **refuses** a request with no `User-Agent` outright, so the faked
+  transport refuses one too — which turned 23 tests red when the header was
+  removed rather than the two that named it;
+- `docker cp` copies a directory **into** an existing destination rather than
+  replacing it, so the faked CLI does the same — which is how a class of bug
+  where round 2's tree nested inside round 1's stayed invisible until it was
+  reproduced;
+- a **CRLF** line-ending setting on the host is asserted against, because a host
+  that annotates every file in a diff is a host deciding what a reviewer reads.
 
-## Why four layers
+## Chaos
 
-Each layer is cheaper than the one above it and less realistic. Running all
-four is what lets the factory change fast in the places that are still being
-designed and stay predictable in the places that are settled.
+Failure injected deliberately — a container that dies mid-build, an API that
+starts erroring, a worker that never reports — and each asserts the failure path
+from
+[observability and error handling](/docs/architecture/observability-and-error-handling).
+At this seam those are nearly free: a container that dies is a fake that throws,
+a 503 is a fake returning an error, and a worker that never reports is a clock
+that jumps past the round timeout.
+
+## What the board is tested against
+
+Board tests drive the **real HTTP surface**, over a real socket. What the board
+*renders* is asserted as a reviewer reads it — the swimlane, the diff, the round
+count, the decision form — rather than as which class called which.
+
+One of them is not faked: the diff-on-the-board test runs the real round runner,
+the real container runtime, the real deriver, the real diff reader and the real
+board, with only the Docker CLI substituted, and only so that `docker cp` hands
+over a genuine git repository with its read-only pack files intact.
+
+## What no test can reach
+
+Three things are stated rather than papered over, because a reader who assumes
+otherwise is worse off than one who is told:
+
+- The **GitHub API's real shape** — exact field names, which status codes arrive
+  when — is taken from its documentation and is not verified against the live
+  service. What *is* verified is everything the factory decides: what it asks
+  for, in what order, and what it does with each answer.
+- The **fold-restore script** is asserted as the shape it is written against, and
+  nothing executes it. The key is right and the restore is written against it;
+  the suite does not prove a browser reopened anything.
+- The **rootless requirement** cannot be satisfied on Docker Desktop. That is a
+  bounded, named deviation with compensating controls the worker image enforces —
+  not a property this test suite can assert.

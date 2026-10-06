@@ -3,9 +3,9 @@ title: Multi-project processing
 description: One factory serves every configured repository in round-robin order, and no project's pipeline blocks another's.
 ---
 
-Nexus is designed to run many projects from one deployment. Each project is a
-YAML file in `factories/`; the factory loads all of them at start and serves
-them continuously.
+Nexus is built to run many projects from one deployment. Each project is a YAML
+file in `factories/`; the factory loads all of them at start and serves them
+continuously.
 
 ## Round-robin, not first-come
 
@@ -15,19 +15,42 @@ cannot starve the rest. This matters because the alternative — a work queue
 ordered by arrival — would let a single project with a burst of issues hold the
 factory's capacity while quieter projects waited behind it.
 
+Intake stays serial, deliberately. Parallelising it would buy a little latency in
+the one part of the factory that was never the bottleneck, while costing the one
+property that makes the multi-project guarantee provable at all: **the rotation
+order *is* the anti-starvation mechanism.** Interleaved reads would make the order
+a property of scheduling rather than of the directory.
+
+A project's turn is bounded rather than a whole pass — a busy repository cannot
+spend a pass on itself.
+
 ## Non-blocking by design
 
 Workers processing issues from different projects do not block each other. A
-long build in project A does not stop project B's issue from starting: each
-work item gets its own container, so concurrency is bounded by the factory's
-container budget rather than by a shared working tree or a shared lock.
+long build in project A does not stop project B's issue from starting: each work
+item gets its own container, so concurrency is bounded by the factory's
+**container budget** rather than by a shared working tree or a shared lock.
+
+Within the budget the next container goes to whichever project is holding fewer.
+A global budget alone bounds the machine; it does not stop a project with a
+thousand open issues from holding both slots while a project with one waits
+behind it. "Bounded" has to mean bounded, not rationed.
+
+A merge takes no container slot at all. A factory with two long builds running
+should not stop shipping what a human has already read and approved — that would
+be a less safe factory than one with no builds at all.
 
 ## What stays per-project
 
-Configuration is per-project — repository, keys, LLM provider, worker image.
-Work items carry their project with them, and the board can group or filter
-tickets by project, so a reviewer looking at one repository's queue sees that
-repository's tickets rather than the factory's whole output.
+Configuration is per-project — repository, keys, model, worker image. Work items
+carry their project with them, and the board can group or filter tickets by
+project, so a reviewer looking at one repository's queue sees that repository's
+tickets rather than the factory's whole output.
+
+Grouping is inside each lane rather than instead of lanes, because the lanes are
+the board's spine and a lane is a state every project shares. The question a
+reviewer asks of a lane with nine cards on it is *which of them are mine*, and
+grouping answers it without a filter and without reading each card.
 
 ## What stays shared
 
@@ -36,9 +59,15 @@ shared. That is the reason to run one factory instead of one per repository:
 retry behaviour, escalation, metrics, and the feedback loop are identical
 everywhere, and improving them improves every project at once.
 
+## What stays per-project's own business
+
+A project's **provider choice** is per project on purpose: model choice is a
+cost and capability decision, and a factory-wide default would make one project's
+choice every project's bill.
+
 ## The isolation that still holds
 
-Multi-project does not weaken the factory's central guarantee. **Each issue
+Multi-project does not weaken the factory's central guarantee. **Each round
 still gets a fresh container environment regardless of project** — a worker
 container never carries state from a previous run, and never from another
 project's run. Round-robin orders the work; isolation bounds it.

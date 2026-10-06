@@ -1,59 +1,104 @@
 ---
 title: Kanban service
-description: The board at port 5000 — its swimlanes, its single state source, its auto-refresh contract, and the decision API.
+description: The board at port 5000 — its swimlanes, its single state source, its auto-refresh contract, and the decision form that is its whole write path.
 ---
 
-The Kanban service holds the factory's board state and serves it at **port
-5000**. It is the component people look at, and the only one that accepts a
-review decision.
+The Kanban service is the ASP.NET Core endpoint the factory process serves at
+**port 5000**. It is the component people look at, and the only one that accepts
+a review decision.
 
-## State
+It holds **no board state**. Work items are persisted in SQLite, which is the
+store of record, and the board reads the same records the orchestrator writes —
+there is no board-side copy of the truth to drift out of sync. The board is an
+endpoint the process serves, not a service it calls.
 
-Work items are **persisted**, and the board reads the same records the
-orchestrator writes. There is no board-side copy of the truth to drift out of
-sync: what the board shows is the state the factory holds, refreshed.
+## What a card carries
 
-Each work item carries its project, its source issue, its swimlane, its round
-count, and — once a build has finished — the build results a reviewer needs.
+Each work item carries its project, its source issue, its base branch, its
+swimlane, its round count, and the record of every round it has had:
+
+- the **diff**, as git produced it on the host from the tree that round left;
+- what the round's container recorded about itself — files its own git saw, the
+  commands it ran and what each returned;
+- the agent's one optional note, kept as an account rather than a record;
+- the **round's log**, bounded — so a round that produced nothing readable still
+  says what happened;
+- its **decisions**, with the reviewer's own words and the lane each was applied
+  to.
+
+The diff is stored as columns beside the payload rather than inside it, so a
+restart cannot lose it and a board render reads the record rather than re-running
+git against a directory it might no longer have.
 
 ## Swimlanes
 
 | Swimlane | Meaning |
 | --- | --- |
-| **Backlog** | Polled from GitHub, not yet accepted. |
-| **Frontier** | Accepted, waiting for a worker. |
+| **Backlog** | Polled from GitHub, waiting for a reviewer to accept it. |
+| **Frontier** | Accepted, waiting for a worker container. |
 | **In Progress** | A worker container is open on it. |
 | **Review** | Build finished, awaiting a decision. |
-| **Done** | Approved and merged. |
+| **Done** | Approved **and merged**. |
 
-**Rejected** and **escalated** are terminal states off the main flow. Both are
-rendered on the board; the factory does not hide failures from the surface
-people watch.
+**Escalated** and **Rejected** are two distinct states off the main flow, with
+two distinct causes, and the board says which is which on the card. Escalated is
+a parking state a human finishes from the board; Rejected is final. Both are
+rendered — the factory does not hide failures from the surface people watch.
 
 ## Auto-refresh
 
-The board auto-refreshes and shows real-time status. The design point is not
-convenience — it is that a board someone has to refresh manually is a board
-they stop trusting. Auto-refresh keeps the board honest against the factory's
-actual state, which matters most when a build is failing and someone is
-watching it fail.
+The board auto-refreshes every five seconds. The design point is not convenience
+— it is that a board someone has to refresh manually is a board they stop
+trusting.
 
-## Decisions
+Auto-refresh is not free, though: it would close every fold a reviewer had opened
+while they were reading. So which sections are open is remembered in the tab and
+restored on the way back in, keyed by work item, round and path — three things,
+because opening a file in round 1 should not also open round 2's copy of a file
+of the same name.
 
-A ticket in **Review** exposes three actions, and they are the board's whole
+## The board's write path
+
+A ticket in **Review** exposes three actions, and one form is the board's whole
 write path:
 
 - **Approve** — hands the ticket to the merger, which opens and merges the pull
-  request. The ticket moves to Done.
+  request. Done means a merge landed; an approval the merger could not carry out
+  leaves the ticket in Escalated.
 - **Request changes** — attaches the feedback and returns the ticket to the
-  build; the round counter increments.
+  build; the round counter increments. Empty feedback is refused.
 - **Reject** — moves the ticket to the rejected state; the factory stops work
   on it.
 
+There is a second form, and it is not a decision: **a parked work item offers
+approve and reject only**, so the board never renders a button that would be
+refused. Requesting changes on a parked ticket is refused, with a message saying
+why — a third round is not a decision the loop takes back.
+
+The board records what the reviewer decided and asks the loop for one step. Which
+lane a decision means is the loop's policy, so a page that decided lanes itself
+would be a second state machine free to disagree with the first.
+
+## The threshold, per card
+
 Feedback timeout also moves a ticket: past the threshold, the factory merges
-rather than holding the pipeline.
+rather than holding the pipeline. Each card carries when *that* card would ship,
+and the card's attribute is written only when the mode is on — an empty
+countdown would read as a promise waiting for a value. The threshold is on the
+board because a reviewer must never have to wonder whether their silence can
+merge their repository.
 
 ## Multi-project on one board
 
-Tickets are grouped or filterable by project, so a reviewer can read one
-repository's queue. The board is shared; the view of it does not have to be.
+Tickets are grouped inside each lane by project and can be filtered to one, so a
+reviewer can read one repository's queue. The board is shared; the view of it does
+not have to be.
+
+The filter is a GET. It changes what is rendered and nothing else: no work item
+moves, no decision is recorded, and the three decisions are offered and refused
+on exactly the same terms whatever is showing.
+
+**One thing the filter never narrows is intake.** It is a way of looking at work
+items, and every served project's intake row stays on the board whatever is in
+force — a filter that could hide the reason there is nothing on the board is a
+filter that can make a broken factory look like a working one.

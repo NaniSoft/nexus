@@ -37,9 +37,11 @@ to be wrong, duplicated, or not worth the remaining rounds. Rejection is not a
 judgement on the build. It is the decision that the work should stop, and it is
 a normal outcome rather than a failure one.
 
-That is also why the terminal states are on the board. Rejected and escalated
-tickets are rendered where everyone looks, because a queue that hides its
-failures trains the people watching it to stop trusting it.
+That is also why both states off the flow are on the board. Rejected and
+escalated tickets are rendered where everyone looks, because a queue that hides
+its failures trains the people watching it to stop trusting it — and because
+escalated is not a dead end: it parks for a human, and the board still offers
+approve and reject there.
 
 ## Why three rounds
 
@@ -65,13 +67,38 @@ There is a cost side to this too. Every round is a real container, a real
 build, a real model spend. A factory without a ceiling does not fail loudly; it
 just gets slowly more expensive while producing nothing anyone merges.
 
-## Auto-merge, on approval or on timeout
+## On exhaustion, escalate rather than merge
 
-The factory merges on **approval**, and merges on **feedback timeout** — a
-ticket left in Review past the threshold merges rather than holding the
+Three rounds and the feedback is still outstanding is not a ticket that should
+be merged, and it is worth being exact about why the loop **escalates** there
+rather than falling through to the timeout path.
+
+A work item that has been called wrong three times is one a human actively
+disagrees with. Merging it over that objection would defeat the only guarantee
+the design makes, and it would do so quietly — the change would look merged, the
+round count would look spent, and nothing on the board would say that a reviewer
+had said no. So exhaustion parks the ticket in **Escalated**, which is a state a
+human finishes from the board: approve or reject are still offered there, and
+those are the only two ways out of it. Rejected is the state that is final.
+
+That is the asymmetry the whole design turns on: **ignoring a work item merges
+it; actively rejecting one protects the repository.** Escalation is what keeps
+the two apart.
+
+## Auto-merge on timeout, and why it is off by default
+
+The factory merges on **approval**, and it *can* merge on **feedback timeout** —
+a ticket left in Review past the threshold merging rather than holding the
 pipeline.
 
-The second half is the aggressive one, so it deserves the reasoning.
+It ships **off**. Out of the box a work item waits in Review until a human
+decides, however long that takes, and turning the timeout on is a deliberate
+operator action. The board says which mode is live, states the threshold, and
+puts the moment each individual card would ship on the card itself — a reviewer
+must never have to wonder whether their silence can merge their repository.
+
+The reasoning for having the mode at all is worth keeping, because it is the
+reason the default is a setting rather than the reason the setting is off.
 
 A factory's throughput is bounded by its review queue, and its review queue is
 bounded by people who have other work. That is fine until it is not: a queue

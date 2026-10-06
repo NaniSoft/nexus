@@ -1,18 +1,18 @@
 ---
 title: Rootless Docker
-description: The considerations behind running worker containers without a root daemon — the least privileged host the factory can run on.
+description: The considerations behind running worker containers without a root daemon — the least privileged host the factory can run on, and where it is a bounded deviation.
 ---
 
-The design names **rootless Docker** as a security consideration, and it is
-worth spelling out why: the factory's whole job is starting containers and
-letting agents run arbitrary build commands inside them. How privileged the
-thing that starts those containers is determines how bad the worst case is.
+The design names **rootless Docker** as a security requirement, and it is worth
+spelling out why: the factory's whole job is starting containers and letting
+agents run arbitrary build commands inside them. How privileged the thing that
+starts those containers is determines how bad the worst case is.
 
 ## The problem being reduced
 
 A rootful Docker daemon is effectively root on the host. Any path from a
-container to the daemon is a path to the host, and the factory deliberately
-opens that path hundreds of times a day, on work it did not write.
+container to the daemon is a path to the host, and the factory deliberately opens
+that path hundreds of times a day, on work it did not write.
 
 Rootless Docker removes that ceiling. The daemon runs unprivileged, containers
 are bounded by the user that owns them, and an escape from a worker container
@@ -26,19 +26,46 @@ constrains three things the factory does:
 - **Image handling.** Registries and storage live under the unprivileged user;
   the images a project's config names have to be resolvable there.
 - **Ports and networking.** Unprivileged users cannot bind low ports. The
-  factory's own published surface — the board on port 5000 — is unaffected,
-  and worker containers need no inbound ports at all.
+  factory's own published surface — the board on port 5000 — is unaffected, and
+  worker containers need no inbound ports at all.
 - **Volume ownership.** Mounted paths must be readable and writable by the
   daemon's user, which is a host provisioning concern rather than a
   configuration concern.
 
 None of those change the factory model. They are why rootless is a
-*consideration* recorded in design rather than a switch in a config file.
+*requirement recorded in design* rather than a switch in a config file.
+
+## The compensating controls, which are the point
+
+Because the daemon is what the factory trusts least, everything the factory can
+control about a round's environment is a control against an escape:
+
+| Control | How it is enforced |
+| --- | --- |
+| Runs unprivileged | A non-root user, uid 1000, the only account in the image, with no supplementary group and no `sudo` or `setcap` |
+| Publishes no port | The round command is created with no `-p`, and the image starts no listener |
+| Mounts nothing | No `-v`, no `--mount`; the tree is fetched over the network |
+| Holds one scoped credential | For one project, for one round, dying with the container |
+| Cannot write to a remote | The round commits and stops; the host pushes |
+| Leaves nothing | The container is removed on every path out, including cancellation |
+
+## Where it is a bounded deviation
+
+**A development machine running Docker Desktop cannot satisfy this.** Docker
+Desktop reports no rootless marker and offers no rootless mode to switch to.
+
+That is recorded rather than papered over: the deployment is the deviation, and
+it is bounded by the table above, each of which the worker image enforces and its
+own smoke test proves by reading the properties back off the built image and the
+finished container rather than off the Dockerfile claiming them.
+
+The deployment states the deviation in its own Compose file, next to the
+machine-only limit, so an operator reads it where they make the decision.
 
 ## The posture in one line
 
-The factory assumes its workloads are untrusted — they are written by agents —
-so it runs them in the least privileged environment that still builds software:
-one fresh container per issue, scoped credentials, no root daemon.
+The factory assumes its workloads are untrusted — they are written by agents — so
+it runs them in the least privileged environment that still builds software:
+one fresh container per round, scoped credentials, no root daemon.
 [Secrets and token scopes](/docs/configuration/secrets-and-token-scopes) is the
 other half of that sentence.

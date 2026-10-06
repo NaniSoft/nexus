@@ -11,9 +11,14 @@ standard output. Nexus applies that shape to software creation.
 The factory's input is a GitHub issue on a configured repository. An issue is
 already a work order: it has a title, a description, a reporter, and a place in
 a queue the team already reads. Nexus does not invent a parallel backlog — it
-consumes the one that exists. Every open issue on a configured repository is a
-candidate work order; the factory polls for them and turns each into a work
-item on the board.
+consumes the one that exists.
+
+Every open issue on a configured repository becomes a candidate work order, and
+the poller turns each into a work item on the board. **Nothing is built until a
+reviewer accepts it.** Intake is indiscriminate by design — a filter would put
+factory policy into project configuration — and which issues are worth building
+is a judgement a human makes on the board, which is the one surface the design
+trusts for human input.
 
 ## The process is contained and repeated
 
@@ -23,16 +28,18 @@ run, and is thrown away when the run ends. Because the environment is identical
 every time, a build that fails gives you a signal about the work, not about the
 machine it happened to land on.
 
-The work inside the container is done by coding agents — OpenCode, hosted by
-code-server — driven by the orchestrator. The agents plan, edit, and run the
-project's own tests. They do not decide whether the result ships.
+The work inside the container is done by a coding agent — OpenCode — driven by
+the orchestrator. It plans, edits, and runs the project's own tests. **It does
+not decide whether the result ships**, and it does not report on itself: what
+reaches the reviewer is derived by observing the container — files changed from
+git, commands from a recording wrapper, outcomes from exit codes.
 
 ## The output is a pull request
 
-The factory recognises exactly one output: a pull request against the
-configured repository. If the work cannot be shaped into a reviewable pull
-request, the factory has not finished the job — the ticket goes back for another
-round or escalates.
+The factory recognises exactly one output: a pull request against the configured
+repository. If the work cannot be shaped into a reviewable pull request, the
+factory has not finished the job — the ticket goes back for another round, or it
+parks for a human.
 
 ## The three commitments
 
@@ -41,6 +48,8 @@ design defends:
 
 1. **One issue, one fresh container.** No shared state between runs.
 2. **One reviewed change.** A human sees the diff before it merges; the factory
-   never merges around them.
-3. **A bounded loop.** Three rounds of feedback maximum. The factory terminates
-   instead of spinning.
+   never merges around an objection, and **Done means merged** — an approval is
+   not complete until a merge actually landed.
+3. **A bounded loop.** Three rounds of feedback maximum, and on exhaustion the
+   ticket escalates rather than merging. The factory terminates instead of
+   spinning.

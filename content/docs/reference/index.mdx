@@ -1,16 +1,18 @@
 ---
 title: Reference
-description: Look things up — the design-stage configuration schema and the factory's vocabulary.
+description: Look things up — the fixed configuration schema, and the factory's vocabulary.
 ---
 
 Reference is for looking things up rather than reading through.
 
-- **[Configuration schema](/docs/reference/configuration-schema)** — every
-  field the design's configuration model carries, its type, and whether it is
-  required. Documented as a **design-stage model**, not a runnable reference.
+- **[Configuration schema](/docs/reference/configuration-schema)** — every field
+  a project file carries, its type, and whether it is required. **Fixed, not
+  illustrative:** these are the names the loader reads.
 - **[Glossary](/docs/reference/glossary)** — the factory's vocabulary, defined
   once so the rest of the docs can use it without re-explaining.
 
-Where a field's name or type is not yet fixed by the design, the schema says so
-instead of guessing. Nexus has not shipped, and a reference that pretended
-otherwise would be the least useful page on this site.
+Where a field's type or permitted value matters and is not in the schema page,
+the schema says so rather than guessing. There is still no released version, so
+nothing here promises compatibility across releases — but a reader can write a
+valid file today, and that is the difference between a reference and a
+description of one.

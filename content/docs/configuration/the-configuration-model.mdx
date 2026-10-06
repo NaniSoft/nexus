@@ -1,69 +1,83 @@
 ---
 title: The configuration model
-description: The four concerns a project's YAML carries — repository, worker image, LLM provider, keys — and how the loader validates them.
+description: The six values a project's YAML carries — repository, worker image, LLM model, keys — and how the loader validates them.
 ---
 
-A project's configuration is a YAML file naming four things: where the work
-comes from, what environment builds it, what model drives the agents, and what
-credentials that requires. Everything else the factory does is the same for
-every project.
+A project's configuration is a YAML file naming six things: what the project is
+called, where the work comes from, what environment builds it, what model drives
+the agents, and what credentials that requires. Everything else the factory does
+is the same for every project.
 
-## The four documented concerns
+## The six values
 
-| Concern | What it fixes |
+| Field | What it fixes |
 | --- | --- |
+| `name` | The project's identity on the factory. |
 | **Repository** | The Git repo the factory polls for issues and opens pull requests against. |
+| **Worker image** | The Docker image each round's worker container starts from. |
+| **LLM model** | The full `provider/model` reference this project's agents run on. |
 | **API keys** | The credentials the project's builds need, referenced by name. |
-| **LLM provider** | Which provider the project's build agents use. |
-| **Worker image** | The Docker image each issue's worker container starts from. |
 
-A design-stage illustration of the shape — field names are illustrative, not
-frozen:
+The exact names, and their being fixed rather than illustrative, are in
+[the schema reference](/docs/reference/configuration-schema). This page is about
+the shape and why it is that shape.
 
 ```yaml
 # factories/atlas.yaml
 name: atlas
 
-# The repository: polled for issues, target for pull requests.
 repo:
   url: https://github.com/NaniSoft/atlas
 
-# The image every one of this project's worker containers starts from.
 worker:
-  image: nexus-worker-atlas
+  image: ghcr.io/nanisoft/atlas-worker:1
 
-# What drives the build agents, and what they authenticate with.
 llm:
-  provider: PROVIDER
+  model: anthropic/claude-sonnet-4-5
+
 keys:
-  github: GITHUB_TOKEN
-  llm: LLM_API_KEY
+  github: ATLAS_GITHUB_TOKEN
+  llm: ATLAS_ANTHROPIC_API_KEY
 ```
 
-Two things to notice about that file. First, it is per **project**, not per
-issue: nothing here changes between two issues on the same repository. Second,
-it names no agent behaviour. The factory's policy — rounds, timeouts, merge
-rules — is the factory's, identical everywhere; a project configures its inputs,
-not the factory's rules.
+Three things to notice about that file.
+
+First, it is per **project**, not per issue: nothing here changes between two
+issues on the same repository.
+
+Second, it names **no agent behaviour**. The factory's policy — rounds,
+timeouts, merge rules — is the factory's, identical everywhere; a project
+configures its inputs, not the factory's rules.
+
+Third, it names **no credentials**, only the environment variables that hold
+them. That is what keeps the file reviewable in public and rotation an
+environment change.
 
 ## Validation
 
 The config loader **validates** a project's file before anything downstream
-sees it. A file that fails validation stops that project from joining the
-factory rather than failing later, mid-run, in a worker container.
+sees it. A file that fails validation stops that project from joining the factory
+rather than failing later, mid-run, in a worker container — and the refusal is
+rendered on the board with the reason, so a misconfigured project is a visible
+one rather than a silent one.
 
-Validation is what makes the rest of the design simple. The poller, the
-worker, and the board all read configuration values through the loader, and
-none of them has to handle the case of a missing provider or an unresolvable
+Validation is strict in a specific way: **a field beyond the schema is refused,
+not ignored.** There is no `disabled: true`, no free-form extension point, and no
+tolerated typo. The reason is that the schema's job is to keep factory policy
+out of project configuration, and a field the loader quietly ignores is a field
+somebody will eventually put policy in and believe it is working.
+
+Validation is also what makes the rest of the design simple. The poller, the
+worker, and the board all read configuration values through the loader, and none
+of them has to handle the case of a missing model reference or an unresolvable
 image — the loader already refused it.
 
 ## Who reads what
 
-Configuration is exposed to **the issue poller, the worker, and the board**
-components:
+Configuration is exposed to **the issue poller, the worker, and the board**:
 
 - the poller needs the repository and the GitHub key;
-- the worker needs the image and the LLM provider and key;
+- the worker needs the image, the model, and the LLM key;
 - the board needs the project's name, to group and filter tickets.
 
 One loaded configuration, three consumers, no second parsing path.

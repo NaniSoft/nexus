@@ -1,6 +1,6 @@
 ---
 title: Introduction
-description: Nexus is the Agent Factory — an autonomous software-creation engine that turns a GitHub issue into a reviewed, merged pull request.
+description: Nexus is the Agent Factory — a system that turns a GitHub issue into a reviewed, merged pull request, and it runs.
 ---
 
 Nexus is the Agent Factory: a system that receives GitHub issues as use cases,
@@ -11,45 +11,53 @@ It exists because agent-driven development is already powerful and already
 produces real software — and because the way it happens today is ad hoc. A
 person opens a terminal, picks a repository, writes a prompt, watches the run,
 reviews the diff by hand, and pushes. Every step is manual, and none of it is
-recorded anywhere a team can inspect. The work is real; the factory around it
-is not.
+recorded anywhere a team can inspect. The work is real; the factory around it is
+not.
 
-Nexus is that factory. It watches configured repositories for issues, gives
-every issue a fresh container to build in, lets coding agents do the work
-inside it, and puts the result on a Kanban board where a human approves it,
-asks for changes, or rejects it. Approval merges. Rejection closes the ticket.
-Three rounds of feedback is the ceiling — after that the factory merges or
-escalates rather than looping forever.
+Nexus is that factory. It watches configured repositories for issues, gives every
+accepted issue a fresh container to build in, lets a coding agent do the work
+inside it, and puts the result on a Kanban board where a human approves it, asks
+for changes, or rejects it. **Approval merges.** Rejection closes the ticket.
+Three rounds of feedback is the ceiling — and on exhaustion the ticket
+**escalates rather than merging**, so a change you have called wrong is never
+shipped over your objection.
 
 ## The loop
 
 1. **Poll** — the factory reads open issues from each configured repository and
-   turns every one into a work item in the Backlog swimlane.
-2. **Contain** — a fresh Docker container starts for the work item. Nothing
-   carries over from a previous run.
-3. **Build** — inside the container, [code-server](/docs/concepts/worker-containers)
-   and OpenCode work the issue: planning, editing, running the tests.
-4. **Review** — the result lands in the Review swimlane. A human approves,
-   requests changes, or rejects.
-5. **Merge** — approval opens and merges the pull request. Requested changes
-   send the ticket back to the build with the feedback attached; three rounds
-   maximum.
+   turns every one into a work item in the Backlog swimlane. Nothing is built
+   until a reviewer accepts it.
+2. **Accept** — a reviewer picks the work worth doing, and the ticket moves to
+   Frontier.
+3. **Contain** — a fresh Docker container starts for it. Nothing carries over
+   from a previous run, no host path is mounted, and no port is published.
+4. **Build** — inside the container, OpenCode works the issue: planning, editing,
+   running the project's own tests.
+5. **Review** — the diff and the round's record land on a Review card. A human
+   approves, requests changes, or rejects.
+6. **Merge** — approval opens and merges the pull request, from the host, under a
+   credential the agent never saw. Requested changes send the ticket back with
+   your words attached; three rounds maximum, then it parks for a human.
 
 ## Who it is for
 
 Nexus is built for the maintainers of many repositories at once — the team that
 has more issues than hands. Configuring a project is one YAML file in
-`factories/`; after that the factory polls it, builds from it, and reports on
-it alongside every other project, in round-robin order, without one project's
+`factories/`; after that the factory polls it, builds from it, and reports on it
+alongside every other project, in round-robin order, without one project's
 pipeline blocking another's.
 
 ## Status
 
-Nexus is in active development. These docs describe the designed system in the
-present tense: the architecture, the configuration model, the operational
-posture, and the guarantees the design commits to. There is no quickstart here,
-no screenshots, and no release notes — the factory has not shipped. The blog
-follows the build as it happens.
+**It runs.** The factory is deployed with Docker Compose, the board is at
+`http://127.0.0.1:5000`, and it has been taken end to end against a real
+repository: an issue polled, built by an agent in a real container, reviewed on
+the board, and shipped as a merged pull request.
+
+These docs describe that system in the present tense — the architecture, the
+configuration model, the operational posture, and the guarantees it commits to.
+There is no quickstart here and no release notes, because there is no release to
+upgrade from; the deployment page is where to start.
 
 ## Where to go next
 

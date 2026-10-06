@@ -10,56 +10,67 @@ in full.
 OpenCode is the factory's coding agent; the orchestrator drives it through
 NOpenCode. See [orchestration](/docs/concepts/orchestration).
 
-**Auto-merge** — the factory opening and merging a pull request without a human
-clicking approve: on approval, or on feedback timeout. See
+**Auto-merge** — the factory merging a pull request without a human clicking
+approve: on approval, or — when the mode is on — on feedback timeout. Off by
+default. See
 [the auto-merge policy](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
 
-**Backlog** — the swimlane holding issues polled from GitHub that the factory
-has not started. See [the Kanban](/docs/concepts/kanban-and-the-human-feedback-loop).
+**Backlog** — the swimlane holding issues polled from GitHub that nobody has
+accepted yet. Nothing is built from here until a reviewer accepts it. See
+[the Kanban](/docs/concepts/kanban-and-the-human-feedback-loop).
 
-**Board** — the Kanban at port 5000: swimlanes, auto-refresh, and the only
-surface that accepts a review decision. See [Kanban service](/docs/architecture/kanban-service).
+**Board** — the Kanban at port 5000: swimlanes, auto-refresh, the diff, and the
+only surface that accepts a review decision. See
+[Kanban service](/docs/architecture/kanban-service).
 
-**Board** — the Kanban at port 5000: swimlanes, auto-refresh, and the only
-surface that accepts a review decision. See [Kanban service](/docs/architecture/kanban-service).
+**code-server** — VS Code in the browser. Carried in the worker image and started
+in a review workspace, so a reviewer can open the round's tree and run the
+project's build; never published to anything but loopback.
 
-**code-server** — VS Code in the browser, running inside the worker container;
-the build's editing environment.
+**Container budget** — the count of worker containers that bounds concurrency.
+Everything else follows from it: a work item waits in Frontier rather than being
+refused, and within the budget the next container goes to whichever project is
+holding fewer. See [the orchestration layer](/docs/architecture/orchestration-layer).
 
-**Dead letter / escalated** — the terminal state for a ticket the factory gave
-up on. Rendered on the board, never silent. See
-[observability and error handling](/docs/architecture/observability-and-error-handling#dead-letter-escalation).
+**Done** — the swimlane for approved **and merged** tickets. The only way in is
+through Review, and an approval is not complete until a merge landed.
 
-**Done** — the swimlane for approved and merged tickets. The only way in is
-through Review.
+**Escalated** — the parking state for a ticket that failed permanently, timed out,
+ran out of rounds, or could not be merged. A human finishes it from the board:
+approve or reject are still offered there. See
+[parking escalation](/docs/architecture/observability-and-error-handling#parking-escalation).
 
 **Factory** — the whole system: config loader, issue poller, orchestrator and
-workers, Kanban service, merger. Generic — it serves every project configured
-in `factories/` without modification. See [the factory model](/docs/concepts/the-factory-model).
+workers, board, merger. Generic — it serves every project configured in
+`factories/` without modification. See
+[the factory model](/docs/concepts/the-factory-model).
 
-**`factories/`** — the directory holding one YAML file per project. Adding a
-file is adding a project. See [the factories/ layout](/docs/configuration/the-factories-layout).
+**`factories/`** — the directory holding one YAML file per project. Adding a file
+is adding a project, and a file there is *served* rather than sampled — which is
+why this project's own repository commits none. See
+[the factories/ layout](/docs/configuration/the-factories-layout).
 
 **Feedback round** — one cycle of "changes requested" → rebuild → re-review.
-Three is the maximum. See [why three rounds](/docs/concepts/kanban-and-the-human-feedback-loop#why-three-rounds).
+Three is the maximum. See
+[why three rounds](/docs/concepts/kanban-and-the-human-feedback-loop#why-three-rounds).
 
 **Frontier** — the swimlane for work items the factory has accepted and is about
 to build.
 
-**In Progress** — the swimlane for work items with a live worker container
-open on them.
+**In Progress** — the swimlane for work items with a live worker container open
+on them.
 
 **Issue** — a GitHub issue on a configured repository; the factory's only input
-specification. See [writing an issue the factory can build](/docs/guides/writing-an-issue-the-factory-can-build).
-
-**MAF** — the Microsoft Agent Framework, the orchestration layer the factory is
-built on with its .NET SDK. See [orchestration](/docs/concepts/orchestration).
+specification. See
+[writing an issue the factory can build](/docs/guides/writing-an-issue-the-factory-can-build).
 
 **Merger** — the component that opens and merges the pull request on approval.
-It merges; it does not decide.
+It runs on the host, under a credential no worker container ever held. It merges;
+it does not decide.
 
-**NOpenCode** — the .NET integration connecting the orchestrator to OpenCode.
-See [NOpenCode and OpenCode](/docs/concepts/orchestration#nopencode-and-opencode).
+**NOpenCode** — the factory's own interface for running one round, one call of
+which is one round. Not a package: our interface is named after it. See
+[NOpenCode and OpenCode](/docs/concepts/orchestration#the-agent-seam).
 
 **OpenCode** — the coding agent that works an issue inside a worker container.
 
@@ -69,25 +80,38 @@ repository and converts each into a work item in Backlog.
 **Pull request** — the factory's only recognised output. If the work cannot be
 shaped into one, the factory has not finished the job.
 
-**Reject** — the review decision that ends a ticket in the rejected state. The
-factory stops spending on it.
+**Reject** — the review decision that ends a ticket in the rejected state. Final:
+nothing the factory does brings it back.
 
-**Request changes** — the review decision that returns a ticket to the build
-with feedback attached, consuming one of the three rounds.
+**Request changes** — the review decision that returns a ticket to the build with
+your feedback attached, consuming one of the three rounds. Empty feedback is
+refused.
 
-**Review** — the swimlane where a build waits for a human decision.
+**Review** — the swimlane where a build waits for a human decision, carrying the
+diff.
+
+**Review workspace** — a second kind of container, spawned from a Review card: a
+copy of the round's tree with the project's toolchain and code-server, reachable
+from this machine only. Destroyed on a decision, on a new round, or when its
+lifetime runs out.
+
+**Round** — one whole agent session in one fresh container: build, test,
+self-correct, return. The container's lifetime and the round boundary are the
+same thing.
 
 **Round robin** — the order the factory walks configured projects in, so no
 project starves another. See
 [multi-project processing](/docs/concepts/multi-project-processing).
 
-**Testcontainers** — the integration-test layer's tool for running the factory's
-real dependencies — a real container, a real build — inside a test. See
-[testing strategy](/docs/operations/testing-strategy#integration-do-the-pieces-work-against-the-real-thing).
+**Testcontainers** — the tool the worker-adapter tests use to run the factory's
+real dependencies — a real container, a real round — inside a test. Skipped with
+the reason on a machine with no daemon. See
+[testing strategy](/docs/operations/testing-strategy).
 
 **Work item** — the factory's internal representation of one issue: its project,
-its source issue, its swimlane, its round count, and its build results.
+its source issue, its base branch, its swimlane, its round count, and its
+per-round records.
 
-**Worker container** — the fresh Docker container started for a single build
-attempt, running code-server and OpenCode. See
+**Worker container** — the fresh Docker container started for a single round. No
+host path, no published port, one scoped credential. See
 [worker containers](/docs/concepts/worker-containers).

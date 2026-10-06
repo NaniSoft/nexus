@@ -53,17 +53,25 @@ that is worth solving once instead of once per project per person.
 
 ## What we are announcing
 
-The design. Nexus — the Agent Factory — is designed and documented:
-Microsoft Agent Framework orchestration on .NET, worker containers running
-code-server and OpenCode, a Kanban board with five swimlanes and a human
-feedback loop, multi-project round-robin across a directory of YAML files, and
-an observability posture built around one promise: nothing ends in silence.
+The design. Nexus — the Agent Factory — is designed and documented: a
+deterministic orchestration layer on .NET, worker containers running OpenCode, a
+Kanban board with five swimlanes and a human feedback loop, multi-project
+round-robin across a directory of YAML files, and an observability posture
+built around one promise: nothing ends in silence.
 
 It is in active development, and we are publishing the design before the
 release because the design is the part worth arguing about. The docs describe
-the system in the present tense — what it does, not what it will do — and the
-[configuration model](/docs/configuration/the-configuration-model) is written
-down as a model, not a contract, because nothing has shipped to be contracted.
+the system in the present tense — what it does, not what it will do.
+
+**Update, 2026-10-01.** The factory runs. It has taken a real issue on a real
+repository all the way to a merged pull request, and the
+[deployment page](/docs/operations/deployment) is where to start. One correction
+to what is written above: there is no agent framework in the orchestration
+layer, and there never was — the orchestrator is a hand-rolled state machine,
+and [why](/docs/concepts/orchestration#no-agent-framework-in-the-loop) is worth
+reading whether or not you agree with it. The
+[configuration model](/docs/configuration/the-configuration-model) is now a
+[fixed schema](/docs/reference/configuration-schema) rather than a model.
 
 ## What comes next
 

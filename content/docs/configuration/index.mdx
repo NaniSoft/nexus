@@ -1,21 +1,24 @@
 ---
 title: Configuration
-description: One YAML file per project — repository, keys, LLM provider, worker image — and the directory that holds them.
+description: One YAML file per project — repository, worker image, LLM model, keys — and the directory that holds them.
 ---
 
 Configuration is how a project joins the factory, and it is deliberately small:
-one YAML file per project, four concerns in it.
+one YAML file per project, six values in it.
 
 - **[The configuration model](/docs/configuration/the-configuration-model)** —
-  the four documented concerns and how the loader validates them.
+  what each value is for, and how the loader validates them.
 - **[The `factories/` layout](/docs/configuration/the-factories-layout)** — one
-  file per project, loaded together at start.
+  file per project, loaded together at start, and why this repository commits
+  none.
 - **[Secrets and token scopes](/docs/configuration/secrets-and-token-scopes)** —
-  environment variables, and the narrowest scope that works.
-- **[Rootless Docker](/docs/configuration/rootless-docker)** — the
-  considerations behind running workers without a root daemon.
+  credentials by name, and why the write token never enters a worker container.
+- **[Rootless Docker](/docs/configuration/rootless-docker)** — the least
+  privileged host the factory can run on, and where that is a bounded deviation.
 
-These pages document the **configuration model**: the shape the design commits
-to. The factory has not shipped, so there is nothing here to install and no
-versioned schema to migrate — field names are illustrative where the design has
-not fixed them, and each page says which.
+These pages document a **fixed schema**: the field names below are what the
+loader reads and what a project file has to say, not illustrations. There is
+nothing here to install and no versioned schema to migrate, because there is no
+release to upgrade from — and the
+[field names themselves](/docs/reference/configuration-schema) are stated as
+fixed, since a reader has to be able to write a valid file from this.

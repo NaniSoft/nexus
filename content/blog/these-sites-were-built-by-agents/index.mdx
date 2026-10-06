@@ -13,8 +13,12 @@ company root. They share one design language, one component library, one
 pack spectrum, and one chrome — and every one of them was built by an agent
 working a repository with a person directing it.
 
-Not by Nexus. Nexus is not shipping yet. That distinction is the whole point of
-this post.
+Not by Nexus. That distinction is the whole point of this post.
+
+**Update, 2026-10-01.** Nexus now runs, and it has merged its first pull request
+from its own board — against a throwaway repository, not this one. These sites
+still were not built by it, which is the distinction the post is making and the
+reason it is still the interesting claim.
 
 ## What actually happened
 
@@ -44,8 +48,8 @@ were per-session become per-project configuration:
 - **The review** becomes a board with three decisions and a ceiling: approve,
   request changes, reject, three rounds maximum.
 - **The record** becomes the factory's own. Structured logs, metrics,
-  escalation. A team can inspect what happened instead of asking the person who
-  was there.
+  escalation onto the board. A team can inspect what happened instead of asking
+  the person who was there.
 
 The first three are exactly the steps that were manual every time. That is not
 a coincidence — it is the definition of the work.
@@ -68,16 +72,20 @@ Because the design is the part that benefits from being argued about before it
 is code, and the release is the part that does not.
 
 Everything Nexus claims is written down where it can be checked: the
-[architecture](/docs/architecture/system-overview), the
-[configuration model](/docs/configuration/the-configuration-model), the
-[testing strategy](/docs/operations/testing-strategy), and the two rules this
-post leans on — [three rounds, and merge on
-timeout](/blog/humans-in-the-loop-three-rounds-max). There are no screenshots
-here, no quickstart, and no changelog, because there is nothing to screenshot,
-install, or release.
+  [architecture](/docs/architecture/system-overview), the
+  [configuration model](/docs/configuration/the-configuration-model), the
+  [testing strategy](/docs/operations/testing-strategy), and the two rules this
+  post leans on — [three rounds, and merge on
+  timeout](/blog/humans-in-the-loop-three-rounds-max). There are no screenshots
+  here and no changelog, because there is nothing to release yet; what there is
+  now is a [deployment page](/docs/operations/deployment).
 
 The next thing Nexus builds should be built through the factory: an issue on a
 configured repository, a fresh container, a diff on a board, a person deciding.
-That is the milestone this site is waiting to announce — and when it happens,
-it will be the first claim on this site that is about Nexus rather than about
-the design of it.
+
+**Update, 2026-10-01.** That has now happened, against a throwaway repository —
+issue, container, diff, decision, merged pull request. It did not happen here,
+and it will not be pointed at this repository until the merge path is trusted
+with a token that can write to it. So the milestone this site was waiting to
+announce is announced, and the claim it was going to make — that Nexus can build
+one of these sites — is still open.

@@ -1,21 +1,14 @@
 ---
 title: Orchestration layer
-description: The .NET service that owns factory policy — Microsoft Agent Framework for agents, NOpenCode for the build, and the round state machine.
+description: The .NET state machine that owns factory policy — the round state machine, the container budget, and the rules that close the loop.
 ---
 
-The orchestration layer is a .NET service built on the **Microsoft Agent
-Framework**. It is the only component that makes policy decisions, which is
-what keeps the factory's behaviour explainable: every transition a work item
+The orchestration layer is the part of the .NET service that makes policy
+decisions, and it is the only component that does. Every transition a work item
 goes through was decided here.
 
-## Agents under MAF
-
-MAF treats agents as first-class, composable objects with a runtime that owns
-concurrency, handoff, and failure. The factory uses that rather than
-re-implementing it: the agents involved in a build are declared to the
-framework, and the framework sequences them. Multi-agent orchestration is the
-framework's job; the factory's job is deciding what the agents are and what
-their outputs mean.
+There is no agent framework in this layer, and no host-side agent of any kind —
+[Orchestration](/docs/concepts/orchestration) says why.
 
 ## Driving the build through NOpenCode
 
@@ -24,33 +17,77 @@ work item to **NOpenCode**, which drives **OpenCode** inside the worker
 container and returns structured results. The orchestrator consumes those
 results — what changed, what ran, what passed — and updates the work item.
 
-Keeping that boundary means the orchestrator can be tested against a fake
-NOpenCode, and OpenCode can be upgraded without the factory's policy moving.
+Keeping that boundary means the orchestrator's policy is tested entirely against
+a fake NOpenCode: no Docker anywhere near the tests that assert what a round
+ceiling does, and OpenCode can be upgraded without the factory's policy moving.
 
 ## The round state machine
 
-Every work item carries a round counter. The transitions are:
+Every work item carries a round counter, and every transition is listed here
+rather than summarised:
 
 ```
-Backlog → Frontier → In Progress → Review ─┬→ Done            (approved)
-                                           ├→ In Progress     (changes requested, round < 3)
-                                           ├→ Rejected        (rejected)
-                                           └→ Escalated       (terminal failure)
+—  → Backlog                          (issue polled)
+Backlog → Frontier                     (a reviewer accepted it)
+Frontier → In Progress                 (a container was free)
+In Progress → Review                   (the round returned a result)
+In Progress → In Progress              (transient failure, retries remain)
+In Progress → Escalated                (transient retries exhausted,
+                                        permanent failure, or timeout)
+Review → Done                          (approved, and the merge landed)
+Review → Frontier                      (changes requested, rounds remain)
+Review → Escalated                     (changes requested, rounds exhausted)
+Review → Rejected                      (rejected)
+Review → Done                          (past the feedback threshold)
+Escalated → Done                       (a human merged it)
+Escalated → Rejected                   (a human rejected it)
 ```
 
-Two rules close the loop:
+Two rows in that table are the ones a summary drops, and both are load-bearing.
+
+**Requesting changes on the third round escalates, and never merges.** A work
+item that has been called wrong three times is not going to be called right by a
+fourth round of the same loop, and shipping it over the reviewer's objection
+would defeat the only guarantee the design makes.
+
+**Escalated is a parking state, not a grave.** A human can still merge or reject
+it from the board. Only Rejected is final. The asymmetry is deliberate and it is
+the reason the board renders which of the two a card is: ignoring a work item
+merges it, while actively rejecting one protects the repository.
+
+## Two rules close the loop
 
 - **Three rounds maximum.** A fourth request for changes is not accepted; the
-  ticket leaves the normal loop instead.
-- **Feedback timeout merges.** A ticket left in Review past the threshold is
-  merged by the factory rather than held. [Why](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
+  ticket leaves the normal loop instead. [Why](/docs/concepts/kanban-and-the-human-feedback-loop#why-three-rounds).
+- **Feedback timeout merges, and defaults to off.** A ticket left in Review past
+  the threshold *can* be merged by the factory rather than held, but the
+  threshold only runs when the operator turns it on. [Why](/docs/concepts/kanban-and-the-human-feedback-loop#the-auto-merge-policy).
 
-## Round-robin scheduling
+## The container budget
 
-The orchestrator's loop walks configured projects in round-robin order, one
-turn each. Work items from different projects are handed to workers without a
-shared lock, so a slow build in one project delays its own ticket, not another
-project's.
+Concurrency is bounded by a **count of worker containers** and by nothing else:
+two, as a code constant rather than configuration, so no project can have a
+different budget and no deployment can quietly raise the machine's ceiling.
+
+It is not a lock and not a shared working tree. Each round gets its own fresh
+container whatever project it is for, so there is nothing shared to serialise.
+Within the budget, the next container goes to whichever project is holding
+fewer — so a project with a thousand open issues cannot take the whole machine
+from one with a single issue. A work item waits in Frontier rather than in
+Backlog, because a queued work item and one nobody has accepted are different
+things and the board should not blur them.
+
+The budget is enforced in exactly one place, and the board renders how much of
+it is in use: a bounded machine that says nothing about its bound is
+indistinguishable from a wedged one.
+
+## Stepped, not driven
+
+The orchestrator is **stepped**, not timer-driven: one step applies at most one
+transition. A heartbeat asks for a step on a schedule, so retries and backoffs
+are ended by something looking rather than by a timer firing on its own — but
+the loop contains no wait of any kind. A merge takes no container slot, which is
+why an approval is not stuck behind a long build.
 
 ## What the orchestrator does not do
 

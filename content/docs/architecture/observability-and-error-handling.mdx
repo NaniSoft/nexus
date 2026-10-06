@@ -1,6 +1,6 @@
 ---
 title: Observability and error handling
-description: Structured logging, metrics, retry strategies, and dead-letter escalation — how the factory stays legible when things fail.
+description: Structured logging, metrics, retry strategies, and parking escalation — how the factory stays legible when things fail.
 ---
 
 A factory that fails silently is worse than no factory. This is the design's
@@ -14,19 +14,30 @@ work item, project, stage, outcome. The point is that a question like "what
 happened to this ticket" has an answer that does not require reading prose, and
 that events from concurrent runs do not blur into one another.
 
+A record about a *project* rather than a work item — a repository that could not
+be read — carries the project instead, because there is no work item to name.
+That is a second vocabulary rather than a field filled with something invented.
+
 ## Metrics
 
-The factory exposes counters for the numbers that describe its health:
+The factory publishes counters for the numbers that describe its health:
 
 - issues processed;
 - builds succeeded and failed;
 - feedback rounds per ticket.
 
 Those three are chosen because together they answer the question a maintainer
-actually has — is the factory shipping work, and is it doing so without burning
-rounds. Round counts matter most: a factory whose average is drifting toward
+actually has — "is the factory shipping work, and is it doing so without burning
+rounds". Round counts matter most: a factory whose average is drifting toward
 three is a factory whose issues are written for it badly, or whose projects are
 misconfigured. The metric is the early warning.
+
+They are published on the platform's own metrics API with **no exporter**. That
+is deliberate: this process publishes no port and binds its board to loopback,
+and a metrics endpoint would be a second surface with a second set of access
+rules to reach the same machine. A consumer attaches to the meter in whatever
+process it shares, so the factory can be measured without exposing anything —
+and *where* the numbers go is the deployment's business, not this process's.
 
 ## Retries
 
@@ -40,11 +51,20 @@ where a failure is transient, bounds them, and stops when they stop helping.
 A build that fails its tests is not a transient failure, and retrying it is
 just an expensive way to hide the result.
 
-## Dead-letter escalation
+Two things count as transient that a reader would not guess, and both are
+declared where they are observed rather than read out of a message:
+
+- **A round that did not run to completion** — a provider rate limit, a refused
+  provider, a missing model. It is asked for again as the *same* round, so a
+  transient cause spends containers rather than a reviewer's attention.
+- **A repository that could not be read**, on an exponential backoff that grows
+  and is capped, so a project down for a day is read a handful of times rather
+  than a thousand. A *permanent* intake failure is not asked again at all.
+
+## Parking escalation
 
 Failures that are not transient and do not resolve across rounds are
-**escalated** to a dead-letter state. The ticket leaves the normal loop instead
-of occupying it.
+**escalated**. The ticket leaves the normal loop instead of occupying it.
 
 Escalated tickets are **visible on the Kanban board**. That is the part that
 makes escalation real: a dead-letter queue nobody looks at is where failures go
@@ -52,16 +72,33 @@ to be forgotten, and the board is the one surface the factory's operators
 already read. Escalation is not a punishment for the ticket — it is the
 factory saying it needs a human, with the record of why attached.
 
+**Escalated is a parking state, not a terminal one.** A human can still merge or
+reject the work item from the board, and those are the only two ways out of it.
+The loop has no transition that re-opens one, so a parked work item stays parked
+however long it sits. **Rejected is the state that is final**, and the board
+offers a parked work item two of the three decisions precisely because
+finishing it by hand is the answer — not a third round.
+
 ## The full failure path
 
 ```
-transient failure → retry (bounded) → retry succeeds → continue
-                                   → retries exhausted → escalate
-permanent failure → escalate directly
-feedback exhausted (3 rounds)     → close the loop, escalate
-reviewer silent past threshold    → auto-merge
+transient failure → retry (bounded) → retry succeeds  → continue
+                                  → retries exhausted → park (escalated)
+permanent failure → park (escalated)
+round that did not run to completion → retry the same round, up to 3 attempts
+feedback exhausted (3 rounds)      → park (escalated), never merged
+merge that could not land          → park (escalated), approval on the record
+reviewer silent past threshold     → merge        (only when auto-merge is on)
 ```
 
 Nothing in that path ends in silence. Every terminal state is a state the board
 renders, which is the design's real guarantee: a ticket the factory gave up on
 is a ticket someone can see.
+
+The distinction between a round's **own** exit code and a **command's** exit code
+is what keeps the third and fourth lines apart from a build that merely failed
+its tests. A round whose last command returned zero finished, and whatever its
+tests did is data a reviewer judges. A round whose last command did not return
+zero never finished, and nothing on its disk is a result. Those are two different
+numbers, read in two different places, and conflating them would make every
+failing test retryable.

@@ -1,6 +1,6 @@
 ---
 title: The factories/ layout
-description: One YAML file per project, loaded together at start — the whole act of adding a repository to the factory.
+description: One YAML file per project, loaded together at start — the whole act of adding a repository to the factory, and why this repository commits none.
 ---
 
 Per-project configuration lives in the `factories/` directory: one YAML file
@@ -20,6 +20,9 @@ else. No component changes, no rebuild of the factory, no per-project plugin.
 That is the concrete meaning of the factory being **generic** — reusable across
 multiple projects without being modified for any of them.
 
+Configuration loads once, at start. A changed file means a **restart**; there is
+no hot reload and therefore no half-reloaded state to reason about.
+
 ## Loaded together, at start
 
 The factory **loads all of the project configs in `factories/`** and serves
@@ -30,14 +33,36 @@ Loading is followed by validation, per project: a file that does not validate
 keeps its project out of the rotation instead of failing the whole factory.
 [A project whose configuration is wrong is a project that is not being
 served](/docs/configuration/the-configuration-model#validation) — visibly, and
-with the reason.
+with the reason, on the board.
+
+Shared, partial, included and generated files are refused outright. A project is
+always exactly one complete file somebody wrote.
+
+## This repository commits no project file
+
+**A file in `factories/` is served, not sampled.** The served set is exactly the
+files here, so a committed project file names a repository the factory will
+poll, build issues from, and open and merge real pull requests into — given a
+credential. The only thing standing between a fresh checkout and a write to
+somebody's repository is that the credential's environment variable happens to
+be unset, which is luck rather than policy, and it is true of every clone.
+
+So the examples live one directory over, in the factory's own repository's
+`worker/examples/`: readable, and outside the directory the loader reads.
+
+Which also means **the first thing to know about a greenfield repository**: it
+needs one commit before it can be built at all. A round clones the base and
+diffs against the commit it started from, and an empty repository has no such
+commit. The first commit is a human's — push a README, and every issue after
+that is the factory's.
 
 ## How the directory is consumed
 
 Round-robin order is walked over the loaded set, so a project's position in the
-rotation comes from the directory's contents rather than from an ordering
-anyone maintains. [Multi-project processing](/docs/concepts/multi-project-processing)
-describes what that means for fairness and for non-blocking.
+rotation comes from the directory's contents — sorted by file name — rather than
+from an ordering anyone maintains.
+[Multi-project processing](/docs/concepts/multi-project-processing) describes
+what that means for fairness and for non-blocking.
 
 ## Conventions worth keeping
 
