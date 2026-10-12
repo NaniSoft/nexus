@@ -13,7 +13,7 @@ A Review ticket carries what happened, not a summary of it.
 
 **The diff**, as git wrote it, generated on the host from the tree the round
 left. One section per file, the first open and the rest folded, with git's own
-text underneath each one **unchanged** — so you can hold the card against your own
+text underneath each one **unchanged**, so you can hold the card against your own
 `git diff` and get the same bytes. Beside it, what the round's container recorded
 about itself: the files its own git saw, the commands it ran, what each returned,
 and the round's log if it produced nothing readable.
@@ -23,7 +23,7 @@ distinguishes them is telling you something a card that does not is not:
 
 - **"the round ran to completion and changed nothing"** versus **"the round's own
   command did not succeed"**. Same untouched disk, opposite claims about the
-  round — the first is a real outcome, the second is a round that stopped.
+  round: the first is a real outcome, the second is a round that stopped.
 - **How much was left off** when the change was very large. A diff that stops
   without saying how much it stopped at is indistinguishable from a diff of a
   smaller change, so the card counts the files and lines it did not render and
@@ -33,7 +33,7 @@ Read the tests first. The factory runs the project's suite, so a green run is
 evidence, but it is evidence about what the project already tests. A change with
 no test touching it is unverified no matter how green the run is.
 
-Then read the diff as a whole. Agent work fails in characteristic ways — a change
+Then read the diff as a whole. Agent work fails in characteristic ways: a change
 that solves the issue in one place while quietly breaking an assumption somewhere
 else, or a fix that adds a special case where the codebase already has an
 abstraction. Whole-diff reading is what catches those.
@@ -42,7 +42,7 @@ abstraction. Whole-diff reading is what catches those.
 
 **Approve** merges. Do it when the diff answers the issue and you would have
 merged it from a colleague. Approval is a signature on the change, not a
-thank-you to the factory — and it is not complete until a merge actually lands.
+thank-you to the factory, and it is not complete until a merge actually lands.
 If the merger could not carry it out, the ticket ends up in Escalated with your
 approval on the record, which is the honest answer rather than a Done that
 happened to nobody.
@@ -51,14 +51,14 @@ happened to nobody.
 consumes one of the three rounds. **Write the feedback as you would for a
 colleague's pull request**: specific, actionable, and pointed at the change
 rather than the agent. "This is wrong" costs a round and produces another guess;
-"this path drops the error case — the caller in X assumes it is set" produces a
+"this path drops the error case: the caller in X assumes it is set" produces a
 fix. Your words are the next round's brief, which is why a request for changes
 with nothing to say is refused: the brief *is* the decision.
 
 **Reject** ends the ticket. Use it when the issue itself turns out to be wrong,
 duplicated, or not worth the remaining rounds. Rejection is not a judgement on
 the build; it is the decision that the work should not continue, and it is
-**final** — nothing the factory does brings it back.
+**final**: nothing the factory does brings it back.
 
 ## Three rounds, so spend them well
 
@@ -67,7 +67,7 @@ exists so that disagreement terminates. It also changes what good feedback
 looks like: three rounds is enough to steer a build that is close, and not
 enough to design something by committee through the board.
 
-When the third round comes back, the ticket **escalates** — it parks for a human
+When the third round comes back, the ticket **escalates**: it parks for a human
 rather than merging. Escalation is not a dead end: the board still offers you
 approve and reject there, and those are the only two ways out.
 

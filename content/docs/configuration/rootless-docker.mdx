@@ -1,6 +1,6 @@
 ---
 title: Rootless Docker
-description: The considerations behind running worker containers without a root daemon — the least privileged host the factory can run on, and where it is a bounded deviation.
+description: "The considerations behind running worker containers without a root daemon: the least privileged host the factory can run on, and where it is a bounded deviation."
 ---
 
 The design names **rootless Docker** as a security requirement, and it is worth
@@ -26,7 +26,7 @@ constrains three things the factory does:
 - **Image handling.** Registries and storage live under the unprivileged user;
   the images a project's config names have to be resolvable there.
 - **Ports and networking.** Unprivileged users cannot bind low ports. The
-  factory's own published surface — the board on port 5000 — is unaffected, and
+  factory's own published surface (the board on port 5000) is unaffected, and
   worker containers need no inbound ports at all.
 - **Volume ownership.** Mounted paths must be readable and writable by the
   daemon's user, which is a host provisioning concern rather than a
@@ -64,7 +64,7 @@ machine-only limit, so an operator reads it where they make the decision.
 
 ## The posture in one line
 
-The factory assumes its workloads are untrusted — they are written by agents — so
+The factory assumes its workloads are untrusted (they are written by agents), so
 it runs them in the least privileged environment that still builds software:
 one fresh container per round, scoped credentials, no root daemon.
 [Secrets and token scopes](/docs/configuration/secrets-and-token-scopes) is the

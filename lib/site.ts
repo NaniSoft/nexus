@@ -8,7 +8,7 @@
  * about twenty lines of theme module, and patching that module one import at a time
  * passed a read-through and failed a build. It is deleted.
  *
- * **The ground is `lavender` and it does not change.** A page's ground is stable for
+ * **The ground is `cyan` and it does not change.** A page's ground is stable for
  * the life of the page; it is a property of the page, not of the reader. It is
  * applied declaratively on the document element and never read back, so a stored
  * theme can repaint the page's marks and its mode and cannot repaint the ground out
@@ -68,9 +68,10 @@ export const SITE_PRODUCT = {
  * This site is one member of a set of five, so the switcher carries all five rather
  * than only the siblings: a set of four that omits the page you are on is a set that
  * has to be re-derived every time the family changes, and the mark that marks the
- * current one is the switcher's own job. This site's own mark wears `lavender`,
+ * current one is the switcher's own job. This site's own mark wears `cyan`,
  * which is also the page's ground, so its boundary in the switcher is the ground and
- * not a second claim about it; the other four are four of the five packs.
+ * not a second claim about it. Prism carries no pack at all, which is the one case
+ * `ProductMark` draws as the full spectrum: the system itself owns every hue.
  *
  * The directory is a JSON file rather than a list in this module, because two
  * independent readers need it and a TypeScript module is not one of them: the test
@@ -80,7 +81,7 @@ export const SITE_PRODUCT = {
 export const PRODUCTS: readonly SwitcherProduct[] = site.products.map((product) => ({
   id: product.id,
   name: product.name,
-  pack: pack(product.pack),
+  pack: product.pack ? pack(product.pack) : undefined,
   href: product.href,
 }));
 
@@ -97,7 +98,7 @@ export const PRODUCTS: readonly SwitcherProduct[] = site.products.map((product) 
 export function product(productId: string): {
   id: string;
   name: string;
-  pack: PackId;
+  pack?: PackId;
   tagline: string;
   href: string;
 } {
@@ -108,5 +109,11 @@ export function product(productId: string): {
         `the ground pack and a link to nowhere. The directory holds ${site.products.map((p) => p.id).join(', ')}.`,
     );
   }
-  return { id: found.id, name: found.name, pack: pack(found.pack), tagline: found.tagline, href: found.href };
+  return {
+    id: found.id,
+    name: found.name,
+    pack: found.pack ? pack(found.pack) : undefined,
+    tagline: found.tagline,
+    href: found.href,
+  };
 }

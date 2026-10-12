@@ -321,7 +321,7 @@ describe('the documentation card hover', () => {
     }
   });
 
-  it('and the hairline it replaced was a one-pixel change worth 1.79:1', () => {
+  it('and the hairline it replaced was a one-pixel change worth less than a fifth of a step', () => {
     // Why the old rule was a weak affordance rather than a missing one, held as two
     // numbers so the next person to reach for a border hover can see what it cost. The
     // first is the change the hover made: `--primary` against the `--border` it replaced,

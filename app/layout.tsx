@@ -28,7 +28,7 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://nexus.nanisoft.com'),
   title: {
-    default: 'Nexus, software that builds software',
+    default: 'Nexus, the Agent Factory',
     template: '%s · Nexus',
   },
   description:
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     locale: 'en',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
   },
 };
 

@@ -340,9 +340,26 @@ body {
   text-decoration: none;
 }
 
-.site-blog-list__title:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.25rem;
+/*
+ * Motion, on the surfaces this site owns.
+ *
+ * Every transition reads the design system's duration and easing tokens and
+ * nothing else: no raw cubic-bezier, no keyframes authored here, no entrance
+ * states. The ambient motion on this site is the design system's own (the hero
+ * figure's travelling marker, which is a package stylesheet animation), and what
+ * this sheet adds is feedback: a hover answer that arrives at the speed the
+ * design system answers at, rather than instantly. Under
+ * `prefers-reduced-motion: reduce` the design system's own sheet disables
+ * transitions globally, so this block collapses with everything else.
+ */
+.site-catalog__item {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.site-blog-list__title {
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .site-blog-list__description {

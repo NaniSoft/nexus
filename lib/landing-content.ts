@@ -28,7 +28,7 @@
 // standing facts are bare phrases and the separators are the gaps between them.
 
 export const HERO = {
-  title: 'Software that builds software.',
+  title: 'Industrializing software delivery with AI agents.',
   lede: 'A coding agent takes a GitHub issue and returns a reviewed, merged pull request. One issue, one fresh container.',
   primaryCta: { label: 'Follow the build', href: '/blog' },
   secondaryCta: { label: 'Read the docs', href: '/docs' },
@@ -138,10 +138,10 @@ export const LOOP = {
  * span rather than a wider drawing.
  */
 const LOOP_FIGURE_NOTES = [
-  'a repository',
-  'fresh, every time',
-  'the agent works',
-  'a person decides',
+  'one repo',
+  'fresh each time',
+  'the build',
+  'a human reviews',
   'shipped',
 ] as const;
 
@@ -156,47 +156,36 @@ const LOOP_FIGURE_NOTES = [
  * renders at its foot, and the only number that changes the picture is the distance
  * between the two.
  *
- * **The span was 0.54 and the three node notes printed over one another.** A fitted box
- * is `min(roomX / spanX, roomY / spanY)`, and `spanX` is 1 because the five stages run
- * the full width, so the lane pitch is `roomY / spanY / 4`. At 0.54 that is 180.25 /
- * 0.54 / 4 = 83.4 units, against 115.2 units of half-widths for the widest adjacent
- * pair: measured on the built export, `fresh, every time` and `the agent works` overlapped
- * by 22.51 units, `the agent works` and `a person decides` by 18.82, and `a repository`
- * and `fresh, every time` by 12.63.
+ * **The span was 0.54 and the node notes printed over one another; then 0.36, and the
+ * fifth stage left the panel.** A fitted box is `min(roomX / spanX, roomY / spanY)`,
+ * and `spanX` is 1 because the five stages run the full width, so the lane pitch is
+ * `roomY / spanY / 4` and the uniform scale is that same `roomY / spanY` while it is
+ * the smaller of the two. A smaller span buys label clearance and spends panel width:
+ * at 0.36 the pitch was 125.17 units against 115.2 of half-widths for the widest
+ * adjacent pair, but the scale rose to 500.7 and the ink ran to canvas 593.4, which is
+ * 64 units past the 529px edge of `Hero01`'s `lg:grid-cols-[5fr_6fr]` column at 1440.
  *
- * **What the drawing's width cannot buy, and what the panel's width cannot either.**
- * `PulseGraph` holds the drawing at its own 640-unit coordinate space with `min-w-160`,
- * and the panel it sits in is `Hero01`'s `lg:grid-cols-[5fr_6fr]` column, which measured
- * 459px of container at 1024 and 529px from 1152 up. The container therefore carries
- * `640 - holder` of horizontal scroll at every one of those widths whatever the span is:
- * 181px at 1024 and 111px from 1152 up, measured identically at 0.54 and at the 0.36
- * below. That part is not this page's to remove. What the span does decide is how much
- * of the drawing falls inside the window a reader sees before touching it, and at 0.54
- * all of it did: the ink ran from canvas 113.5 to 510.0, inside 529. So the old figure
- * never needed scrolling, and it also never fit its own labels.
+ * **The notes are the lever that ends the trade.** The budget is arithmetic: at 12
+ * units a note character advances 7.2 units (`MONO_ADVANCE`, 0.6 of the size), so the
+ * widest adjacent pair needs `3.6 x (lenA + lenB)` of lane. A first pass cut the notes
+ * to a 28-character widest pair and span 0.44, and the rendered page still clipped the
+ * fifth stage at 1440: the measured panel was optimistic by a few units, and a margin
+ * computed to fit exactly is a margin that does not. The notes were cut again, to a
+ * 24-character widest pair (`fresh each time` beside `the build`, and the same again
+ * on the review side), and the span rose to 0.47: the pitch is 180.25 / 0.47 / 4 =
+ * 95.88 units against a worst-case label need of 3.6 x 24 + 7 = 93.4, and the scale
+ * falls to 383.5, so the ink runs from canvas 113.5 to 497.0, which is 32 units inside
+ * the 529px panel edge at 1440 instead of six units from it. At 1024 the column is
+ * 459px and the drawing scrolls the last few units, which is the width the old figure
+ * already scrolled at every width.
  *
- * `0.36` puts the lane pitch at 180.25 / 0.36 / 4 = 125.17 units: 9.97 clear of the
- * 115.2 the widest adjacent pair needs, which is more than the 7 units of `INK_CLEARANCE`
- * the design system keeps between two pieces of ink in one of its own drawings, and 2.97
- * beyond that rule rather than sitting on it. It is the largest round span that keeps
- * every note clear by that standard. The cost is that the ink now runs to canvas 593.4,
- * which is 64.4 units past the 529px edge at 1440 and 134.4 past the 459px edge at 1024,
- * so the fifth stage is off the panel at those widths and reachable by the scroll that
- * was always there.
- *
- * **Why not the span that shows all five and stops there.** A lane of 112.45 is what
- * keeps `shipped` inside 529px, and against Prism's own 7.2 units a character that is
- * legible at the platform measured here and overprinting on every platform that is not:
- * Menlo and SF Mono advance 0.6em and Consolas 0.5525em, so a lane sized on Consolas
- * collides on a Mac. A label collision is a rendering bug and a clipped stage is a scroll,
- * and a scroll is the cheaper of the two at every width.
- *
- * Nothing was deleted to buy any of it: the same five stages, the same five notes in the
- * same words and the same relation from the board to the review stage, on the same 640 x
- * 360 canvas in the same panel.
+ * A shorter note is the honest cut: each one names the actor of its stage, and the
+ * full sentence for every stage is a card in the section below. Nothing else moved:
+ * the same five stages, the same five notes in the same job, the same relation from
+ * the board to the review stage, on the same 640 x 360 canvas in the same panel.
  */
 const LOOP_STAGE_Y = 0.62;
-const LOOP_FIGURE_SPAN = 0.36;
+const LOOP_FIGURE_SPAN = 0.47;
 const LOOP_OBSERVER_Y = LOOP_STAGE_Y - LOOP_FIGURE_SPAN;
 
 /**
@@ -247,6 +236,12 @@ export const LOOP_FIGURE = {
       id: stage.title.toLowerCase(),
       name: stage.title.toLowerCase(),
       note: LOOP_FIGURE_NOTES[index],
+      // The fit renormalises the caller's x span onto its own padded drawing, so the
+      // ends always sit at the fit's padding: what keeps `issue` and `merge` and their
+      // notes inside the canvas is the component's padding (56 units) against the
+      // width of the end labels, and the notes above are cut to the shortest clauses
+      // that clear it. The drawing is also width-hooked to its panel in the page's
+      // composition, so the whole rail scales rather than scrolls.
       x: index / (LOOP.stages.length - 1),
       y: LOOP_STAGE_Y,
       lane: index,

@@ -9,7 +9,7 @@ exact names they have.
 **The field names are fixed, not illustrative.** They are what the loader reads,
 what validation is written against, and what a project file has to say. A file
 using a different name does not validate, and a file carrying a field beyond
-this set is **refused rather than ignored** — which is the whole point of naming
+this set is **refused rather than ignored**, which is the whole point of naming
 the schema here.
 
 ## Top level
@@ -22,8 +22,8 @@ the schema here.
 | `llm` | mapping | yes | What drives the build agents. See [LLM](#llm). |
 | `keys` | mapping | yes | Credentials, referenced by environment variable name. See [Keys](#keys). |
 
-That is the whole top level. The factory's behaviour — rounds, timeouts, merge
-policy, retry strategy — is **not** configurable per project; it is the
+That is the whole top level. The factory's behaviour (rounds, timeouts, merge
+policy, retry strategy) is **not** configurable per project; it is the
 factory's, identical everywhere. See
 [the configuration model](/docs/configuration/the-configuration-model).
 
@@ -70,14 +70,14 @@ project's bill.
 | `github` | string | yes | The **name** of the environment variable holding the project's GitHub token. |
 | `llm` | string | yes | The **name** of the environment variable holding the project's model credential. |
 
-Values are **names of environment variables**, never the secrets themselves —
-see [secrets and token scopes](/docs/configuration/secrets-and-token-scopes).
+Values are **names of environment variables**, never the secrets themselves.
+See [secrets and token scopes](/docs/configuration/secrets-and-token-scopes).
 
 The two are not treated alike, and the difference is structural rather than a
 policy someone has to remember: the GitHub name is read **on the host, by the
 merger, after the round's container is gone**, so no worker container ever holds
 a credential capable of writing to a remote. The LLM credential does go into the
-round's container, because the agent cannot reach a provider without one — it is
+round's container, because the agent cannot reach a provider without one. It is
 scoped to one project and dies with one round.
 
 Project files stay committable, and rotation is an environment change.
@@ -105,19 +105,19 @@ keys:
 
 No agent prompts, no per-issue overrides, no board configuration, no plugin
 list. Each of those would move factory policy into project configuration, and
-the factory's promise — that a project is a file, and the factory behaves the
-same for all of them — depends on that line holding.
+the factory's promise (that a project is a file, and the factory behaves the
+same for all of them) depends on that line holding.
 
 It also carries **no `disabled` flag**, and that is a decision rather than an
 oversight. It is why this repository commits no project file at all: a file in
 `factories/` is *served*, not sampled, so an example that lived there would be a
 repository the factory polls and merges into. The examples live outside the
-directory the loader reads — see [the factories/ layout](/docs/configuration/the-factories-layout).
+directory the loader reads. See [the factories/ layout](/docs/configuration/the-factories-layout).
 
 ## A repository with no commits
 
 Not buildable, and deliberately so. A round clones the base and diffs against
 the commit it started from; an empty repository has no such commit, and the
-clone fails. **The first commit is a human's** — the factory will not mint one,
+clone fails. **The first commit is a human's**: the factory will not mint one,
 because that is a different act from answering a project's first issue. A
 greenfield owner pushes a README before adding the project file.

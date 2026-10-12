@@ -80,7 +80,7 @@ function boundaries(container: HTMLElement) {
 describe('the pack map', () => {
   it('reads the ground from one place, and the map agrees with the site', () => {
     expect(SITE_PRODUCT.pack).toBe(map.ground);
-    expect(map.ground).toBe('lavender');
+    expect(map.ground).toBe('cyan');
   });
 
   it('carries a boundary in exactly the regions the map declares, and no others', () => {
@@ -133,10 +133,12 @@ describe('the pack map', () => {
     }
   });
 
-  it('gives every one of the three product rows a mark that is not this site\'s', () => {
+  it('gives every product row a mark, and every mark that is not this site\'s its own hue', () => {
     // The three products built on Nexus, and the reason this list exists: the old page
     // drew them as cards whose dot had a size, a colour and a radius and no background
-    // at all, so a reader saw three names and no marks.
+    // at all, so a reader saw three names and no marks. Atlas and AlphaLens wear their
+    // own packs. Prism owns no hue, so its mark is the full spectrum and carries no
+    // boundary for this map to hold.
     const container = wholePage();
     const rows = [...container.querySelectorAll('[data-slot="product-grid-row"]')];
     expect(rows).toHaveLength(3);
@@ -144,10 +146,19 @@ describe('the pack map', () => {
       const mark = row.querySelector('[data-slot="product-mark"]');
       expect(mark, 'a product row draws no mark').toBeTruthy();
       const disc = mark?.querySelector('[data-slot="product-mark-disc"]');
-      // `bg-primary` is the class that paints the disc. A mark without it is a mark a
-      // reader cannot see, which is the defect this migration repairs.
-      expect(disc?.getAttribute('class'), 'the disc carries no fill class').toContain('bg-primary');
-      expect(mark?.getAttribute('data-pack')).not.toBe(map.ground);
+      const id = mark?.querySelector('[data-product]')?.getAttribute('data-product');
+      if (!id) continue;
+      const pack = new Map(PRODUCTS.map((product) => [product.id, product.pack])).get(id);
+      if (pack) {
+        // `bg-primary` is the class that paints the disc. A mark without it is a mark a
+        // reader cannot see, which is the defect this migration repairs.
+        expect(disc?.getAttribute('class'), 'the disc carries no fill class').toContain('bg-primary');
+        expect(mark?.getAttribute('data-pack')).toBe(pack);
+        expect(mark?.getAttribute('data-pack')).not.toBe(map.ground);
+      } else {
+        expect(mark?.getAttribute('data-pack')).toBeNull();
+        expect(disc?.getAttribute('class') ?? '').toContain('conic-gradient');
+      }
     }
   });
 

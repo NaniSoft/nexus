@@ -30,7 +30,7 @@
     "punctuation is the most recognisable tell of a page nobody wrote."
   ],
   "siteId": "nexus",
-  "ground": "lavender",
+  "ground": "cyan",
   "defaultMode": "dark",
   "products": [
     {
@@ -43,7 +43,7 @@
     {
       "id": "nexus",
       "name": "Nexus",
-      "pack": "lavender",
+      "pack": "cyan",
       "href": "https://nexus.nanisoft.com",
       "tagline": "The Agent Factory: autonomous software creation."
     },
@@ -57,14 +57,13 @@
     {
       "id": "alphalens",
       "name": "AlphaLens",
-      "pack": "blush",
+      "pack": "gold",
       "href": "https://alphalens.nanisoft.com",
       "tagline": "Quantitative trading research for the Indian market."
     },
     {
       "id": "prism",
       "name": "Prism",
-      "pack": "peach",
       "href": "https://prism.nanisoft.com",
       "tagline": "One design language across every product."
     }

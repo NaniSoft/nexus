@@ -7,7 +7,7 @@ tags:
   - thesis
 ---
 
-NaniSoft's sites were built by agents. Not by a product called Nexus — by a
+NaniSoft's sites were built by agents. Not by a product called Nexus, but by a
 person and a coding agent working a repository, one session at a time. The work
 is real, it is in production, and none of it was repeatable. That gap is why
 Nexus exists.
@@ -38,7 +38,7 @@ A factory takes a standard input, applies a repeatable process, and produces a
 standard output. Apply that shape to software creation and most of the
 guesswork falls away.
 
-- The **input** is a GitHub issue — already a work order, already in a queue
+- The **input** is a GitHub issue: already a work order, already in a queue
   the team reads. No parallel backlog, no prompt to write.
 - The **process** is a fresh container per issue, a known image, agents that
   work the issue and run the project's own tests. Identical every time, so a
@@ -48,12 +48,12 @@ guesswork falls away.
   of spinning.
 
 Nothing in that list is a research problem. It is plumbing, state management,
-and a refusal to let a loop run forever — which is exactly the kind of problem
+and a refusal to let a loop run forever, which is exactly the kind of problem
 that is worth solving once instead of once per project per person.
 
 ## What we are announcing
 
-The design. Nexus — the Agent Factory — is designed and documented: a
+The design. Nexus (the Agent Factory) is designed and documented: a
 deterministic orchestration layer on .NET, worker containers running OpenCode, a
 Kanban board with five swimlanes and a human feedback loop, multi-project
 round-robin across a directory of YAML files, and an observability posture
@@ -61,13 +61,13 @@ built around one promise: nothing ends in silence.
 
 It is in active development, and we are publishing the design before the
 release because the design is the part worth arguing about. The docs describe
-the system in the present tense — what it does, not what it will do.
+the system in the present tense: what it does, not what it will do.
 
 **Update, 2026-10-01.** The factory runs. It has taken a real issue on a real
 repository all the way to a merged pull request, and the
 [deployment page](/docs/operations/deployment) is where to start. One correction
 to what is written above: there is no agent framework in the orchestration
-layer, and there never was — the orchestrator is a hand-rolled state machine,
+layer, and there never was. The orchestrator is a hand-rolled state machine,
 and [why](/docs/concepts/orchestration#no-agent-framework-in-the-loop) is worth
 reading whether or not you agree with it. The
 [configuration model](/docs/configuration/the-configuration-model) is now a
@@ -75,10 +75,10 @@ reading whether or not you agree with it. The
 
 ## What comes next
 
-Three more posts this week: the anatomy of the factory — the orchestrator, the
-workers, the board; the feedback loop — why three rounds and why auto-merge is
-the default; and the meta one — how these sites were built, and what changes
-when the factory builds them.
+Three more posts this week: the anatomy of the factory (the orchestrator, the
+workers, the board); the feedback loop (why three rounds and why auto-merge is
+the default); and the meta one (how these sites were built, and what changes
+when the factory builds them).
 
 The build follows from there. When Nexus ships, this is the place it gets
-announced — and the factory's first issue will be an issue on this repository.
+announced, and the factory's first issue will be an issue on this repository.

@@ -11,8 +11,8 @@ continuously.
 
 The factory polls and processes configured projects **in round-robin order**.
 Each pass through the loop gives every project a turn, so one noisy repository
-cannot starve the rest. This matters because the alternative — a work queue
-ordered by arrival — would let a single project with a burst of issues hold the
+cannot starve the rest. This matters because the alternative (a work queue
+ordered by arrival) would let a single project with a burst of issues hold the
 factory's capacity while quieter projects waited behind it.
 
 Intake stays serial, deliberately. Parallelising it would buy a little latency in
@@ -21,7 +21,7 @@ property that makes the multi-project guarantee provable at all: **the rotation
 order *is* the anti-starvation mechanism.** Interleaved reads would make the order
 a property of scheduling rather than of the directory.
 
-A project's turn is bounded rather than a whole pass — a busy repository cannot
+A project's turn is bounded rather than a whole pass: a busy repository cannot
 spend a pass on itself.
 
 ## Non-blocking by design
@@ -37,12 +37,12 @@ thousand open issues from holding both slots while a project with one waits
 behind it. "Bounded" has to mean bounded, not rationed.
 
 A merge takes no container slot at all. A factory with two long builds running
-should not stop shipping what a human has already read and approved — that would
+should not stop shipping what a human has already read and approved. That would
 be a less safe factory than one with no builds at all.
 
 ## What stays per-project
 
-Configuration is per-project — repository, keys, model, worker image. Work items
+Configuration is per-project: repository, keys, model, worker image. Work items
 carry their project with them, and the board can group or filter tickets by
 project, so a reviewer looking at one repository's queue sees that repository's
 tickets rather than the factory's whole output.
@@ -68,6 +68,6 @@ choice every project's bill.
 ## The isolation that still holds
 
 Multi-project does not weaken the factory's central guarantee. **Each round
-still gets a fresh container environment regardless of project** — a worker
+still gets a fresh container environment regardless of project**: a worker
 container never carries state from a previous run, and never from another
 project's run. Round-robin orders the work; isolation bounds it.

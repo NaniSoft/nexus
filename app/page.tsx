@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { ReactElement } from 'react';
 
 import { Cta01 } from '@nanisoft/prism-ui/blocks/cta-01';
@@ -12,6 +13,7 @@ import { StackGrid01 } from '@nanisoft/prism-ui/blocks/stack-grid-01';
 import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
 import { PulseGraph } from '@nanisoft/prism-ui/components/pulse-graph';
 
+import { JsonLd } from '@/components/json-ld';
 import { SiteChrome } from '@/components/site-chrome';
 import {
   BUILD_ORDER,
@@ -26,6 +28,68 @@ import {
   TICKER_LABEL,
 } from '@/lib/landing-content';
 import { product } from '@/lib/site';
+
+const SITE_URL = 'https://nexus.nanisoft.com';
+
+const DESCRIPTION =
+  'Nexus is the Agent Factory: a coding agent takes a GitHub issue and returns a reviewed, ' +
+  'merged pull request. Industrializing software delivery with AI agents.';
+
+/**
+ * The landing's own metadata.
+ *
+ * The document sets the site-wide facts, and the home page is the one route that
+ * ships none of its own, so the home page was the only address on the site with no
+ * canonical while every doc, post and section carried one. A home page that resolves
+ * at two hostnames and claims neither is the canonical bug in its plainest form.
+ */
+export const metadata: Metadata = {
+  title: { absolute: 'Nexus, the Agent Factory' },
+  description: DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'Nexus',
+    locale: 'en',
+    title: 'Nexus, the Agent Factory',
+    description: DESCRIPTION,
+  },
+};
+
+/**
+ * Structured data for the landing, read from the same constants the page renders.
+ *
+ * A WebSite node so search engines can relate this address to the family, and a
+ * SoftwareApplication node naming what the product is. There is no rating, no offer
+ * and no aggregate on any of it: the ledger two sections down this page says the
+ * factory has no release yet, and structured data that claimed a review score would
+ * be the one claim on the page a reader cannot check against the page itself.
+ */
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: 'Nexus',
+      url: SITE_URL,
+      description: DESCRIPTION,
+      inLanguage: 'en',
+      publisher: { '@id': 'https://nanisoft.com/#organization' },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${SITE_URL}/#application`,
+      name: 'Nexus',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Web',
+      url: SITE_URL,
+      description: DESCRIPTION,
+      producer: { '@type': 'Organization', name: 'NaniSoft', url: 'https://nanisoft.com' },
+    },
+  ],
+};
 
 /**
  * The landing, composed from the design system's catalogue and nothing else.
@@ -79,7 +143,7 @@ import { product } from '@/lib/site';
  * product rows in the last section, and the header's switcher. Every one of those
  * boundaries lands on a `ProductMark`, which is a fully rounded disc, and nowhere
  * else. The rule is arithmetic rather than taste: a pack boundary also re-points
- * `--radius`, and this page's ground is lavender at 0.75rem while the other four run
+ * `--radius`, and this page's ground is cyan at 0.5rem while the other packs run
  * 0.5rem to 1rem, so a section wearing another pack would put that section's
  * index into its corner radius.
  *
@@ -150,6 +214,7 @@ const LOOP_FLOW_FINAL_LABEL = 'merged';
 export default function Landing(): ReactElement {
   return (
     <SiteChrome>
+      <JsonLd data={JSON_LD} />
       {/* The thesis, the page's own h1, and the loop drawn beside it. */}
       <Hero01
         headingLevel="h1"
@@ -166,6 +231,7 @@ export default function Landing(): ReactElement {
               nodes={LOOP_FIGURE.nodes}
               relations={LOOP_FIGURE.relations}
               label={LOOP_FIGURE.aria}
+              className="w-full min-w-0"
             />
           </InstrumentPanel01>
         }

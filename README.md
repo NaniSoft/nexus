@@ -5,9 +5,9 @@
 Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, one design language ([Prism](https://prism.nanisoft.com)).
 
 - **Live**: https://nexus.nanisoft.com (Custom Domain, auto-created on deploy)
-- **Pack**: `lavender` is the ground, on the document element, and it does not change. The only region of a page that carries a pack which is not the ground is the landing's products section, which carries the three its rows name. The family's five marks live in the bar's menu now, and a closed menu paints nothing: a reader at first paint sees one pack, and the second pack reaches them when they ask to leave. That is the whole layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
+- **Pack**: `cyan` is the ground, on the document element, and it does not change. The only region of a page that carries a pack which is not the ground is the landing's products section, which carries the three its rows name. The family's five marks live in the bar's menu now, and a closed menu paints nothing: a reader at first paint sees one pack, and the second pack reaches them when they ask to leave. That is the whole layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
 - **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest (jsdom + Testing Library) · Cloudflare Workers
-- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 0.13.0, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. This repository authors no client module: every page is a server component, so the only JavaScript this site ships is the bar's own controls, and those are client components inside the pinned package rather than a boundary drawn here
+- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 1.2.0, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. This repository authors no client module: every page is a server component, so the only JavaScript this site ships is the bar's own controls, and those are client components inside the pinned package rather than a boundary drawn here
 
 ## What ships
 
@@ -19,7 +19,7 @@ Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, on
 - **Crawler files** — `app/sitemap.ts` and `app/robots.ts` emit `sitemap.xml` and `robots.txt` from the same loaders the pages are built from, so a page that exists is a row. Every route also declares its own canonical, and the document declares the social cards once
 - **Search** (`/api/search`) — thirty-five entries as one JSON array, prerendered because the export has no server: the twenty-seven documents with their section as a breadcrumb, the four posts, and the four pages of this site's own. The bar's search control fetches it when it opens and filters in the browser, which is a static file and no request per keystroke. It is not in `sitemap.xml`, because a search index is not a page a reader navigates to
 
-The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `specified`, the standing facts say `No release yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
+The honesty law is content, not chrome: the build-order ledger marks the design `complete` and every implementation piece `running`, the standing facts say `No release yet`, and the status note on every docs and blog page says the design is public and nothing has shipped. `test/content.test.ts` fails CI if a quickstart, an embedded image, a changelog section, or a roadmap date reaches the docs or the blog.
 
 ## The bar is the design system's, and this site composes it
 
@@ -219,7 +219,7 @@ and needs wrangler auth.
 Live at https://nexus.nanisoft.com. The landing, the twenty-seven documents across
 seven sections, the four launch posts, and the About page are all published from this
 branch, and the design documents the factory Nexus is meant to be. The factory itself is
-a separate matter: in active development, design complete, implementation specified and
+a separate matter: in active development, design complete, implementation running and
 not started.
 
 The wayfinder map these sites were built from is retired, and it and its ticket numbers

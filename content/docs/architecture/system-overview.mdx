@@ -1,6 +1,6 @@
 ---
 title: System overview
-description: Five components — config, poller, orchestrator and workers, board, merger — and the path a work item takes between them.
+description: Five components (config, poller, orchestrator and workers, board, merger) and the path a work item takes between them.
 ---
 
 The factory is five components with narrow contracts between them.
@@ -20,7 +20,7 @@ each other as ordinary method calls.
 ## The path of a work item
 
 1. The **config loader** starts first. Nothing else runs without a validated
-   project configuration — see [the configuration model](/docs/configuration/the-configuration-model).
+   project configuration. See [the configuration model](/docs/configuration/the-configuration-model).
 2. The **issue poller** reads open issues from each configured repository, in
    round-robin order. Each issue becomes a work item in **Backlog**.
 3. Work items are **persisted** in SQLite, which is the store of record, so the
@@ -35,7 +35,7 @@ each other as ordinary method calls.
 6. On completion the item moves to **Review**, with the diff, the round's own
    record, and its log on the card.
 7. On approval the **merger** opens the pull request against the configured
-   repository and merges it. The item moves to **Done** — and only if a merge
+   repository and merges it. The item moves to **Done**, and only if a merge
    actually landed.
 
 ## Where the contracts are

@@ -1,6 +1,6 @@
 ---
 title: Observability and error handling
-description: Structured logging, metrics, retry strategies, and parking escalation — how the factory stays legible when things fail.
+description: "Structured logging, metrics, retry strategies, and parking escalation: how the factory stays legible when things fail."
 ---
 
 A factory that fails silently is worse than no factory. This is the design's
@@ -8,14 +8,14 @@ answer, in four parts.
 
 ## Structured logging
 
-Every component logs structured events — the **poller**, the **worker**, the
+Every component logs structured events: the **poller**, the **worker**, the
 **board**, and the **merger**. Structured means each event carries its fields:
 work item, project, stage, outcome. The point is that a question like "what
 happened to this ticket" has an answer that does not require reading prose, and
 that events from concurrent runs do not blur into one another.
 
-A record about a *project* rather than a work item — a repository that could not
-be read — carries the project instead, because there is no work item to name.
+A record about a *project* rather than a work item (a repository that could not
+be read) carries the project instead, because there is no work item to name.
 That is a second vocabulary rather than a field filled with something invented.
 
 ## Metrics
@@ -27,7 +27,7 @@ The factory publishes counters for the numbers that describe its health:
 - feedback rounds per ticket.
 
 Those three are chosen because together they answer the question a maintainer
-actually has — "is the factory shipping work, and is it doing so without burning
+actually has: "is the factory shipping work, and is it doing so without burning
 rounds". Round counts matter most: a factory whose average is drifting toward
 three is a factory whose issues are written for it badly, or whose projects are
 misconfigured. The metric is the early warning.
@@ -36,7 +36,7 @@ They are published on the platform's own metrics API with **no exporter**. That
 is deliberate: this process publishes no port and binds its board to loopback,
 and a metrics endpoint would be a second surface with a second set of access
 rules to reach the same machine. A consumer attaches to the meter in whatever
-process it shares, so the factory can be measured without exposing anything —
+process it shares, so the factory can be measured without exposing anything,
 and *where* the numbers go is the deployment's business, not this process's.
 
 ## Retries
@@ -46,7 +46,7 @@ starts. The distinction is the whole design. A rate-limited API call and a
 missing image are both failures; only one of them benefits from being tried
 again.
 
-Retries are a strategy rather than a reflex — the orchestrator applies them
+Retries are a strategy rather than a reflex: the orchestrator applies them
 where a failure is transient, bounds them, and stops when they stop helping.
 A build that fails its tests is not a transient failure, and retrying it is
 just an expensive way to hide the result.
@@ -54,7 +54,7 @@ just an expensive way to hide the result.
 Two things count as transient that a reader would not guess, and both are
 declared where they are observed rather than read out of a message:
 
-- **A round that did not run to completion** — a provider rate limit, a refused
+- **A round that did not run to completion**: a provider rate limit, a refused
   provider, a missing model. It is asked for again as the *same* round, so a
   transient cause spends containers rather than a reviewer's attention.
 - **A repository that could not be read**, on an exponential backoff that grows
@@ -69,7 +69,7 @@ Failures that are not transient and do not resolve across rounds are
 Escalated tickets are **visible on the Kanban board**. That is the part that
 makes escalation real: a dead-letter queue nobody looks at is where failures go
 to be forgotten, and the board is the one surface the factory's operators
-already read. Escalation is not a punishment for the ticket — it is the
+already read. Escalation is not a punishment for the ticket: it is the
 factory saying it needs a human, with the record of why attached.
 
 **Escalated is a parking state, not a terminal one.** A human can still merge or
@@ -77,7 +77,7 @@ reject the work item from the board, and those are the only two ways out of it.
 The loop has no transition that re-opens one, so a parked work item stays parked
 however long it sits. **Rejected is the state that is final**, and the board
 offers a parked work item two of the three decisions precisely because
-finishing it by hand is the answer — not a third round.
+finishing it by hand is the answer, not a third round.
 
 ## The full failure path
 

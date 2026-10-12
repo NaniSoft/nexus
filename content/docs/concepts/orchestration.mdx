@@ -18,7 +18,7 @@ agents. Every decision the factory makes is a state transition over a work item
 in a store, and every one of them is decided by the same code path whether a
 container was started, a reviewer's click arrived, or a heartbeat asked the
 machine to look again. An agent in that position would make the factory's
-behaviour depend on a model's judgement about what to do next — and the whole
+behaviour depend on a model's judgement about what to do next, and the whole
 guarantee the design makes is that a reviewer knows what the factory will do.
 
 So the orchestrator is a hand-rolled state machine, stepped rather than driven.
@@ -36,7 +36,7 @@ than network guesses.
 ## The agent seam
 
 The orchestrator does not reach into a container to run commands. It hands a
-work item to **`NOpenCode`** — one call is one round — and `NOpenCode` drives
+work item to **`NOpenCode`** (one call is one round), and `NOpenCode` drives
 **OpenCode** inside the worker container and returns a result. What came back is
 derived by *observing* the container, not by believing the agent: files changed
 from git, commands from a recording wrapper, outcomes from exit codes.
@@ -60,12 +60,12 @@ the same way every time:
 - when the round counter closes the loop.
 
 Those decisions are the factory's actual policy. They are written down in
-[Architecture — orchestration layer](/docs/architecture/orchestration-layer).
+[Architecture: orchestration layer](/docs/architecture/orchestration-layer).
 
 ## What it holds no opinion about
 
-Factory behaviour — the round ceiling, the timeouts, the merge policy, the retry
-strategy — is **code, not configuration**. Identical for every project. The one
+Factory behaviour (the round ceiling, the timeouts, the merge policy, the retry
+strategy) is **code, not configuration**. Identical for every project. The one
 deliberate exception is auto-merge, which is a factory-level setting with a
 default of **off**, so a work item waits in Review until a human decides unless
 an operator turns the timeout on deliberately.

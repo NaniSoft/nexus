@@ -1,6 +1,6 @@
 ---
 title: The configuration model
-description: The six values a project's YAML carries — repository, worker image, LLM model, keys — and how the loader validates them.
+description: The six values a project's YAML carries (repository, worker image, LLM model, keys) and how the loader validates them.
 ---
 
 A project's configuration is a YAML file naming six things: what the project is
@@ -45,8 +45,8 @@ Three things to notice about that file.
 First, it is per **project**, not per issue: nothing here changes between two
 issues on the same repository.
 
-Second, it names **no agent behaviour**. The factory's policy — rounds,
-timeouts, merge rules — is the factory's, identical everywhere; a project
+Second, it names **no agent behaviour**. The factory's policy (rounds,
+timeouts, merge rules) is the factory's, identical everywhere; a project
 configures its inputs, not the factory's rules.
 
 Third, it names **no credentials**, only the environment variables that hold
@@ -57,7 +57,7 @@ environment change.
 
 The config loader **validates** a project's file before anything downstream
 sees it. A file that fails validation stops that project from joining the factory
-rather than failing later, mid-run, in a worker container — and the refusal is
+rather than failing later, mid-run, in a worker container, and the refusal is
 rendered on the board with the reason, so a misconfigured project is a visible
 one rather than a silent one.
 
@@ -70,7 +70,7 @@ somebody will eventually put policy in and believe it is working.
 Validation is also what makes the rest of the design simple. The poller, the
 worker, and the board all read configuration values through the loader, and none
 of them has to handle the case of a missing model reference or an unresolvable
-image — the loader already refused it.
+image. The loader already refused it.
 
 ## Who reads what
 

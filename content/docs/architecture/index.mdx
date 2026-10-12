@@ -7,15 +7,15 @@ Architecture describes the factory as built components with contracts between
 them. [Concepts](/docs/concepts) says what each idea is; these pages say what
 runs, in what order, and what happens when a stage fails.
 
-- **[System overview](/docs/architecture/system-overview)** — the five
+- **[System overview](/docs/architecture/system-overview)**: the five
   components and the path a work item takes through them.
-- **[Orchestration layer](/docs/architecture/orchestration-layer)** — the state
+- **[Orchestration layer](/docs/architecture/orchestration-layer)**: the state
   machine that owns policy, the round state machine, and the container budget.
-- **[Worker-container lifecycle](/docs/architecture/worker-container-lifecycle)** —
+- **[Worker-container lifecycle](/docs/architecture/worker-container-lifecycle)**:
   start to teardown, stage by stage, including mid-run failure.
-- **[Kanban service](/docs/architecture/kanban-service)** — the board at port
+- **[Kanban service](/docs/architecture/kanban-service)**: the board at port
   5000, its state source, the diff on the card, and its one write path.
-- **[Observability and error handling](/docs/architecture/observability-and-error-handling)** —
+- **[Observability and error handling](/docs/architecture/observability-and-error-handling)**:
   structured logs, metrics, bounded retries, and parking escalation.
 
 Every page here traces to the factory's design; where the design leaves a

@@ -8,7 +8,7 @@ tags:
 ---
 
 A factory is not a clever model. It is a queue, a shop floor, and a rule for
-when something is finished. This is how Nexus is assembled — five components,
+when something is finished. This is how Nexus is assembled: five components,
 and the reason each seam sits where it sits.
 
 ## The five components
@@ -34,7 +34,7 @@ project to serve it.
 ## The orchestrator: a state machine, not a framework
 
 A factory run is not one agent doing one thing. It is planning, building,
-checking, and reporting — many times over, concurrently, across many projects,
+checking, and reporting, many times over, concurrently, across many projects,
 with retries and timeouts around each. Coordinating that with hand-rolled glue
 is precisely where ad hoc agent work becomes unmaintainable.
 
@@ -52,7 +52,7 @@ behaviour depend on a model's judgement, and the guarantee a reviewer relies on
 is that they know what the factory will do.
 
 The .NET SDK is also what binds the factory together. Config loader, poller,
-worker, board, merger — one runtime, so their contracts are ordinary method
+worker, board, merger: one runtime, so their contracts are ordinary method
 calls instead of network guesses between services that each need their own
 deploy.
 
@@ -60,7 +60,7 @@ deploy.
 
 The orchestrator does not reach into the container to run commands. It hands a
 work item to **NOpenCode**, the .NET integration that drives **OpenCode**
-inside the container and returns structured results — files changed, commands
+inside the container and returns structured results: files changed, commands
 run, test outcomes.
 
 That boundary is the most consequential one in the design. The orchestrator
@@ -78,7 +78,7 @@ component that merges is not the component that wrote the code.
 ## The worker container
 
 Every issue gets a fresh Docker container from the image its project's
-configuration names. Nothing carries over — no cache, no working tree, no
+configuration names. Nothing carries over: no cache, no working tree, no
 state from any previous run. Two reasons, and they are worth separating.
 
 **Reproducibility.** The same issue built twice starts from the same place, so
@@ -92,7 +92,7 @@ A bad run cannot reach a neighbouring project's work, because there is no path
 from one container to another.
 
 Inside, two pieces of software: **code-server**, which gives the run a real
-editing environment — the project's toolchain, test runner, debugger — and
+editing environment (the project's toolchain, test runner, debugger) and
 **OpenCode**, which works the issue. The container's life is six stages: start,
 checkout, build, test, report, teardown. It is removed on success, failure, and
 cancellation alike.
@@ -100,14 +100,14 @@ cancellation alike.
 ## The board, and the loop that ends
 
 Work items are persisted once, and the board reads the same records the
-orchestrator writes — no board-side copy to drift. The board serves on port
+orchestrator writes, with no board-side copy to drift. The board serves on port
 5000 with auto-refresh, five swimlanes (Backlog → Frontier → In Progress →
 Review → Done) and two states off the flow: rejected, which is final, and
 escalated, which parks for a human and still offers approve and reject.
 
 The loop's rules live in the orchestrator, and they are the part worth arguing
-about rather than the parts worth admiring: three feedback rounds maximum — and
-on exhaustion the ticket **escalates rather than merging** — and merge on
+about rather than the parts worth admiring: three feedback rounds maximum (on
+exhaustion the ticket **escalates rather than merging**), and merge on
 approval, with a feedback timeout that can merge once an operator turns it on.
 We will take those on in the next post, because they are the difference between
 a factory and a very expensive way of generating diffs.
@@ -117,7 +117,7 @@ a factory and a very expensive way of generating diffs.
 No scheduler component. No per-project plugin system. No second queue beside
 the board. No per-project override of the factory's rules. Every one of those
 would be easy to add and would quietly end the promise that makes the factory
-worth having — that a project is a file, and the factory behaves the same for
+worth having: that a project is a file, and the factory behaves the same for
 all of them.
 
 The full architecture is in [the docs](/docs/architecture/system-overview),

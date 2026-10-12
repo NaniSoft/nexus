@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Docker Compose brings up the factory — one deployment, every configured project, the machine-only limit and the daemon deviation named in the file.
+description: "Docker Compose brings up the factory: one deployment, every configured project, the machine-only limit and the daemon deviation named in the file."
 ---
 
 The factory deploys with **Docker Compose**. That choice is not nostalgic: the
@@ -30,8 +30,8 @@ with its worker pool, the board publishing at **port 5000**, and the Docker
 runtime they both start containers against.
 
 Workers are **not** long-running members of the deployment. A worker container
-exists for one round, starts on demand, and is removed when the round ends —
-successfully, on failure, or on cancellation — see
+exists for one round, starts on demand, and is removed when the round ends
+(successfully, on failure, or on cancellation). See
 [the worker-container lifecycle](/docs/architecture/worker-container-lifecycle).
 
 Review workspaces are a second kind of container, spawned on demand from a card
@@ -47,7 +47,7 @@ publishes a port at all, and it binds to loopback.
 | Store | The SQLite store of record, with each round's lifted tree beside it. |
 
 A round's tree is **kept** after the round, because the host has to be able to
-reach the round's commit once the container that made it is gone — the host
+reach the round's commit once the container that made it is gone: the host
 pushes, and the container cannot.
 
 ## The machine-only limit
@@ -57,8 +57,8 @@ because there is no second machine to ask who you are; local access *is* the
 authorisation, and the target repository's own branch protection is the backstop
 that makes unattended merging a policy rather than an unbounded risk.
 
-Reaching the board from anywhere else is a deliberate flip of two things — the
-mapping, and a token check on the board's writes — never an accident.
+Reaching the board from anywhere else is a deliberate flip of two things (the
+mapping, and a token check on the board's writes), never an accident.
 
 ## The daemon, named where it is accepted
 
@@ -68,7 +68,7 @@ are **siblings** on the host daemon rather than children of the factory's own.
 Rootless Docker is a requirement where the factory runs for real. Docker Desktop
 reports no rootless marker, and this is the named, bounded deviation: worker
 containers get no host mount, publish no port, run as an unprivileged user with
-no supplementary group, and hold one scoped credential for one round — the
+no supplementary group, and hold one scoped credential for one round: the
 compensating controls the worker image enforces and its own smoke test proves.
 [Rootless Docker](/docs/configuration/rootless-docker) is the longer version.
 
@@ -80,8 +80,8 @@ deployment. Configuration is read at start and does not hot reload, so **a
 changed file means a restart**.
 
 Checking that the set of projects the factory is actually serving matches what
-you expect is the first thing to do after a config change. The board — grouped
-by project — is where that check is visible, and it reports each project's intake
+you expect is the first thing to do after a config change. The board (grouped
+by project) is where that check is visible, and it reports each project's intake
 state separately: never polled, polled, or failing. An empty board is three
 different facts and only one of them is "there is nothing to do".
 

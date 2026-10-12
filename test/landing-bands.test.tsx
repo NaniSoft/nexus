@@ -106,7 +106,7 @@ describe('the landing is nine bands and no two of them are the same shape', () =
     expect([...new Set(shapes.values())].reduce<string[]>((all, group) => [...all, ...group], []).sort()).toEqual(
       [
         '(untitled)',
-        'Software that builds software.',
+        'Industrializing software delivery with AI agents.',
         'The loop',
         'What the loop guarantees',
         'What’s inside',

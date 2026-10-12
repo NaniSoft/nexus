@@ -1,13 +1,13 @@
 ---
 title: Orchestration layer
-description: The .NET state machine that owns factory policy — the round state machine, the container budget, and the rules that close the loop.
+description: "The .NET state machine that owns factory policy: the round state machine, the container budget, and the rules that close the loop."
 ---
 
 The orchestration layer is the part of the .NET service that makes policy
 decisions, and it is the only component that does. Every transition a work item
 goes through was decided here.
 
-There is no agent framework in this layer, and no host-side agent of any kind —
+There is no agent framework in this layer, and no host-side agent of any kind.
 [Orchestration](/docs/concepts/orchestration) says why.
 
 ## Driving the build through NOpenCode
@@ -15,7 +15,7 @@ There is no agent framework in this layer, and no host-side agent of any kind �
 The orchestrator does not reach into the container to run commands. It hands a
 work item to **NOpenCode**, which drives **OpenCode** inside the worker
 container and returns structured results. The orchestrator consumes those
-results — what changed, what ran, what passed — and updates the work item.
+results (what changed, what ran, what passed) and updates the work item.
 
 Keeping that boundary means the orchestrator's policy is tested entirely against
 a fake NOpenCode: no Docker anywhere near the tests that assert what a round
@@ -27,7 +27,7 @@ Every work item carries a round counter, and every transition is listed here
 rather than summarised:
 
 ```
-—  → Backlog                          (issue polled)
+(new) → Backlog                        (issue polled)
 Backlog → Frontier                     (a reviewer accepted it)
 Frontier → In Progress                 (a container was free)
 In Progress → Review                   (the round returned a result)
@@ -72,7 +72,7 @@ different budget and no deployment can quietly raise the machine's ceiling.
 It is not a lock and not a shared working tree. Each round gets its own fresh
 container whatever project it is for, so there is nothing shared to serialise.
 Within the budget, the next container goes to whichever project is holding
-fewer — so a project with a thousand open issues cannot take the whole machine
+fewer, so a project with a thousand open issues cannot take the whole machine
 from one with a single issue. A work item waits in Frontier rather than in
 Backlog, because a queued work item and one nobody has accepted are different
 things and the board should not blur them.
@@ -85,13 +85,13 @@ indistinguishable from a wedged one.
 
 The orchestrator is **stepped**, not timer-driven: one step applies at most one
 transition. A heartbeat asks for a step on a schedule, so retries and backoffs
-are ended by something looking rather than by a timer firing on its own — but
+are ended by something looking rather than by a timer firing on its own, but
 the loop contains no wait of any kind. A merge takes no container slot, which is
 why an approval is not stuck behind a long build.
 
 ## What the orchestrator does not do
 
-It does not hold build state of its own — work items are persisted, and the
+It does not hold build state of its own: work items are persisted, and the
 board reads the same record the orchestrator writes. It does not open pull
 requests; the merger does. And it does not retry blindly: retries are
 [strategy, not reflex](/docs/architecture/observability-and-error-handling).

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BlogPostPage } from '@nanisoft/prism-ui/pages';
 
 import { PostDate } from '@/components/post-date';
+import { JsonLd } from '@/components/json-ld';
 import { SiteChrome } from '@/components/site-chrome';
 import { StatusNote } from '@/components/status-note';
 import { getMdxComponents } from '@/lib/mdx-components';
@@ -65,7 +66,7 @@ const TRAIL_LABELS = { previous: 'Previous', next: 'Next' } as const;
  * machine form, and the trail to the neighbouring posts.
  *
  * Two things changed and neither is the design. The eyebrow above the title read
- * "nanisoft · nexus — blog", the same three elements of one fact the docs index used
+ * "nanisoft · nexus · blog", the same three elements of one fact the docs index used
  * to carry, and it is gone. The meta line under each post read as a date, then a
  * middle dot, then every tag joined by another one, so a three-tag post carried three
  * separators on one line and the line read as a sentence with a date in it. The date
@@ -136,8 +137,22 @@ export default async function BlogPage({ params }: PageProps): Promise<ReactElem
 
   const MDX = page.data.body;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: page.data.title,
+    description: page.data.description,
+    datePublished: isoDate(page.data.date),
+    inLanguage: 'en',
+    url: `https://nexus.nanisoft.com${page.url}`,
+    mainEntityOfPage: `https://nexus.nanisoft.com${page.url}`,
+    author: { '@type': 'Organization', name: 'NaniSoft', url: 'https://nanisoft.com' },
+    publisher: { '@type': 'Organization', name: 'NaniSoft', url: 'https://nanisoft.com' },
+  };
+
   return (
     <SiteChrome current="/blog">
+      <JsonLd data={jsonLd} />
       <BlogPostPage
         title={page.data.title}
         description={page.data.description}

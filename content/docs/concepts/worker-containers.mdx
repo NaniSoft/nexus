@@ -1,6 +1,6 @@
 ---
 title: Worker containers
-description: Every round gets a fresh Docker container — isolated, disposable, and identical every time, with no port and no host path.
+description: "Every round gets a fresh Docker container: isolated, disposable, and identical every time, with no port and no host path."
 ---
 
 A **worker container** is the Docker container the factory starts for a single
@@ -11,10 +11,10 @@ and tested.
 
 Two things, and they are the pair the design is built around:
 
-- **code-server** — VS Code in the browser, running inside the container. It
+- **code-server**: VS Code in the browser, running inside the container. It
   gives the run a real editing environment: the project's language tooling, its
   test runner, its debugger.
-- **OpenCode** — the coding agent that works the issue. It reads the
+- **OpenCode**: the coding agent that works the issue. It reads the
   repository, plans, edits files, and runs commands inside the container.
 
 The two are integrated through **`NOpenCode`**, the seam the orchestrator uses to
@@ -36,7 +36,7 @@ project's work or the factory host.
 build issues from several projects at once without the runs contending for one
 working tree.
 
-**Honest teardown.** When a run ends — success, failure, or cancellation — the
+**Honest teardown.** When a run ends (success, failure, or cancellation), the
 container goes with it. Nothing lingers to make the next run's behaviour
 mysterious.
 
@@ -48,7 +48,7 @@ whole of its interface with the outside:
 - **in**, over the network: the round fetches the repository itself. The
   container is given **no host path**, because a mount would be a path from
   untrusted agent-written code to the factory host.
-- **out**, as **one file** the host lifts with `docker cp` — the structured
+- **out**, as **one file** the host lifts with `docker cp`: the structured
   result. The container's log is the other channel, and it carries live
   progress.
 
@@ -72,8 +72,8 @@ The image a project's workers start from is named in that project's
 configuration, so each repository gets an environment that matches its own
 toolchain rather than one image that pretends to fit everything. The base image
 carries no toolchain of its own beyond git and the two tools named above;
-building and publishing a project's image is part of configuring the project —
-see [Configuration](/docs/configuration/the-configuration-model).
+building and publishing a project's image is part of configuring the project.
+See [Configuration](/docs/configuration/the-configuration-model).
 
 ## Lifecycle
 

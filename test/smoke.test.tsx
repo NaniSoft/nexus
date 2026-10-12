@@ -362,10 +362,18 @@ describe('the landing', () => {
       const link = row?.querySelector('a');
       expect(link?.getAttribute('href')).toBe(product?.href);
       expect(within(row as HTMLElement).getByText(product?.name ?? '')).toBeTruthy();
-      // The row's mark is its own boundary, and it is a mark.
-      const mark = row?.querySelector('[data-slot="product-mark"][data-pack]');
-      expect(mark, `the ${id} mark carries no boundary`).toBeTruthy();
-      expect(mark?.getAttribute('data-pack')).toBe(product?.pack);
+      // A product with a pack wears that pack as the row's boundary. Prism owns no
+      // hue, so its mark is the one case `ProductMark` draws as the full spectrum,
+      // and it carries no boundary at all.
+      const mark = row?.querySelector('[data-slot="product-mark"]');
+      expect(mark, `the ${id} row draws no mark`).toBeTruthy();
+      if (product?.pack) {
+        expect(mark?.getAttribute('data-pack')).toBe(product.pack);
+      } else {
+        expect(mark?.getAttribute('data-pack')).toBeNull();
+        const disc = mark?.querySelector('[data-slot="product-mark-disc"]');
+        expect(disc?.getAttribute('class') ?? '').toContain('conic-gradient');
+      }
     }
   });
 
@@ -431,7 +439,7 @@ describe('the page that does not exist', () => {
 describe('the product this site is', () => {
   it('is in the directory, and the directory holds the five products the set is', () => {
     expect(SITE_PRODUCT.id).toBe('nexus');
-    expect(SITE_PRODUCT.pack).toBe('lavender');
+    expect(SITE_PRODUCT.pack).toBe('cyan');
     expect(PRODUCTS.map((product) => product.id)).toEqual(['www', 'nexus', 'atlas', 'alphalens', 'prism']);
   });
 });

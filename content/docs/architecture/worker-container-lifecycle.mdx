@@ -1,6 +1,6 @@
 ---
 title: Worker-container lifecycle
-description: Start, fetch, build, test, report, teardown — the six stages of one round, and what happens when a stage fails midway.
+description: "Start, fetch, build, test, report, teardown: the six stages of one round, and what happens when a stage fails midway."
 ---
 
 A worker container exists for exactly one round. Its life has six stages, and
@@ -18,7 +18,7 @@ transient-class and goes to
 **2. Fetch.** The container clones the configured repository at the issue's base.
 It fetches it **over the network** rather than being given a host path, because a
 mount is a path from untrusted agent-written code to the factory host. A
-repository with no commits has nothing to clone, and the clone fails — see
+repository with no commits has nothing to clone, and the clone fails. See
 [the factories/ layout](/docs/configuration/the-factories-layout).
 
 **3. Build.** OpenCode works the issue inside the container, driven through
@@ -30,14 +30,14 @@ repository's own scripts do. The round's brief tells the agent that, which is wh
 it is told to record its shell work through the image's own wrapper.
 
 **5. Report.** The round's own exit code is recorded, and the container writes one
-result file — files changed, commands run and what each returned, the agent's
+result file: files changed, commands run and what each returned, the agent's
 optional note, and the start commit the diff is measured from. The host lifts it
 out with `docker cp`, generates the diff from the tree with git, and moves the
 work item to **Review**.
 
 **6. Teardown.** The container is removed. Whether the round succeeded, failed,
 was cancelled, or the agent never ran, the removal happens **in a teardown path
-rather than on the success path** — a container that outlives its round is what
+rather than on the success path**: a container that outlives its round is what
 makes "nothing survives a round" untrue.
 
 The removal is addressed by name, on a token nobody can cancel, for two reasons:
@@ -50,7 +50,7 @@ that must happen the one operation that could not.
 
 A stage that fails does not leave a half-alive environment behind. The container
 is removed as part of the failure path, the work item records where it stopped,
-and the board shows the ticket in the state that reflects it — retrying, failed,
+and the board shows the ticket in the state that reflects it: retrying, failed,
 or escalated.
 
 **A round that did not run to completion is not a round that changed nothing.**
@@ -69,7 +69,7 @@ in exactly one place so nothing can spend a container the loop cannot see.
 ## The tree that stays
 
 The round's working tree is lifted out to the host and **kept**, because the host
-has to be able to reach the round's commit once the container is gone — the host
+has to be able to reach the round's commit once the container is gone: the host
 pushes, and the container cannot. That is also what the reviewer judges: the diff
 on the card is `git diff` run on this host against this tree, which is why the
 board's diff exists even for a round that wrote no result file at all.

@@ -28,8 +28,8 @@
     "is a decision made from that mark.",
     "",
     "The second half of the rule is arithmetic rather than taste. A boundary",
-    "re-points --radius, and this page's ground is lavender at 0.75rem while the other",
-    "four packs run 0.5rem to 1rem, so a section wearing a second pack would put that",
+    "re-points --radius, and this page's ground is cyan at 0.5rem while the other",
+    "other packs run 0.5rem to 1rem, so a section wearing a second pack would put that",
     "section's index into its corner radius. And a section ground puts the pack's hue",
     "into every status dot and every primary-filled control inside it, which is what",
     "the old rule protected against when it forbade pack grounds for a reason that no",
@@ -49,21 +49,30 @@
     "no longer prints an ordinal, and the region is named `landing.products` after the",
     "Block that draws the rows."
   ],
-  "ground": "lavender",
+  "ground": "cyan",
   "defaultMode": "dark",
-  "secondPackRegions": ["landing.products"],
+  "secondPackRegions": [
+    "landing.products"
+  ],
   "regions": {
     "header.brand": {
       "why": "The bar's brand lockup is this site, and this site's pack is the page's pack, so its boundary is the ground rather than a second pack.",
-      "packs": ["lavender"]
+      "packs": [
+        "cyan"
+      ]
     },
     "footer.brand": {
       "why": "The same lockup, in the footer. A ground is stable for the life of a page, and a footer that wore a different hue from the page it closes would be a second claim about the same thing.",
-      "packs": ["lavender"]
+      "packs": [
+        "cyan"
+      ]
     },
     "landing.products": {
       "why": "A product row's mark is that product's own hue, and it is the one claim on this page a reader makes a decision from: which product is this, and does its colour mean anything. The mark is a fully rounded disc, so the boundary moves nothing about its shape. The region is named by the Block that draws the rows rather than by the ordinal the band used to print, so a page that renumbers its sections does not silently rename a region the gate holds it to. This band is the second of the two the page used to have: the old page drew the same three products as cards with a hand-written dot that carried no background at all, so the reader saw three names and no marks.",
-      "packs": ["mint", "blush", "peach"]
+      "packs": [
+        "mint",
+        "gold"
+      ]
     }
   }
 }

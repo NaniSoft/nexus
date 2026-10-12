@@ -3,7 +3,7 @@
 // The fumadocs-mdx Macro API is compile-time: `defineDocs`/`defineCollections`
 // may only appear at top level in this module with literal `dir`s, and the
 // module must not re-export the macro. Frontmatter is fumadocs' page schema
-// plus the blog's date/tags/draft — no Nexus-specific fields.
+// plus the blog's date/tags/draft, with no Nexus-specific fields.
 
 import { defineCollections, defineDocs } from 'fumadocs-mdx/macro';
 import { loader } from 'fumadocs-core/source';

@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Prism mark: a white beam entering a prism, refracted into the blue inks
-       (ADR-0001 — the beam is neutral, refraction is the brand). -->
-  <rect width="32" height="32" rx="4" fill="#0B1220" />
-  <g stroke-linecap="round">
-    <path d="M4 16 L13 16" stroke="#E8EEF9" stroke-width="2.5" />
-    <path d="M15 14 L28 8" stroke="#2563EB" stroke-width="2.5" />
-    <path d="M15 16 L28 16" stroke="#3B82F6" stroke-width="2.5" />
-    <path d="M15 18 L28 24" stroke="#2563EB" stroke-width="2.5" />
-    <path d="M13 12 L15 20 L13 20 Z" fill="#93B2FF" stroke="none" />
+  <!-- Nexus mark: the agent loop, three stages on one cycle. The bright node is
+       the stage a build is at; the loop never skips a stage. Colours are the
+       cyan pack's own tokens (brand-100, brand-400, neutral-950). -->
+  <rect width="32" height="32" rx="4" fill="#15191A" />
+  <g fill="none" stroke="#46BCD6" stroke-width="2.4" stroke-linecap="round">
+    <path d="M17.5 10.1 L22 17.9" />
+    <path d="M20.5 20.5 L11.5 20.5" />
+    <path d="M10 17.9 L14.5 10.1" />
   </g>
+  <circle cx="16" cy="7.5" r="2.8" fill="#CDF5FF" />
+  <circle cx="23.5" cy="20.5" r="2.6" fill="#15191A" stroke="#46BCD6" stroke-width="1.6" />
+  <circle cx="8.5" cy="20.5" r="2.6" fill="#15191A" stroke="#46BCD6" stroke-width="1.6" />
 </svg>

@@ -10,13 +10,13 @@ tags:
 
 There are five nanisoft.com sites. This one, Atlas, AlphaLens, Prism, and the
 company root. They share one design language, one component library, one
-pack spectrum, and one chrome — and every one of them was built by an agent
+pack spectrum, and one chrome. Every one of them was built by an agent
 working a repository with a person directing it.
 
 Not by Nexus. That distinction is the whole point of this post.
 
 **Update, 2026-10-01.** Nexus now runs, and it has merged its first pull request
-from its own board — against a throwaway repository, not this one. These sites
+from its own board (against a throwaway repository, not this one). These sites
 still were not built by it, which is the distinction the post is making and the
 reason it is still the interesting claim.
 
@@ -26,7 +26,7 @@ Each site went the way agent development goes today: a person opened a
 repository, pointed a coding agent at a spec, reviewed what came back, asked
 for changes, and eventually merged. Repeat per site, per feature, per fix.
 
-The outputs are good, and they are real — you are reading one. But the process
+The outputs are good, and they are real: you are reading one. But the process
 was bespoke every time. The environment was whatever the person's machine had.
 The specification was a prompt written for one session. The review was a
 diff in a terminal. Nothing about it compounds: the second site did not get
@@ -41,7 +41,7 @@ here. The factory is what Nexus is for.
 Take the same work and put it through the designed loop, and the parts that
 were per-session become per-project configuration:
 
-- **The environment** becomes a container from a named image — identical every
+- **The environment** becomes a container from a named image: identical every
   run, torn down after, unable to reach another project's work.
 - **The specification** becomes a GitHub issue, the only input the factory
   reads. No prompt to tune per session; the issue is the spec.
@@ -52,7 +52,7 @@ were per-session become per-project configuration:
   the person who was there.
 
 The first three are exactly the steps that were manual every time. That is not
-a coincidence — it is the definition of the work.
+a coincidence: it is the definition of the work.
 
 ## The platform story, and its honest tense
 
@@ -63,7 +63,7 @@ because it is the architecture we are building toward.
 
 Read it in the right tense. Today, agent development built these sites, and a
 person held the loop. The design in these docs is what makes that repeatable
-without the person in the middle of every step — one factory, many projects,
+without the person in the middle of every step: one factory, many projects,
 round-robin across a directory of YAML files, a human review that terminates.
 
 ## Why publish the design first
@@ -75,7 +75,7 @@ Everything Nexus claims is written down where it can be checked: the
   [architecture](/docs/architecture/system-overview), the
   [configuration model](/docs/configuration/the-configuration-model), the
   [testing strategy](/docs/operations/testing-strategy), and the two rules this
-  post leans on — [three rounds, and merge on
+  post leans on: [three rounds, and merge on
   timeout](/blog/humans-in-the-loop-three-rounds-max). There are no screenshots
   here and no changelog, because there is nothing to release yet; what there is
   now is a [deployment page](/docs/operations/deployment).
@@ -83,9 +83,9 @@ Everything Nexus claims is written down where it can be checked: the
 The next thing Nexus builds should be built through the factory: an issue on a
 configured repository, a fresh container, a diff on a board, a person deciding.
 
-**Update, 2026-10-01.** That has now happened, against a throwaway repository —
+**Update, 2026-10-01.** That has now happened, against a throwaway repository:
 issue, container, diff, decision, merged pull request. It did not happen here,
 and it will not be pointed at this repository until the merge path is trusted
 with a token that can write to it. So the milestone this site was waiting to
-announce is announced, and the claim it was going to make — that Nexus can build
-one of these sites — is still open.
+announce is announced, and the claim it was going to make (that Nexus can build
+one of these sites) is still open.
