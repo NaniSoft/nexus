@@ -63,6 +63,7 @@ describe('the site has no client code', () => {
       'app/robots.ts',
       'app/sitemap.ts',
       'components/json-ld.tsx',
+      'components/logo.tsx',
       'components/post-date.tsx',
       'components/site-chrome.tsx',
       'components/status-note.tsx',

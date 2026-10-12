@@ -39,6 +39,25 @@ const SPECTRUM =
 
 const CARD_LINE = 'A coding agent takes a GitHub issue and returns a reviewed, merged pull request.'
 
+/**
+ * The mark, as the card draws it: the same agent loop the favicon carries, painted
+ * in the card's own literals and embedded as a data URI, because the renderer
+ * paints a bitmap and cannot resolve cascade classes. A platform that renders no
+ * card at all loses nothing; a platform that renders it shows the product's mark
+ * and not only its name.
+ */
+const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="150" height="150" fill="none">
+  <g stroke="#7fdaf0" stroke-width="2.4" stroke-linecap="round">
+    <path d="M17.5 10.1 L22 17.9"/>
+    <path d="M20.5 20.5 L11.5 20.5"/>
+    <path d="M10 17.9 L14.5 10.1"/>
+  </g>
+  <circle cx="16" cy="7.5" r="2.8" fill="#cdf5ff"/>
+  <circle cx="23.5" cy="20.5" r="2.6" fill="none" stroke="#7fdaf0" stroke-width="1.6"/>
+  <circle cx="8.5" cy="20.5" r="2.6" fill="none" stroke="#7fdaf0" stroke-width="1.6"/>
+</svg>`
+const MARK_URI = `data:image/svg+xml;base64,${Buffer.from(MARK_SVG).toString('base64')}`
+
 export default function OpengraphImage() {
   return new ImageResponse(
     (
@@ -56,13 +75,16 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div style={{ display: 'flex', fontSize: 26, letterSpacing: 2, color: CYAN }}>
-            NANISOFT · THE AGENT FACTORY
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', fontSize: 26, letterSpacing: 2, color: CYAN }}>
+              NANISOFT · THE AGENT FACTORY
+            </div>
+            <img src={MARK_URI} width={140} height={140} style={{ opacity: 0.9 }} />
           </div>
           <div style={{ display: 'flex', fontSize: 110, fontWeight: 600, letterSpacing: -3, lineHeight: 1 }}>
             Nexus
           </div>
-          <div style={{ display: 'flex', fontSize: 36, color: MUTED, lineHeight: 1.35 }}>
+          <div style={{ display: 'flex', fontSize: 36, color: MUTED, lineHeight: 1.35, maxWidth: 900 }}>
             {CARD_LINE}
           </div>
         </div>

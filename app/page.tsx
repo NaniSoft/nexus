@@ -14,6 +14,7 @@ import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
 import { PulseGraph } from '@nanisoft/prism-ui/components/pulse-graph';
 
 import { JsonLd } from '@/components/json-ld';
+import { NexusLogo } from '@/components/logo';
 import { SiteChrome } from '@/components/site-chrome';
 import {
   BUILD_ORDER,
@@ -215,7 +216,9 @@ export default function Landing(): ReactElement {
   return (
     <SiteChrome>
       <JsonLd data={JSON_LD} />
-      {/* The thesis, the page's own h1, and the loop drawn beside it. */}
+      {/* The thesis, the page's own h1, and the loop drawn beside it. The panel's
+          title-bar slot carries the mark, because a figure of the factory should
+          wear the factory's mark the way a product's screenshot wears its own. */}
       <Hero01
         headingLevel="h1"
         title={HERO.title}
@@ -226,6 +229,7 @@ export default function Landing(): ReactElement {
             label={LOOP_FIGURE.panel.label}
             caption={LOOP_FIGURE.aria}
             footnote={LOOP_FIGURE.panel.footnote}
+            actions={<NexusLogo size={22} className="site-panel-logo" />}
           >
             <PulseGraph
               nodes={LOOP_FIGURE.nodes}
