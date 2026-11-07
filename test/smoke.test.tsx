@@ -536,14 +536,14 @@ describe('the chrome', () => {
     expect(container.textContent).toContain('© NaniSoft');
   });
 
-  it('does not publish the repository twice in the footer', () => {
+  it('does not publish a destination twice in the footer', () => {
     const { container } = render(<HomePage />);
     const footer = container.querySelector('footer');
-    const github = [...(footer?.querySelectorAll('a') ?? [])].filter(
-      (a) => a.getAttribute('href') === 'https://github.com/NaniSoft/nexus',
-    );
-    // It used to be a column link and a social link at once, which is one destination
-    // wearing two controls and the reader's second way to do the same thing.
-    expect(github).toHaveLength(1);
+    const hrefs = [...(footer?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href'));
+    // The repository link used to be a column link and a social link at once, which
+    // is one destination wearing two controls. The streamlined footer carries no
+    // repository column at all, so the property the site holds now is the stronger
+    // one: no destination appears twice, whatever the columns carry.
+    expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 });

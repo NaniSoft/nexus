@@ -4,6 +4,7 @@ import { SiteFooter } from '@nanisoft/prism-ui/blocks/site-footer';
 import { SiteNavbar } from '@nanisoft/prism-ui/blocks/site-navbar';
 
 import { BAR_DEFAULT_MODE, BAR_DEFAULT_PACK, BAR_PRODUCT, COPY, NAV, SITES } from '@/lib/bar';
+import { NexusLogo } from '@/components/logo';
 
 /**
  * The chrome, in one place, and the reason it is not in the root layout.
@@ -39,12 +40,23 @@ import { BAR_DEFAULT_MODE, BAR_DEFAULT_PACK, BAR_PRODUCT, COPY, NAV, SITES } fro
  * section padding, so a bar that scrolls away takes the reader's only persistent way
  * back to the docs with it.
  *
- * The footer keeps the brand lockup, the two grouped destinations and the legal line,
- * and loses its `social` list: GitHub was a column link and a social link at once,
- * which is one destination wearing two controls, and the smoke test asserts the columns
- * rather than the social list.
+ * The footer keeps the brand lockup, the two grouped destinations and the legal
+ * line, and loses its `social` list: GitHub was a column link and a social link at
+ * once, which is one destination wearing two controls. The two groups are now the
+ * family's shared pair, this site's own destinations and the rest of the family,
+ * which is the arrangement all five footers hold: one question per column, and the
+ * same two questions at the foot of every site in the set.
  */
 export type SiteSection = '/docs' | '/blog' | '/about';
+
+/*
+ * The product, as the chrome draws it: the same three facts the bar and the
+ * footer have always read, plus the drawing. The mark is this site's own logo,
+ * and it is the sign in the row, in the mobile panel and at the foot of the
+ * page from this one fact, so a reader meets one sign three times rather than
+ * a disc twice and a drawing once.
+ */
+const PRODUCT = { ...BAR_PRODUCT, mark: <NexusLogo className="site-product-mark" /> };
 
 export function SiteChrome({
   current,
@@ -57,7 +69,7 @@ export function SiteChrome({
   return (
     <>
       <SiteNavbar
-        product={BAR_PRODUCT}
+        product={PRODUCT}
         defaultPack={BAR_DEFAULT_PACK}
         defaultMode={BAR_DEFAULT_MODE}
         navLabel={COPY.nav}
@@ -84,10 +96,17 @@ export function SiteChrome({
       />
       <main className="site-main">{children}</main>
       <SiteFooter
-        product={BAR_PRODUCT}
+        product={PRODUCT}
+        about={
+          // The one sentence a reader who reached the bottom has not been told
+          // yet, in this site's own words from its own lede.
+          <p className="site-footer-about">
+            Nexus is the Agent Factory: one issue in, one reviewed pull request out.
+          </p>
+        }
         columns={[
           {
-            title: 'Site',
+            title: 'This site',
             links: [
               { label: 'Landing', href: '/' },
               { label: 'Docs', href: '/docs' },
@@ -96,11 +115,17 @@ export function SiteChrome({
             ],
           },
           {
-            title: 'Elsewhere',
-            links: [
-              { label: 'GitHub', href: 'https://github.com/NaniSoft/nexus' },
-              { label: 'www.nanisoft.com', href: 'https://www.nanisoft.com' },
-            ],
+            // The family, read from the same directory the bar's menu reads,
+            // minus the member the reader is already on. Every site in the
+            // family holds this same column to this same rule, so the foot of
+            // one site answers the same question the foot of every other one
+            // does: where else does this company go.
+            title: 'The family',
+            links: SITES.filter((site) => site.id !== BAR_PRODUCT.id).map((site) => ({
+              label: site.name,
+              href: site.href,
+              newTab: true,
+            })),
           },
         ]}
         legal="© NaniSoft"

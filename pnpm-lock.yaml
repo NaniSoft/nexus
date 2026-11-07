@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@nanisoft/prism-ui':
-        specifier: 1.2.0
-        version: 1.2.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: 1.3.0
+        version: 1.3.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       fumadocs-core:
         specifier: ^16.15.12
         version: 16.15.12(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.3.0)(lucide-react@0.545.0(react@19.3.0))(next@16.3.5(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@10.2.2)(zod@4.6.5)
@@ -721,8 +721,8 @@ packages:
     resolution: {integrity: sha512-olgPhicy2ns2qnEErJSpIIzEw9O2+76w3qPrh5zUZYhbunIMqKqPB+wMopj3DE4vzdpFJmMn+L53wq87ht4B8A==}
     engines: {node: '>=22.14.0'}
 
-  '@nanisoft/prism-ui@1.2.0':
-    resolution: {integrity: sha512-pVmrybRDBiVRU5+jyZ8YXMM/smtyHsy2mWyNjInfW/NXpznspyKjeL7BDzT6p7yHYOFmYk98qxfBzL/LTaJaOw==}
+  '@nanisoft/prism-ui@1.3.0':
+    resolution: {integrity: sha512-EJLNSqSakvFFuu8ENrDAtSsHiFgGfN19M2CLmfTKc8egfTrcnauk5O5byo6FW2bAGPm5+k8d+Ar/BfSYBPeeEA==}
     engines: {node: '>=22.14.0'}
     hasBin: true
     peerDependencies:
@@ -2905,7 +2905,7 @@ snapshots:
 
   '@nanisoft/prism-tokens@1.2.0': {}
 
-  '@nanisoft/prism-ui@1.2.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@nanisoft/prism-ui@1.3.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@base-ui/react': 1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@nanisoft/prism-tokens': 1.2.0

@@ -128,6 +128,30 @@ body {
   color: var(--muted-foreground);
 }
 
+/*
+ * The drawing inside the mark's slot. `ProductMark` draws the site's own logo
+ * in the sized slot the disc occupied, so the drawing is one node that fills
+ * its box and arrives at every drawn size: sixteen pixels in the bar, twenty
+ * in the mobile panel, twenty-four at the foot of the page.
+ */
+.site-product-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * The footer's word under the mark. The Block renders `about` with no colour of
+ * its own, because muted text is this site's decision about its own copy.
+ */
+.site-footer-about {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
 /* ---------- The standing status note, the docs' one honesty device ---------- */
 
 .site-status-note {
@@ -466,3 +490,4 @@ body {
   flex-wrap: wrap;
   margin-top: 2.5rem;
 }
+

@@ -114,14 +114,20 @@ describe('the pack map', () => {
     expect(new Set(second).size).toBe(1);
   });
 
-  it('puts every boundary on a mark, and the mark on a fully rounded shape', () => {
+  it('puts every boundary on a mark, and the shape inside it in a form the law allows', () => {
     const container = wholePage();
     for (const boundary of container.querySelectorAll('[data-pack]')) {
       expect(boundary.getAttribute('data-slot'), 'a boundary sits on something that is not a mark').toBe(MARK_SLOT);
-      // The shape the boundary may not change: the disc is fully rounded, and the
-      // element carrying the boundary has no radius utility of its own.
+      // The shape the boundary may not change: the disc, when the mark is a disc,
+      // is fully rounded, and the element carrying the boundary has no radius
+      // utility of its own. The site's own lockup is a drawn mark now, so the
+      // slot inside the boundary is the drawing and carries no radius at all,
+      // which is the other placement the law allows the boundary's carrier.
       const disc = boundary.querySelector('[data-slot="product-mark-disc"]');
-      expect(disc?.getAttribute('class')).toContain('rounded-full');
+      const drawn = boundary.querySelector('[data-slot="product-mark-drawn"]');
+      expect(Boolean(disc || drawn), 'a boundary sits on a mark with no shape in it').toBe(true);
+      if (disc) expect(disc.getAttribute('class')).toContain('rounded-full');
+      if (drawn) expect(drawn.getAttribute('class') ?? '').not.toMatch(/\brounded-/);
       expect(boundary.getAttribute('class') ?? '').not.toMatch(/\brounded-(?!full\b)/);
     }
   });
