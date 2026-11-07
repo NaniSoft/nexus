@@ -12,8 +12,11 @@ import { ProcessFlow01 } from '@nanisoft/prism-ui/blocks/process-flow-01';
 import { ProductGrid01 } from '@nanisoft/prism-ui/blocks/product-grid-01';
 import { StackGrid01 } from '@nanisoft/prism-ui/blocks/stack-grid-01';
 import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
+import { AuroraWash } from '@nanisoft/prism-ui/components/aurora-wash';
 import { Badge } from '@nanisoft/prism-ui/components/badge';
 import { Diff, type DiffLine } from '@nanisoft/prism-ui/components/diff';
+import { ParticleField } from '@nanisoft/prism-ui/components/particle-field';
+import { Reveal } from '@nanisoft/prism-ui/components/reveal';
 
 import { EditorialFloor } from '@/components/editorial-floor';
 import { JsonLd } from '@/components/json-ld';
@@ -105,11 +108,17 @@ const JSON_LD = {
  * scroll-reveal observer, a canvas of looping packets, a hand-written graph and eleven
  * kilobytes of CSS to draw what the catalogue draws.
  *
- * It is a server component. It ships no client JavaScript, takes no hook, reads no
- * context, and needs no provider mounted above it, because every item resolves its
- * colours through the cascade rather than by reading a value once at mount. That
- * includes the hero's figure, which is a server-rendered drawing animated by the
- * design system's own stylesheet: the loop runs and the site still ships no runtime.
+ * It is a server component. It takes no hook, reads no context, and needs no
+ * provider mounted above it, because every item resolves its colours through the
+ * cascade rather than by reading a value once at mount. That includes the hero's
+ * instrument, which is a server-rendered drawing animated by the design system's
+ * own stylesheet. The one client island is the field behind the hero, the design
+ * system's living figure: its floor is server-rendered markup and its loop is
+ * armed by the package, stopped off screen, and never armed at all for a reader
+ * who asked the platform for less motion. The bands a reader scrolls to arrive
+ * on the design system's own reveal, which is a stylesheet rule bound to the
+ * scroll position and not a script: the old page's observer came back as law
+ * and not as code.
  *
  * **The hero shows the loop, and the section below it explains it.** The figure beside
  * the thesis is the same five stages the first section lists, drawn on one rail with a
@@ -245,16 +254,32 @@ export default function Landing(): ReactElement {
           wear the factory's mark the way a product's screenshot wears its own. */}
       <Hero01
         headingLevel="h1"
-        title={HERO.title}
+        title={
+          /* The words are the content library's; only the emphasis is composed
+              here, so the ink can change and the sentence cannot. */
+          <>
+            {HERO.title.slice(0, HERO.title.indexOf(HERO.spectrum)).trim()}{' '}
+            <span className="prism-text-spectrum">{HERO.spectrum}</span>
+          </>
+        }
         description={HERO.lede}
         actions={[HERO.primaryCta, HERO.secondaryCta]}
         instrument={<ReviewPanel />}
+        backdrop={
+          <>
+            <AuroraWash />
+            <ParticleField count={44} />
+          </>
+        }
       />
 
       {/* The standing facts, as one line of short phrases under the thesis. */}
       <LogoStrip01 items={[...TICKER]} label={TICKER_LABEL} />
 
-      {/* The loop. Five stages, in order, and the four guarantees under them. */}
+      {/* The loop. Five stages, in order, and the four guarantees under them.
+          The bands a reader scrolls to arrive on the design system's own reveal;
+          the hero, the strip and the closing ask stay still. */}
+      <Reveal>
       <ProcessFlow01
         title={LOOP.label}
         description={LOOP.lede}
@@ -262,6 +287,7 @@ export default function Landing(): ReactElement {
         finalLabel={LOOP_FLOW_FINAL_LABEL}
         stages={LOOP.stages.map((stage) => ({ name: stage.title, description: stage.body }))}
       />
+      </Reveal>
 
       {/*
         The loop as three artifacts a reader can look at: the issue that starts
@@ -269,6 +295,7 @@ export default function Landing(): ReactElement {
         heading of its own because it is evidence for the section above it, not a
         second topic. Every artifact is example content and says so.
       */}
+      <Reveal delay={1}>
       <Bento01
         cells={[
           {
@@ -340,6 +367,7 @@ export default function Landing(): ReactElement {
           },
         ]}
       />
+      </Reveal>
 
       <NoteGrid01
         title={LOOP.notes.label}
@@ -352,6 +380,7 @@ export default function Landing(): ReactElement {
         figure instead of another paragraph. The drawing is a placeholder for a
         real photograph and says so under the frame.
       */}
+      <Reveal delay={1}>
       <MediaBand01
         headingLevel="h2"
         size="tall"
@@ -362,6 +391,7 @@ export default function Landing(): ReactElement {
         media={<EditorialFloor />}
         caption={REVIEW_BAND.caption}
       />
+      </Reveal>
 
       {/* What is inside. A set, so nothing on it is numbered. */}
       <FeatureGrid01
@@ -372,6 +402,7 @@ export default function Landing(): ReactElement {
       />
 
       {/* How it is built: the composed parts, then the four built in house. */}
+      <Reveal>
       <StackGrid01
         title={STACK.label}
         description={STACK.lede}
@@ -380,23 +411,28 @@ export default function Landing(): ReactElement {
         own={STACK.own}
         caption={STACK.caption}
       />
+      </Reveal>
 
       {/* The build order. The honesty law, rendered. */}
+      <Reveal delay={1}>
       <StatusLedger01
         title={BUILD_ORDER.label}
         description={BUILD_ORDER.lede}
         rows={BUILD_ORDER.rows}
         caption={BUILD_ORDER.caption}
       />
+      </Reveal>
 
       {/* The platform story. The one band on this page that carries a second
           pack, and every boundary in it lands on a product's own mark. */}
+      <Reveal delay={2}>
       <ProductGrid01
         title={PLATFORM.label}
         description={PLATFORM.lede}
         products={PLATFORM.products.map((id) => product(id))}
         caption={PLATFORM.caption}
       />
+      </Reveal>
 
       {/* The single ask. Both actions are anchors, and both carry the same label the
           hero and the About page use for the same destination. */}

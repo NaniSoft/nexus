@@ -34,9 +34,16 @@ import { INSIDE, LOOP, REVIEW_BAND, STACK } from '@/lib/landing-content';
  * `scripts/check-cascade.mjs` is the half of this repository that can reach a cascade.
  */
 
-/** Every `<section>` the landing renders, in document order, bar and footer excluded. */
+/**
+ * Every `<section>` the landing renders, in document order, bar and footer excluded.
+ *
+ * A band the page wraps in the design system's `Reveal` sits inside one wrapper
+ * carrying `data-slot="reveal"`, so the census reads through that wrapper and
+ * nothing else: a bare `div` between the main and a section is still not a band
+ * this file knows about, and the arrival is the only wrapper the page composes.
+ */
 function bands(container: HTMLElement): Element[] {
-  return [...container.querySelectorAll('main > section')];
+  return [...container.querySelectorAll('main > section, main > [data-slot="reveal"] > section')];
 }
 
 /**

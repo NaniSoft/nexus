@@ -180,9 +180,18 @@ describe('the landing', () => {
       expect(container.querySelectorAll(`[data-slot="${slot}"]`).length, `no element carries data-slot="${slot}"`)
         .toBeGreaterThan(0);
     }
-    // The canvas is deleted, not disabled, and so is the packet that travelled the rail.
-    expect(container.querySelector('canvas')).toBeNull();
-    expect(document.querySelector('canvas')).toBeNull();
+    // The one canvas on the page is the design system's own living field, and
+    // even it is not only a canvas: the field's floor is server-rendered markup
+    // the loop only ever moves, which is the third law's contract. A canvas this
+    // repository authored, or a script this page armed, would be the retired
+    // line's defect back, and the packet that travelled the old rail stays
+    // deleted either way.
+    const canvases = [...container.querySelectorAll('canvas')];
+    for (const canvas of canvases) {
+      expect(canvas.getAttribute('data-slot')).toBe('particle-field-canvas');
+    }
+    expect(container.querySelector('[data-slot="particle-field-floor"]')).toBeTruthy();
+    expect(container.querySelector('[data-slot="particle-field-mark"]')).toBeTruthy();
     expect(container.innerHTML).not.toMatch(/data-reveal|nx-rail__packet/);
   });
 
@@ -258,10 +267,14 @@ describe('the landing', () => {
     expect(panel?.getAttribute('data-state')).toBe('neutral');
     expect(panel?.textContent).not.toMatch(/\blive\b/);
 
-    // And it is a drawing rather than a canvas, which is the whole of the
-    // difference: a canvas paints pixels it has already resolved, so a pack
-    // boundary landing above it would not re-ink it.
-    expect(container.querySelector('canvas')).toBeNull();
+    // And the instrument itself is a drawing rather than a canvas, which is the
+    // whole of the difference: a canvas paints pixels it has already resolved,
+    // so a pack boundary landing above it would not re-ink it. The one canvas on
+    // the page is the design system's living field behind the band, whose
+    // palette is re-read when the pack changes, which is the objection this
+    // assertion existed to make, answered by the package rather than dodged.
+    const instrumentCanvases = graph?.querySelectorAll('canvas');
+    expect(instrumentCanvases?.length ?? 0).toBe(0);
   });
 
   it('keeps every standing fact, and every one of them with a name rather than a prefix', () => {

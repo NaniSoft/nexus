@@ -29,6 +29,12 @@
 
 export const HERO = {
   title: 'Industrializing software delivery with AI agents.',
+  /**
+   * The tail of the title, carried in the design system's spectrum ink. It is
+   * kept beside the title rather than derived from it so the two can never
+   * disagree: the page composes the emphasis and this file owns the words.
+   */
+  spectrum: 'with AI agents.',
   lede: 'A coding agent takes a GitHub issue and returns a reviewed, merged pull request. One issue, one fresh container.',
   primaryCta: { label: 'Follow the build', href: '/blog' },
   secondaryCta: { label: 'Read the docs', href: '/docs' },
