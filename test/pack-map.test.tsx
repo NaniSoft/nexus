@@ -151,19 +151,20 @@ describe('the pack map', () => {
     for (const row of rows) {
       const mark = row.querySelector('[data-slot="product-mark"]');
       expect(mark, 'a product row draws no mark').toBeTruthy();
-      const disc = mark?.querySelector('[data-slot="product-mark-disc"]');
+      // The row now draws the product's own logo rather than the two-colour disc,
+      // so the mark carries a drawn shape and not a fill.
+      expect(
+        mark?.querySelector('[data-slot="product-mark-drawn"]'),
+        'a product row draws the disc, not its own logo',
+      ).toBeTruthy();
       const id = mark?.querySelector('[data-product]')?.getAttribute('data-product');
       if (!id) continue;
       const pack = new Map(PRODUCTS.map((product) => [product.id, product.pack])).get(id);
       if (pack) {
-        // `bg-primary` is the class that paints the disc. A mark without it is a mark a
-        // reader cannot see, which is the defect this migration repairs.
-        expect(disc?.getAttribute('class'), 'the disc carries no fill class').toContain('bg-primary');
         expect(mark?.getAttribute('data-pack')).toBe(pack);
         expect(mark?.getAttribute('data-pack')).not.toBe(map.ground);
       } else {
         expect(mark?.getAttribute('data-pack')).toBeNull();
-        expect(disc?.getAttribute('class') ?? '').toContain('conic-gradient');
       }
     }
   });

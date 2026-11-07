@@ -291,6 +291,8 @@ export const LOOP_FIGURE = {
  */
 export const REVIEW_BAND = {
   title: 'A person decides. The factory does the rest.',
+  /** The second clause, carried in the spectrum ink like the hero's. */
+  spectrum: 'The factory does the rest.',
   description:
     'The loop runs on its own. At the review stage it stops and waits for a person, because a merge is the one thing the factory does not do over an objection.',
   caption:
@@ -444,6 +446,8 @@ export const BUILD_ORDER = {
  */
 export const PLATFORM = {
   label: 'Built on Nexus',
+  /** The platform's name, carried in the spectrum ink like the hero's. */
+  spectrum: 'Nexus',
   lede: 'Nexus is the core of the platform. Atlas, AlphaLens, and Prism are built on top of it.',
   products: ['atlas', 'alphalens', 'prism'],
   caption:

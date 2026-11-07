@@ -4,6 +4,9 @@
 # wrangler deploy/config never needs workerd — wrangler dev is unused here,
 # static assets + remote preview).
 allowBuilds:
+  # tsParticles' install script only prints a funding message; the engine needs
+  # no postinstall to run, so it is denied like esbuild below.
+  '@tsparticles/engine': false
   esbuild: false
   workerd: false
 # First-party prism packages are excluded from the release-age policy: they are

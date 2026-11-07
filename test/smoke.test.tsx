@@ -180,18 +180,11 @@ describe('the landing', () => {
       expect(container.querySelectorAll(`[data-slot="${slot}"]`).length, `no element carries data-slot="${slot}"`)
         .toBeGreaterThan(0);
     }
-    // The one canvas on the page is the design system's own living field, and
-    // even it is not only a canvas: the field's floor is server-rendered markup
-    // the loop only ever moves, which is the third law's contract. A canvas this
-    // repository authored, or a script this page armed, would be the retired
-    // line's defect back, and the packet that travelled the old rail stays
-    // deleted either way.
-    const canvases = [...container.querySelectorAll('canvas')];
-    for (const canvas of canvases) {
-      expect(canvas.getAttribute('data-slot')).toBe('particle-field-canvas');
-    }
-    expect(container.querySelector('[data-slot="particle-field-floor"]')).toBeTruthy();
-    expect(container.querySelector('[data-slot="particle-field-mark"]')).toBeTruthy();
+    // The page's own living medium is the tsParticles field, which this runner
+    // mocks away (its engine draws a canvas the jsdom environment cannot
+    // provide). With it mocked, the page authors no canvas of its own, so the
+    // old page's resolved-colour canvases stay gone rather than hidden.
+    expect(container.querySelectorAll('canvas').length).toBe(0);
     expect(container.innerHTML).not.toMatch(/data-reveal|nx-rail__packet/);
   });
 
@@ -384,12 +377,15 @@ describe('the landing', () => {
       // and it carries no boundary at all.
       const mark = row?.querySelector('[data-slot="product-mark"]');
       expect(mark, `the ${id} row draws no mark`).toBeTruthy();
+      // The row draws the product's own logo rather than the two-colour disc.
+      expect(
+        mark?.querySelector('[data-slot="product-mark-drawn"]'),
+        `the ${id} row draws the disc, not its own logo`,
+      ).toBeTruthy();
       if (product?.pack) {
         expect(mark?.getAttribute('data-pack')).toBe(product.pack);
       } else {
         expect(mark?.getAttribute('data-pack')).toBeNull();
-        const disc = mark?.querySelector('[data-slot="product-mark-disc"]');
-        expect(disc?.getAttribute('class') ?? '').toContain('conic-gradient');
       }
     }
   });

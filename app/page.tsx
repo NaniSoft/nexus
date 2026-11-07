@@ -15,8 +15,10 @@ import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
 import { AuroraWash } from '@nanisoft/prism-ui/components/aurora-wash';
 import { Badge } from '@nanisoft/prism-ui/components/badge';
 import { Diff, type DiffLine } from '@nanisoft/prism-ui/components/diff';
-import { ParticleField } from '@nanisoft/prism-ui/components/particle-field';
+import { HeaderTransparency } from '@nanisoft/prism-ui/components/header-transparency';
+import { AlphaLensMark, AtlasMark, PrismMark } from '@nanisoft/prism-ui/components/product-marks';
 import { Reveal } from '@nanisoft/prism-ui/components/reveal';
+import { TsparticlesField } from '@nanisoft/prism-ui/components/tsparticles-field';
 
 import { EditorialFloor } from '@/components/editorial-floor';
 import { JsonLd } from '@/components/json-ld';
@@ -245,10 +247,44 @@ const PROOF_DIFF_LABELS = {
   context: 'unchanged',
 } as const
 
+/**
+ * A section heading split for the spectrum ink, like the hero's own claim.
+ *
+ * The hero carries its claim's tail in the design system's spectrum ink, and a
+ * section heading that shares the page with it carries its own tail the same
+ * way, so the page has one colourful type treatment rather than one at the top
+ * and none below.
+ */
+function heading(label: string, spectrum: string) {
+  const leading = label.replace(spectrum, '').replace(/\s+$/, '');
+  return (
+    <>
+      {leading}{' '}
+      <span className="prism-text-spectrum">{spectrum}</span>
+    </>
+  );
+}
+
+/** The platform products' own marks, so the band draws logos rather than discs. */
+const PLATFORM_MARKS: Record<string, ReactElement> = {
+  atlas: <AtlasMark className="site-product-mark" />,
+  alphalens: <AlphaLensMark className="site-product-mark" />,
+  prism: <PrismMark className="site-product-mark" />,
+};
+
 export default function Landing(): ReactElement {
   return (
     <SiteChrome>
       <JsonLd data={JSON_LD} />
+      <HeaderTransparency />
+      {/* The page's one continuous ground: light and a moving medium, fixed
+          behind every section so the whole page reads as one surface rather than
+          as a hero and a set of separate bands. It is `aria-hidden` because a
+          medium is not information. */}
+      <div aria-hidden className="site-atmosphere">
+        <AuroraWash />
+        <TsparticlesField />
+      </div>
       {/* The thesis, the page's own h1, and the loop drawn beside it. The panel's
           title-bar slot carries the mark, because a figure of the factory should
           wear the factory's mark the way a product's screenshot wears its own. */}
@@ -265,12 +301,6 @@ export default function Landing(): ReactElement {
         description={HERO.lede}
         actions={[HERO.primaryCta, HERO.secondaryCta]}
         instrument={<ReviewPanel />}
-        backdrop={
-          <>
-            <AuroraWash />
-            <ParticleField count={44} />
-          </>
-        }
       />
 
       {/* The standing facts, as one line of short phrases under the thesis. */}
@@ -383,10 +413,11 @@ export default function Landing(): ReactElement {
       <Reveal delay={1}>
       <MediaBand01
         headingLevel="h2"
+        className="site-media-band"
         size="tall"
         tone="muted"
         align="media-right"
-        title={REVIEW_BAND.title}
+        title={heading(REVIEW_BAND.title, REVIEW_BAND.spectrum)}
         description={REVIEW_BAND.description}
         media={<EditorialFloor />}
         caption={REVIEW_BAND.caption}
@@ -427,9 +458,9 @@ export default function Landing(): ReactElement {
           pack, and every boundary in it lands on a product's own mark. */}
       <Reveal delay={2}>
       <ProductGrid01
-        title={PLATFORM.label}
+        title={heading(PLATFORM.label, PLATFORM.spectrum)}
         description={PLATFORM.lede}
-        products={PLATFORM.products.map((id) => product(id))}
+        products={PLATFORM.products.map((id) => ({ ...product(id), mark: PLATFORM_MARKS[id] }))}
         caption={PLATFORM.caption}
       />
       </Reveal>

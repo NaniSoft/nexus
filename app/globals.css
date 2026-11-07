@@ -119,6 +119,10 @@ body {
   fill: var(--primary);
 }
 
+.site-logo__accent-stroke {
+  stroke: var(--primary);
+}
+
 /*
  * The lockup inside the hero instrument panel's title bar: the mark at the size
  * the panel's own controls draw, with room to breathe on both sides of the bar.
@@ -509,3 +513,4 @@ body {
     display: none;
   }
 }
+
