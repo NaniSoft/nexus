@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import HomePage from '@/app/page';
-import { INSIDE, LOOP, STACK } from '@/lib/landing-content';
+import { INSIDE, LOOP, REVIEW_BAND, STACK } from '@/lib/landing-content';
 
 /**
  * That the landing's bands are nine different bands.
@@ -82,11 +82,11 @@ function cardColumns(band: Element): string[] {
   return [];
 }
 
-describe('the landing is nine bands and no two of them are the same shape', () => {
-  it('draws nine bands, and every one of them draws something no other band draws', () => {
+describe('the landing is eleven bands and no two of them are the same shape', () => {
+  it('draws eleven bands, and every one of them draws something no other band draws', () => {
     const { container } = render(<HomePage />);
     const sections = bands(container);
-    expect(sections, 'the landing is not the nine bands this file is written about').toHaveLength(9);
+    expect(sections, 'the landing is not the eleven bands this file is written about').toHaveLength(11);
 
     const shapes = new Map<string, string[]>();
     for (const band of sections) {
@@ -106,9 +106,11 @@ describe('the landing is nine bands and no two of them are the same shape', () =
     expect([...new Set(shapes.values())].reduce<string[]>((all, group) => [...all, ...group], []).sort()).toEqual(
       [
         '(untitled)',
+        '(untitled)',
         'Industrializing software delivery with AI agents.',
         'The loop',
         'What the loop guarantees',
+        REVIEW_BAND.title,
         'What’s inside',
         'How it’s built',
         'Where it stands',
@@ -178,6 +180,7 @@ describe('the landing is nine bands and no two of them are the same shape', () =
       cardBands.map((entry) => `${entry.name}: ${entry.cards} cards in ${entry.columns.join('/')} columns`),
       'the bands that draw boxed cards, and the width each gives them',
     ).toEqual([
+      `(untitled): 3 cards in 6 columns`,
       `${INSIDE.label}: ${INSIDE.features.length} cards in 2 columns`,
       `${STACK.label}: ${STACK.parts.length + STACK.own.length} cards in 2/4 columns`,
     ]);
@@ -197,7 +200,7 @@ describe('the landing is nine bands and no two of them are the same shape', () =
     expect(
       widest.map((entry) => `${entry.name}: ${entry.columns}`),
       'the widest each card grid is given',
-    ).toEqual([`${INSIDE.label}: 2`, `${STACK.label}: 4`]);
+    ).toEqual(['(untitled): 6', `${INSIDE.label}: 2`, `${STACK.label}: 4`]);
   });
 
   it('keeps every claim the two card grids carry, and every stage the flow carries', () => {

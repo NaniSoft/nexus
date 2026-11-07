@@ -276,6 +276,21 @@ export const LOOP_FIGURE = {
   },
 } as const;
 
+/**
+ * The editorial band between the loop and the capabilities.
+ *
+ * It is not a product capability, so it has no place in `INSIDE`. It is the one
+ * statement the page makes about the person in the loop, and the figure under it
+ * is a schematic of the floor rather than a screenshot.
+ */
+export const REVIEW_BAND = {
+  title: 'A person decides. The factory does the rest.',
+  description:
+    'The loop runs on its own. At the review stage it stops and waits for a person, because a merge is the one thing the factory does not do over an objection.',
+  caption:
+    'A schematic of the floor, not a photograph. Five containers, one review, one result lifted out.',
+} as const;
+
 /** 02, what is inside. Eight entries, all from the design. */
 export const INSIDE = {
   label: 'What’s inside',

@@ -1,20 +1,23 @@
 import type { Metadata } from 'next';
 import type { ReactElement } from 'react';
 
+import { Bento01 } from '@nanisoft/prism-ui/blocks/bento-01';
 import { Cta01 } from '@nanisoft/prism-ui/blocks/cta-01';
 import { FeatureGrid01 } from '@nanisoft/prism-ui/blocks/feature-grid-01';
 import { Hero01 } from '@nanisoft/prism-ui/blocks/hero-01';
-import { InstrumentPanel01 } from '@nanisoft/prism-ui/blocks/instrument-panel-01';
 import { LogoStrip01 } from '@nanisoft/prism-ui/blocks/logo-strip-01';
+import { MediaBand01 } from '@nanisoft/prism-ui/blocks/media-band-01';
 import { NoteGrid01 } from '@nanisoft/prism-ui/blocks/note-grid-01';
 import { ProcessFlow01 } from '@nanisoft/prism-ui/blocks/process-flow-01';
 import { ProductGrid01 } from '@nanisoft/prism-ui/blocks/product-grid-01';
 import { StackGrid01 } from '@nanisoft/prism-ui/blocks/stack-grid-01';
 import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
-import { PulseGraph } from '@nanisoft/prism-ui/components/pulse-graph';
+import { Badge } from '@nanisoft/prism-ui/components/badge';
+import { Diff, type DiffLine } from '@nanisoft/prism-ui/components/diff';
 
+import { EditorialFloor } from '@/components/editorial-floor';
 import { JsonLd } from '@/components/json-ld';
-import { NexusLogo } from '@/components/logo';
+import { ReviewPanel } from '@/components/review-panel';
 import { SiteChrome } from '@/components/site-chrome';
 import {
   BUILD_ORDER,
@@ -22,8 +25,8 @@ import {
   HERO,
   INSIDE,
   LOOP,
-  LOOP_FIGURE,
   PLATFORM,
+  REVIEW_BAND,
   STACK,
   TICKER,
   TICKER_LABEL,
@@ -212,6 +215,27 @@ const JSON_LD = {
 const LOOP_FLOW_COLUMNS = 3;
 const LOOP_FLOW_FINAL_LABEL = 'merged';
 
+/**
+ * The diff the proof band shows, and its labels.
+ *
+ * Example content, like the card in the hero: the page has no release to show a
+ * real review from, and a screenshot of a review that does not exist would be the
+ * exact overclaim the status ledger below is written to prevent. The lines are a
+ * real shape of change, not a real change from this repository.
+ */
+const PROOF_DIFF: readonly DiffLine[] = [
+  { kind: 'context', oldNumber: 42, newNumber: 42, content: 'const delay = 2000' },
+  { kind: 'removed', oldNumber: 43, content: 'await sleep(delay)' },
+  { kind: 'added', newNumber: 43, content: 'await sleep(backoff(attempt))' },
+  { kind: 'added', newNumber: 44, content: 'if (attempt >= MAX_ROUNDS) escalate()' },
+]
+
+const PROOF_DIFF_LABELS = {
+  added: 'added',
+  removed: 'removed',
+  context: 'unchanged',
+} as const
+
 export default function Landing(): ReactElement {
   return (
     <SiteChrome>
@@ -224,21 +248,7 @@ export default function Landing(): ReactElement {
         title={HERO.title}
         description={HERO.lede}
         actions={[HERO.primaryCta, HERO.secondaryCta]}
-        instrument={
-          <InstrumentPanel01
-            label={LOOP_FIGURE.panel.label}
-            caption={LOOP_FIGURE.aria}
-            footnote={LOOP_FIGURE.panel.footnote}
-            actions={<NexusLogo size={22} className="site-panel-logo" />}
-          >
-            <PulseGraph
-              nodes={LOOP_FIGURE.nodes}
-              relations={LOOP_FIGURE.relations}
-              label={LOOP_FIGURE.aria}
-              className="w-full min-w-0"
-            />
-          </InstrumentPanel01>
-        }
+        instrument={<ReviewPanel />}
       />
 
       {/* The standing facts, as one line of short phrases under the thesis. */}
@@ -252,9 +262,105 @@ export default function Landing(): ReactElement {
         finalLabel={LOOP_FLOW_FINAL_LABEL}
         stages={LOOP.stages.map((stage) => ({ name: stage.title, description: stage.body }))}
       />
+
+      {/*
+        The loop as three artifacts a reader can look at: the issue that starts
+        it, the run that works it, and the diff a person reviews. The band has no
+        heading of its own because it is evidence for the section above it, not a
+        second topic. Every artifact is example content and says so.
+      */}
+      <Bento01
+        cells={[
+          {
+            id: 'issue',
+            span: 'md',
+            title: 'The issue',
+            tone: 'muted',
+            body: (
+              <div className="flex flex-col gap-2">
+                <span className="text-foreground text-sm font-medium">
+                  Add retry backoff to the poller
+                </span>
+                <span className="text-muted-foreground text-pretty text-xs">
+                  A GitHub issue is the whole intake form. There is no separate planning document
+                  to keep in step with it.
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="outline">issue</Badge>
+                  <Badge variant="secondary">backend</Badge>
+                  <Badge variant="outline">no release yet</Badge>
+                </div>
+              </div>
+            ),
+          },
+          {
+            id: 'run',
+            span: 'md',
+            title: 'The run',
+            tone: 'muted',
+            body: (
+              <div className="flex flex-col gap-2">
+                <ol className="flex flex-col gap-1.5 text-xs">
+                  {[
+                    ['Issue received', 'done'],
+                    ['Container started', 'done'],
+                    ['Build and tests', 'done'],
+                    ['Review requested', 'now'],
+                  ].map(([step, state]) => (
+                    <li key={step} className="flex items-center justify-between gap-2">
+                      <span>{step}</span>
+                      <Badge variant={state === 'now' ? 'default' : 'secondary'}>{state}</Badge>
+                    </li>
+                  ))}
+                </ol>
+                <span className="text-muted-foreground text-pretty text-xs">
+                  One fresh container per round, and a person decides at the end.
+                </span>
+              </div>
+            ),
+          },
+          {
+            id: 'review',
+            span: 'lg',
+            title: 'The diff a person reviews',
+            body: (
+              <div className="flex flex-col gap-2">
+                <Diff
+                  lines={PROOF_DIFF}
+                  label="the proposed change, as designed"
+                  labels={PROOF_DIFF_LABELS}
+                  file="poller.ts"
+                  summary="+2 -1"
+                />
+                <span className="text-muted-foreground text-pretty text-xs">
+                  Approve, request changes, or reject. Three rounds, then the ticket escalates.
+                </span>
+              </div>
+            ),
+          },
+        ]}
+      />
+
       <NoteGrid01
         title={LOOP.notes.label}
         notes={LOOP.notes.items.map((note) => ({ title: note.title, body: note.body }))}
+      />
+
+      {/*
+        The one editorial stop on the page. The factory is the mechanism, and the
+        review is the place a person meets it; the band gives that meeting a
+        figure instead of another paragraph. The drawing is a placeholder for a
+        real photograph and says so under the frame.
+      */}
+      <MediaBand01
+        headingLevel="h2"
+        size="tall"
+        tone="muted"
+        align="media-right"
+        title={REVIEW_BAND.title}
+        description={REVIEW_BAND.description}
+        media={<EditorialFloor />}
+        caption={REVIEW_BAND.caption}
       />
 
       {/* What is inside. A set, so nothing on it is numbered. */}

@@ -2,7 +2,7 @@
 
 ## Project
 
-**nexus.nanisoft.com** — Nexus, the Agent Factory — autonomous software creation. Landing + a twenty-seven-page documentation set + blog, in the lavender pack.
+**nexus.nanisoft.com** — Nexus, the Agent Factory — autonomous software creation. Landing + a twenty-seven-page documentation set + blog, in the cyan pack.
 
 Part of the five-site Nanisoft web platform (www + nexus + atlas + alphalens + prism), one design language: Prism.
 

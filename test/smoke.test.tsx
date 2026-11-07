@@ -15,6 +15,7 @@ import {
   LOOP,
   LOOP_FIGURE,
   PLATFORM,
+  REVIEW_BAND,
   STACK,
   TICKER,
   TICKER_LABEL,
@@ -81,6 +82,7 @@ describe('the landing', () => {
       HERO.title,
       LOOP.label,
       LOOP.notes.label,
+      REVIEW_BAND.title,
       INSIDE.label,
       STACK.label,
       BUILD_ORDER.label,
@@ -150,7 +152,9 @@ describe('the landing', () => {
     // than twenty-five, and the two card grids that are left are the capability set
     // and the stack survey.
     const cards = [...container.querySelectorAll('[data-slot="card"]')];
-    expect(cards.length).toBe(INSIDE.features.length + STACK.parts.length + STACK.own.length);
+    // The capabilities and the stack, plus the three proof cells under the loop:
+    // the issue, the run and the diff.
+    expect(cards.length).toBe(INSIDE.features.length + STACK.parts.length + STACK.own.length + 3);
   });
 
   it('is composed from catalogue items, and every one of them is identifiable in the markup', () => {
