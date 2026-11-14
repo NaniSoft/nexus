@@ -1,0 +1,11 @@
+{
+  "name": "ui-check-fixture-negative",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^19.3.0",
+    "tailwindcss": "4.1.0",
+    "@nanisoft/prism-ui": "1.7.0"
+  },
+  "devDependencies": {}
+}

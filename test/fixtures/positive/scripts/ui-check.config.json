@@ -1,0 +1,20 @@
+{
+  "$comment": "Fixture configuration. This root must pass the gate with no findings.",
+  "roots": ["app"],
+  "packageJson": "package.json",
+  "assetRegistry": "asset-registry.json",
+  "allowedImportPrefixes": [
+    "react",
+    "react-dom",
+    "next/",
+    "@nanisoft/prism-ui",
+    "fumadocs-core",
+    "fumadocs-mdx",
+    "zod",
+    "node:",
+    "@/",
+    "./",
+    "../"
+  ],
+  "exceptions": []
+}

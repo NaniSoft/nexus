@@ -51,9 +51,10 @@
  * to the site. So it is a named lane, run by hand, and it fails loudly when it cannot
  * find a browser rather than reporting a clean page.
  *
- * The honest limit, printed on every run: it reads computed style from one engine at
- * one viewport, and it says nothing about what a reader sees. It is the strongest
- * evidence available without a human looking, not a substitute for one.
+ * The honest limit, printed on every run: it reads computed style from one engine
+ * at three widths and two modes, and it says nothing about what a reader sees. It is
+ * the strongest evidence available without a human looking, not a substitute
+ * for one.
  *
  * Run after `pnpm build`: node scripts/check-cascade.mjs
  */
@@ -88,6 +89,11 @@ const BROWSERS = [
 ].filter(Boolean);
 
 const MODES = ['light', 'dark'];
+
+/** The widths of the supported matrix: phone, tablet, desktop. Every mode and
+    page is resolved at each, because a token that paints at 1280 and not at
+    390 is a token a reader on a phone does not have. */
+const WIDTHS = [390, 768, 1280];
 
 /** The key the design system's boot script reads, and the value shape it expects. */
 const STORAGE_KEY = 'prism-theme';
@@ -136,8 +142,8 @@ const PAGES = [
 
 /** Which selector each named box is, in the order the findings read best. */
 const BOXES = {
-  'status note': '.site-status-note',
-  'section card': '.site-catalog__item',
+  'status note': '[data-slot="alert"]',
+  'section card': '[data-slot="card"]',
 };
 
 const CONTENT_TYPES = {
@@ -328,12 +334,31 @@ const MEASURE = `(() => {
   };
   const disc = (mark) => {
     const element = mark.querySelector('[data-slot="product-mark-disc"]');
+    const svg = mark.querySelector('[data-slot="product-mark-drawn"] svg') ?? element;
+    /* A drawn mark has no disc, so a background probe reports every drawn mark as
+       invisible and measures 0x0: the probe, not the mark, was broken. A drawn mark
+       paints through stroke and fill on its svg, and the check is that the svg has
+       a non-zero box and a stroke or a fill that resolves to something visible. */
+    const painted = (() => {
+      if (!svg) return false;
+      if (element && !svg.matches?.('svg')) return getComputedStyle(element).backgroundColor !== 'rgba(0, 0, 0, 0)';
+      const box = svg.getBoundingClientRect?.();
+      if (!box || box.width < 1 || box.height < 1) return false;
+      /* Any painted node counts: the accent, the rays, the ink. The probe cannot
+         know which child carries the paint, so it checks every descendant. */
+      const visible = (value) => value && value !== 'none' && value !== 'rgba(0, 0, 0, 0)';
+      return [...svg.querySelectorAll('*')].some((node) => {
+        const style = getComputedStyle(node);
+        return visible(style.stroke) || visible(style.fill);
+      });
+    })();
     return {
       product: mark.querySelector('[data-product]')?.getAttribute('data-product') ?? null,
       pack: mark.getAttribute('data-pack'),
       background: element ? getComputedStyle(element).backgroundColor : null,
-      width: element ? element.getBoundingClientRect().width : 0,
-      height: element ? element.getBoundingClientRect().height : 0,
+      width: svg ? svg.getBoundingClientRect().width : 0,
+      height: svg ? svg.getBoundingClientRect().height : 0,
+      painted,
     };
   };
   return {
@@ -354,17 +379,22 @@ const MEASURE = `(() => {
         own: getComputedStyle(element).backgroundColor,
         ground: groundBehind(element),
       })),
-    proseLink: computed('[data-slot="prose"] a, .site-prose-table a', ['color', 'text-decoration-line']),
-    status: computed('.site-status-note', ['border-top-style', 'border-top-color', 'background-color']),
-    card: computed('.site-catalog__item', ['border-top-style', 'border-top-color', 'background-color']),
+    proseLink: computed('[data-slot="prose"] a', ['color', 'text-decoration-line']),
+    status: computed('[data-slot="alert"]', ['border-top-style', 'border-top-color', 'background-color']),
+    card: computed('[data-slot="card"]', ['border-top-style', 'border-top-color', 'background-color']),
     marks: [...document.querySelectorAll('[data-slot="product-mark"][data-pack]')].map(disc),
-    rows: [...document.querySelectorAll('[data-slot="product-grid-row"]')].map((row) => ({
-      product: row.querySelector('[data-product]')?.getAttribute('data-product') ?? null,
-      href: row.querySelector('a')?.getAttribute('href') ?? null,
-      background: row.querySelector('[data-slot="product-mark-disc"]')
-        ? getComputedStyle(row.querySelector('[data-slot="product-mark-disc"]')).backgroundColor
-        : null,
-    })),
+    rows: [...document.querySelectorAll('[data-slot="product-grid-row"]')].map((row) => {
+      const mark = row.querySelector('[data-slot="product-mark"]');
+      const measured = mark ? disc(mark) : null;
+      return {
+        product: measured?.product ?? null,
+        href: row.querySelector('a')?.getAttribute('href') ?? null,
+        background: measured?.background ?? null,
+        painted: measured?.painted ?? false,
+        width: measured?.width ?? 0,
+        height: measured?.height ?? 0,
+      };
+    }),
     readyState: document.readyState,
   };
 })()`;
@@ -381,12 +411,6 @@ const client = connect(url);
 await client.ready;
 await client.send('Page.enable');
 await client.send('Runtime.enable');
-await client.send('Emulation.setDeviceMetricsOverride', {
-  width: 1280,
-  height: 1024,
-  deviceScaleFactor: 1,
-  mobile: false,
-});
 
 /* ------------------------------------------------------------------ *
  * Colour, so the two answers can be compared rather than eyeballed
@@ -452,7 +476,15 @@ for (const mode of MODES) {
   const published = contract(SITE.ground, mode);
 
   for (const page of PAGES) {
-    await client.send('Page.navigate', { url: `${origin}${page.route}` });
+    for (const width of WIDTHS) {
+      await client.send('Emulation.setDeviceMetricsOverride', {
+        width,
+        height: 1024,
+        deviceScaleFactor: 1,
+        mobile: width < 768,
+      });
+      const label = `${page.route} @${width}px`;
+      await client.send('Page.navigate', { url: `${origin}${page.route}` });
     let measured = null;
     for (let attempt = 0; attempt < 60; attempt += 1) {
       await sleep(150);
@@ -463,17 +495,17 @@ for (const mode of MODES) {
       }
     }
     if (!measured) {
-      find('unreachable', mode, page.route, 'the page never finished loading, so nothing on it was resolved.');
+      find('unreachable', mode, label, 'the page never finished loading, so nothing on it was resolved.');
       continue;
     }
 
-    const line = { route: page.route, stylesheets: measured.html.sheets };
-    /* One stylesheet is the design system's arrangement, so the count proves nothing on
-       its own. What proves the sheet loaded is the site sheet's own declaration: it is
-       the one custom property in the chain that no other file can supply, and it is
-       empty when the sheet did not arrive. */
+    const line = { route: label, stylesheets: measured.html.sheets };
+    /* One stylesheet is the design system's arrangement, so the count proves nothing
+       on its own. What proves the sheet loaded is the --font-sans token: it is the one
+       custom property in the chain that no other file can supply, and it is empty when
+       the sheet did not arrive. */
     if (!measured.html.font) {
-      find('unstyled', mode, page.route, `the document carries ${measured.html.sheets} stylesheet(s) and --font-sans resolves to nothing, so the site's own sheet did not load. A page measured with its sheet missing reports every token as empty, which is a report about a page that does not exist.`);
+      find('unstyled', mode, label, `the document carries ${measured.html.sheets} stylesheet(s) and --font-sans resolves to nothing, so the site's own sheet did not load. A page measured with its sheet missing reports every token as empty, which is a report about a page that does not exist.`);
       continue;
     }
 
@@ -481,34 +513,34 @@ for (const mode of MODES) {
     if (page.route === '/') {
       line['document'] = `${measured.html.pack}${measured.html.dark ? ' .dark' : ''} · ${measured.html.origin} · --radius ${measured.html.radius}`;
       if (measured.html.pack !== SITE.ground) {
-        find('ground', mode, page.route, `the document element carries data-pack="${measured.html.pack}" and lib/site.json says "${SITE.ground}".`);
+        find('ground', mode, label, `the document element carries data-pack="${measured.html.pack}" and lib/site.json says "${SITE.ground}".`);
       }
       if ((mode === 'dark') !== measured.html.dark) {
-        find('mode', mode, page.route, `the boot script left the document element ${measured.html.dark ? 'with' : 'without'} .dark while the stored decision was ${mode}. A stored theme that does not reach the page is a stored theme that does not exist.`);
+        find('mode', mode, label, `the boot script left the document element ${measured.html.dark ? 'with' : 'without'} .dark while the stored decision was ${mode}. A stored theme that does not reach the page is a stored theme that does not exist.`);
       }
       line['--font-sans'] = measured.html.font.split(',')[0];
       if (!/Inter/.test(measured.html.font)) {
-        find('typeface', mode, page.route, `--font-sans resolves to "${measured.html.font}", whose first family is not the design system's own. Naming a family is not shipping it.`);
+        find('typeface', mode, label, `--font-sans resolves to "${measured.html.font}", whose first family is not the design system's own. Naming a family is not shipping it.`);
       }
     }
 
     /* 1. The page ground, resolved rather than asserted. */
     line['body ground'] = measured.body?.['background-color'] ?? '(no body)';
     if (asRgb(measured.body?.['background-color']) !== asRgb(published['--background'])) {
-      find('page-ground', mode, page.route, `body resolves background-color: ${line['body ground']} and the design system declares --background: ${published['--background']} for this pack in this mode. The old rule named a custom property only the generated variablesheet defined, and it reverted to transparent.`);
+      find('page-ground', mode, label, `body resolves background-color: ${line['body ground']} and the design system declares --background: ${published['--background']} for this pack in this mode. The old rule named a custom property only the generated variablesheet defined, and it reverted to transparent.`);
     }
 
     /* 2. The body ink, resolved rather than asserted. Black on a dark ground is a
           plausible-looking page, so this is the one value a reviewer must not eyeball. */
     line['body ink'] = measured.body?.color ?? '(no body)';
     if (asRgb(measured.body?.color) !== asRgb(published['--foreground'])) {
-      find('body-ink', mode, page.route, `body resolves color: ${line['body ink']} and the design system declares --foreground: ${published['--foreground']}. The old rule deleted the browser default, and the browser default is black on a dark ground.`);
+      find('body-ink', mode, label, `body resolves color: ${line['body ink']} and the design system declares --foreground: ${published['--foreground']}. The old rule deleted the browser default, and the browser default is black on a dark ground.`);
     }
 
     const ratio = contrast(measured.body?.color, measured.body?.['background-color']);
     line['ink contrast'] = ratio === null ? 'unmeasurable' : `${ratio.toFixed(2)}:1`;
     if (ratio !== null && ratio < MIN_CONTRAST) {
-      find('body-ink-contrast', mode, page.route, `body text on the page ground measures ${ratio.toFixed(2)}:1, under the ${MIN_CONTRAST}:1 the design system gates its own ink against.`);
+      find('body-ink-contrast', mode, label, `body text on the page ground measures ${ratio.toFixed(2)}:1, under the ${MIN_CONTRAST}:1 the design system gates its own ink against.`);
     }
 
     /* Every piece of text on the page, not one of them, each against the ground it
@@ -526,7 +558,7 @@ for (const mode of MODES) {
       : 'no text';
     line['text measured'] = measured.paragraphs.length;
     if (worst && worst.ratio !== null && worst.ratio < MIN_CONTRAST) {
-      find('text-contrast', mode, page.route, `a piece of text measures ${worst.ratio.toFixed(2)}:1 (${worst.tag}) on the ground behind it (${worst.ground}), under the ${MIN_CONTRAST}:1 the design system gates its own ink against. A muted role is a lighter weight of the same promise, not a smaller one.`);
+      find('text-contrast', mode, label, `a piece of text measures ${worst.ratio.toFixed(2)}:1 (${worst.tag}) on the ground behind it (${worst.ground}), under the ${MIN_CONTRAST}:1 the design system gates its own ink against. A muted role is a lighter weight of the same promise, not a smaller one.`);
     }
 
     /* 3. The link rule. The old sheet carried `a { color: var(--prism-color-link);
@@ -543,38 +575,38 @@ for (const mode of MODES) {
         const underline = measured.proseLink['text-decoration-line'];
         line['link in copy'] = `${ink} / ${underline}`;
         if (underline === 'none') {
-          find('link-decoration', mode, page.route, `a link in body copy resolves text-decoration-line: none. The old bare-element rule said text-decoration: none and it beat the design system's own layered prose rule, so a link looked like the text around it.`);
+          find('link-decoration', mode, label, `a link in body copy resolves text-decoration-line: none. The old bare-element rule said text-decoration: none and it beat the design system's own layered prose rule, so a link looked like the text around it.`);
         }
         const linkRatio = contrast(ink, measured.body?.['background-color']);
         if (linkRatio !== null && linkRatio < MIN_CONTRAST) {
-          find('link-contrast', mode, page.route, `a link in body copy measures ${linkRatio.toFixed(2)}:1 on the page ground.`);
+          find('link-contrast', mode, label, `a link in body copy measures ${linkRatio.toFixed(2)}:1 on the page ground.`);
         }
       } else {
-        find('no-link', mode, page.route, 'the page carries no link in body copy, so the deleted link rule was not exercised here.');
+        find('no-link', mode, label, 'the page carries no link in body copy, so the deleted link rule was not exercised here.');
       }
     }
 
     /* 4. The three product marks, painted. The assertion a DOM query cannot make, and
           the reason this lane exists. */
-    line['marks painted'] = `${measured.marks.filter((mark) => mark.background && mark.background !== 'rgba(0, 0, 0, 0)').length} of ${measured.marks.length}`;
+    line['marks painted'] = `${measured.marks.filter((mark) => mark.painted).length} of ${measured.marks.length}`;
     line['product rows'] = measured.rows
-      .map((row) => `${row.product}${row.background && row.background !== 'rgba(0, 0, 0, 0)' ? '' : ' (invisible)'}`)
+      .map((row) => `${row.product}${row.painted ? '' : ' (invisible)'}`)
       .join(', ') || '(none)';
     if (page.route === '/') {
       if (measured.rows.length !== 3) {
-        find('product-rows', mode, page.route, `the landing carries ${measured.rows.length} product row(s) and it publishes three.`);
+        find('product-rows', mode, label, `the landing carries ${measured.rows.length} product row(s) and it publishes three.`);
       }
       for (const row of measured.rows) {
-        if (!row.background || row.background === 'rgba(0, 0, 0, 0)') {
-          find('mark-invisible', mode, page.route, `the ${row.product} row's mark resolves background-color: ${row.background ?? '(nothing)'}. It is in the document and it paints nothing, which is the defect the old landing shipped.`);
+        if (!row.painted) {
+          find('mark-invisible', mode, label, `the ${row.product} row's mark paints nothing: its drawing resolves no visible stroke or fill, or its box is empty. It is in the document and it paints nothing, which is the defect the old landing shipped.`);
         }
       }
       for (const mark of measured.marks) {
-        if (!mark.background || mark.background === 'rgba(0, 0, 0, 0)') {
-          find('mark-invisible', mode, page.route, `the ${mark.product} mark's disc resolves background-color: ${mark.background ?? '(nothing)'}.`);
+        if (!mark.painted) {
+          find('mark-invisible', mode, label, `the ${mark.product} mark paints nothing: its drawing resolves no visible stroke or fill, or its box is empty.`);
         }
         if (mark.width < 8 || mark.height < 8) {
-          find('mark-size', mode, page.route, `the ${mark.product} mark's disc measures ${mark.width}x${mark.height} CSS pixels, so a reader would not see it.`);
+          find('mark-size', mode, label, `the ${mark.product} mark measures ${mark.width}x${mark.height} CSS pixels, so a reader would not see it.`);
         }
       }
     }
@@ -585,28 +617,29 @@ for (const mode of MODES) {
       const selector = BOXES[what];
       const style = measured[what === 'status note' ? 'status' : 'card'];
       if (!style) {
-        find('box-missing', mode, page.route, `${selector} is not on this page, so the repaired box was not measured and a box that is not there and a box that was not repaired look the same.`);
+        find('box-missing', mode, label, `${selector} is not on this page, so the repaired box was not measured and a box that is not there and a box that was not repaired look the same.`);
         continue;
       }
       line[what] = `${style['border-top-style']} ${style['border-top-color']} on ${style['background-color']}`;
       if (style['border-top-style'] === 'none') {
-        find('box-edge', mode, page.route, `${selector} resolves border-top-style: none, so the box has no edge at all. A shorthand with one dead operand erases itself rather than repainting itself.`);
+        find('box-edge', mode, label, `${selector} resolves border-top-style: none, so the box has no edge at all. A shorthand with one dead operand erases itself rather than repainting itself.`);
       }
       if (asRgb(style['border-top-color']) !== asRgb(published['--border'])) {
-        find('box-edge-colour', mode, page.route, `${selector} resolves border-top-color: ${style['border-top-color']} and the design system declares --border: ${published['--border']} for this pack in this mode.`);
+        find('box-edge-colour', mode, label, `${selector} resolves border-top-color: ${style['border-top-color']} and the design system declares --border: ${published['--border']} for this pack in this mode.`);
       }
       if (!style['background-color'] || style['background-color'] === 'rgba(0, 0, 0, 0)') {
-        find('box-fill', mode, page.route, `${selector} resolves background-color: ${style['background-color']}, so the box is an edge around nothing.`);
+        find('box-fill', mode, label, `${selector} resolves background-color: ${style['background-color']}, so the box is an edge around nothing.`);
       }
       /* The edge and the fill must be two colours, or the box is an edge drawn around
          its own interior. In this pack's dark mode `--muted` and `--border` resolve to
          the same value, which is the trap this assertion exists to catch. */
       if (asRgb(style['border-top-color']) === asRgb(style['background-color'])) {
-        find('box-invisible', mode, page.route, `${selector} resolves its edge and its fill to the same colour (${style['border-top-color']}), so the box is not visible at all even though both declarations survived.`);
+        find('box-invisible', mode, label, `${selector} resolves its edge and its fill to the same colour (${style['border-top-color']}), so the box is not visible at all even though both declarations survived.`);
       }
     }
 
     report.push({ mode, line });
+    }
   }
 
   if (seeded.result?.identifier) {
@@ -618,7 +651,7 @@ client.socket.close();
 cleanup();
 
 console.log(
-  `\n${NAME}: ${findings.length} finding(s), resolved by ${browser} in ${MODES.length} mode(s) against ${PAGES.length} page(s) of the export served over HTTP`,
+  `\n${NAME}: ${findings.length} finding(s), resolved by ${browser} in ${MODES.length} mode(s) at ${WIDTHS.join(', ')}px against ${PAGES.length} page(s) of the export served over HTTP`,
 );
 for (const entry of report) {
   console.log(`\n${NAME}: --- ${entry.mode} ---`);
@@ -633,7 +666,7 @@ console.log(
     '  of this, and this lane is the strongest evidence available without a person looking.',
 );
 console.log(
-  `${NAME}: it reads one engine at one viewport. It cannot see a reader's eye, and it says nothing about\n` +
+  `${NAME}: it reads one engine at ${WIDTHS.length} widths. It cannot see a reader's eye, and it says nothing about\n` +
     '  what a person finds legible, only about the two numbers a gate can compare.',
 );
 

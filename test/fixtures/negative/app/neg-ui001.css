@@ -1,0 +1,15 @@
+/* Fixture neg-ui001: a custom stylesheet in application source. */
+.card {
+  --brand: #ff0000;
+  background: var(--brand);
+  object-fit: cover;
+}
+
+@media (min-width: 700px) {
+  .card { padding: 16px; }
+}
+
+@font-face {
+  font-family: FixtureSans;
+  src: url(./fixture.woff2);
+}

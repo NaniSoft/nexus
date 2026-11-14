@@ -137,8 +137,8 @@ const JSON_LD = {
  * `eyebrow` used to be this site's own name, which the Block draws as a rounded badge
  * and the header already draws as a wordmark forty pixels higher up. A pill that says
  * the same word twice is not information, and the thesis, the one line under it and
- * the two actions are the whole of what a reader needs before they scroll. The
- * nuance line that used to be a band of its own is gone for the same reason: it said
+ * the two actions are the whole of what a reader needs before they scroll. The nuance
+ * line that used to be a band of its own is gone for the same reason: it said
  * what the platform section at the foot of the page says, in the same words, and a
  * page that argues its platform story twice is a page that has not noticed it has
  * already said it.
@@ -267,9 +267,9 @@ function heading(label: string, spectrum: string) {
 
 /** The platform products' own marks, so the band draws logos rather than discs. */
 const PLATFORM_MARKS: Record<string, ReactElement> = {
-  atlas: <AtlasMark className="site-product-mark" />,
-  alphalens: <AlphaLensMark className="site-product-mark" />,
-  prism: <PrismMark className="site-product-mark" />,
+  atlas: <AtlasMark className="h-full w-full" />,
+  alphalens: <AlphaLensMark className="h-full w-full" />,
+  prism: <PrismMark className="h-full w-full" />,
 };
 
 export default function Landing(): ReactElement {
@@ -281,7 +281,7 @@ export default function Landing(): ReactElement {
           behind every section so the whole page reads as one surface rather than
           as a hero and a set of separate bands. It is `aria-hidden` because a
           medium is not information. */}
-      <div aria-hidden className="site-atmosphere">
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <AuroraWash />
         <TsparticlesField />
       </div>
@@ -413,7 +413,6 @@ export default function Landing(): ReactElement {
       <Reveal delay={1}>
       <MediaBand01
         headingLevel="h2"
-        className="site-media-band"
         size="tall"
         tone="muted"
         align="media-right"

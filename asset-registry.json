@@ -1,0 +1,35 @@
+{
+  "$comment": [
+    "This site's asset registry. The design system owns the central asset manifest",
+    "for its own assets; this file registers only the application-owned assets that",
+    "must pass the same governance: a favicon the framework requires as a file, and",
+    "one theme-aware SVG component that cannot be authored as a file asset without",
+    "losing the cascade. Every other application asset arrives as it is added, as an",
+    "entry here, and fails ASSET004 until it does."
+  ],
+  "version": 1,
+  "assets": [
+    {
+      "id": "favicon-icon",
+      "path": "app/icon.svg",
+      "category": "logo",
+      "format": "svg",
+      "allowedVariants": ["logo"],
+      "themeAware": false,
+      "budgetKiB": 50,
+      "role": "brand-logo",
+      "exception": "Next.js requires the favicon as a file at app/icon.svg. The mark is the product's own drawing; it carries a fixed colour because it renders outside the token cascade, on a favicon and in a document viewer."
+    },
+    {
+      "id": "editorial-floor",
+      "path": "components/editorial-floor.tsx",
+      "category": "illustration",
+      "format": "svg-component",
+      "allowedVariants": ["illustration"],
+      "themeAware": true,
+      "budgetKiB": 50,
+      "role": "complex-diagram",
+      "exception": "A React SVG component rather than a file asset, because its recipe is theme-aware token fills (currentColor plus emitted utilities) and the ambient travel animation, neither of which survives authoring as a static file consumed through an img element. It is sanitized by the same gate that guards file SVGs: no script, no handler attributes, no dangerous inner markup."
+    }
+  ]
+}

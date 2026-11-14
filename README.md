@@ -7,13 +7,13 @@ Part of the [NaniSoft](https://www.nanisoft.com) web platform — five sites, on
 - **Live**: https://nexus.nanisoft.com (Custom Domain, auto-created on deploy)
 - **Pack**: `cyan` is the ground, on the document element, and it does not change. The only region of a page that carries a pack which is not the ground is the landing's products section, which carries the three its rows name. The family's five marks live in the bar's menu now, and a closed menu paints nothing: a reader at first paint sees one pack, and the second pack reaches them when they ask to leave. That is the whole layering, and `scripts/pack-map.json` is the map and the pack-boundary gate in `@nanisoft/prism-ui/gates` is the gate, checked in both light and dark mode
 - **Stack**: Next 16 static export · fumadocs-mdx · pnpm · TypeScript strict · oxlint · Vitest (jsdom + Testing Library) · Cloudflare Workers
-- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 1.2.0, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. This repository authors no client module: every page is a server component, so the only JavaScript this site ships is the bar's own controls, and those are client components inside the pinned package rather than a boundary drawn here
+- **Chrome and every section**: [@nanisoft/prism-ui](https://www.npmjs.com/package/@nanisoft/prism-ui) 1.7.1, pinned exactly. It brings [@nanisoft/prism-tokens](https://www.npmjs.com/package/@nanisoft/prism-tokens) at the exact version it was released against, so this repository declares one first-party dependency and cannot be handed a mismatched pair. This repository authors no client module: every page is a server component, so the only JavaScript this site ships is the bar's own controls, and those are client components inside the pinned package rather than a boundary drawn here
 
 ## What ships
 
 - **Landing** (`/`) — the thesis as the page's `h1` with two real links under it and the loop drawn beside it, then the five standing facts as one line, then six sections: **the loop** (five stages, then the four guarantees under them) · **what's inside** (the eight capabilities) · **how it's built** (the eight composed parts, then the four built in house) · **where it stands** (the status ledger, one tier and one published word per row) · **built on Nexus** (Atlas, AlphaLens and Prism, each row a mark in that product's own pack and a whole-row link to its live site). It closes on a filled call to action. No band carries a number above its heading: the five stages are numbered because five stages in an order are a sequence, and the eight capabilities are not, because eight capabilities are a set
-- **Docs** (`/docs`) — this site's own section index over `content/docs/`, then the design system's documentation screen for the twenty-seven documents behind it: the Introduction plus six sections, Concepts, Architecture, Configuration, Operations, Guides and Reference, each a folder with its own `meta.json`. Every one of those pages carries a navigation rail of all twenty-seven, a contents rail of its own headings where it has any, and a pager derived from the tree rather than passed in
-- **Blog** (`/blog`) — the four launch posts over `content/blog/`, folder-per-post with a required ISO `date`, optional `tags` and `draft` (drafts never export), reverse-chronological. The index is this site's own composition and this site's own CSS, because the four blog lists in this family are four deliberate designs and the design system deliberately ships none. Each post is the design system's blog post Page, which owns the byline, the date in both its display and its machine form, and the trail to the neighbouring posts
+- **Docs** (`/docs`) — the section index over `content/docs/`, composed as `ContentGrid01` cards in the catalogue, then the design system's documentation screen for the twenty-seven documents behind it: the Introduction plus six sections, Concepts, Architecture, Configuration, Operations, Guides and Reference, each a folder with its own `meta.json`. Every one of those pages carries a navigation rail of all twenty-seven, a contents rail of its own headings where it has any, and a pager derived from the tree rather than passed in
+- **Blog** (`/blog`) — the four launch posts over `content/blog/`, folder-per-post with a required ISO `date`, optional `tags` and `draft` (drafts never export), reverse-chronological. The index is `ContentGrid01` rows, because choosing which post to open is what that arrangement is for. Each post is the design system's blog post Page, which owns the byline, the date in both its display and its machine form, the tags, and the trail to the neighbouring posts
 - **About** (`/about`) — the product's story: what the factory is for, what it is made of, and the honest tense of where it stands
 - **Not found** — the design system's not-found Page: the code as the page's heading, the sentence under it, and two ways out
 - **Crawler files** — `app/sitemap.ts` and `app/robots.ts` emit `sitemap.xml` and `robots.txt` from the same loaders the pages are built from, so a page that exists is a row. Every route also declares its own canonical, and the document declares the social cards once
@@ -64,13 +64,12 @@ migration.
 ```
 app/layout.tsx        the document: two theme attributes, the boot script, the site's own metadata
 app/page.tsx          the landing, composed from catalogue items and nothing else
-app/globals.css       the two section indexes, the status note, the table hairline
 app/about/page.tsx    a page header, the prose at the measure, a fact list, three links
 app/not-found.tsx     the not-found Page
 app/sitemap.ts        the map a crawler is given, built from the corpus
 app/robots.ts         what a crawler is told
-app/blog/…            the blog index (site's own) and the blog post (the catalogue's)
-app/docs/…            the section index (site's own) and the documentation screen (the catalogue's)
+app/blog/…            the blog index (ContentGrid01 rows) and the blog post (the catalogue's Page)
+app/docs/…            the section index (ContentGrid01 cards) and the documentation screen (the catalogue's Page)
 app/api/search/route.ts  the search index, prerendered because the export has no server
 components/site-chrome.tsx  the bar, the main, the footer, and the current page
 lib/site.json         the ground, the default mode, the product directory
@@ -78,30 +77,39 @@ lib/site.ts           those facts, typed by the design system's pack vocabulary
 lib/bar.ts            the bar's own data and every word it prints
 lib/landing-content.ts every word of the landing, as data
 lib/to-prism-tree.ts  the content pipeline's page tree, as the documentation Page's data
-scripts/              the gates, the pack map, the parity expectations, the browser lane
+scripts/              the gates, the pack map, the browser lane, the UI compliance gate
+asset-registry.json   the application-owned assets, registered for governance
 ```
 
-Four things are worth knowing before changing anything here.
+Three things are worth knowing before changing anything here.
 
 **A consumer cannot write a design-system utility class.** The emitted stylesheet is
 compiled from the design system's own source, so a utility exists in it only if a
 Prism component uses it. `mb-12` is safe; a utility Prism happens not to use would do
-nothing and say nothing. Anything this site needs for itself goes in `app/globals.css`
-as a site class. The corollary is the one this repository shipped a defect of:
-`.site-catalog__grid` was on the docs index and declared nowhere, and because a
-consumer does not run Tailwind, a class with no declaration is a name rather than a
-style. Six section cards stacked in one column while the markup said grid.
+nothing and say nothing. This site ships no stylesheet of its own, so a structural
+need is expressed as the layout utilities the emitted sheet already carries, or it
+is composed from design system components. The gate (`pnpm ui:check`, code UI004)
+checks every className against the emitted class set, so a dead class fails rather
+than painting nothing. The corollary is the one this repository once shipped: a
+class with no declaration is a name rather than a style, which is why six cards
+stacked where a grid was written.
 
-**The site stylesheet owns almost nothing.** It must not declare the page ground, the
-body ink, a focus outline or a hairline colour on a selector with no class in it, and
-it must not carry a `:focus` rule at all: the design system's base layer is layered and this
-sheet is not, so a bare-element rule here wins the cascade whatever the cascade then does
-with it. Three rules were deleted rather than mapped for exactly that reason, and two more
-were repaired with explicit longhands, because a shorthand with one dead operand erases the
-whole declaration rather than repainting it, and that is how a box loses both its edge
-and its fill without anything throwing. That last sentence is the reason the `token-read`
-gate exists; the rule is the failure message, and when `pnpm check` is red the message says
-which of these it was and why it matters.
+**There is no site stylesheet to get the cascade wrong with.** The only sheet is
+`@nanisoft/prism-ui/styles.css`, imported once in the root layout, and this site
+adds no bare-element rule, no focus rule and no shorthand that can erase itself.
+Three rules this site once carried were deleted rather than mapped for exactly that
+reason, and the last of the sheet (two section indexes, the status note, a table
+hairline) was then migrated onto design system components: ContentGrid01 for both
+indexes, Alert for the note, the Table parts for MDX tables. That migration is
+recorded in UI-GOVERNANCE.md with the inventory it started from.
+
+**The UI compliance gate (`pnpm ui:check`) is the law for zero-custom-styling.**
+`scripts/ui-check.mjs` checks the source with an AST walker against the published
+package's own contracts: the emitted class set, the asset manifest and the
+resolution rule. Codes UI001 to UI012 cover source, ASSET001 to ASSET014 cover
+assets, and `test/fixtures` proves every code fires on a deliberate violation
+and that the approved composition passes. Exceptions live in
+`scripts/ui-check.config.json` with an owner and a review date, and nowhere else.
 
 **A pack boundary is not only colour.** It repoints the pack's corner radius beneath
 it, and it wears the mode of the nearest ancestor carrying `.dark`, which is why a
@@ -127,14 +135,16 @@ pnpm dev          # dev server
 pnpm build        # static export to out/
 pnpm lint         # oxlint
 pnpm typecheck    # next typegen && tsc --noEmit
+pnpm ui:check     # the zero-custom-styling gate, on source alone
 pnpm test         # vitest
-pnpm check        # the docs-tree gate and the consumer gate kit; run after pnpm build
+pnpm check        # ui:check, then the docs-tree gate and the consumer gate kit; run after pnpm build
 ```
 
-`pnpm check` runs this site's own docs-tree gate and then `prism-gates`, the gate
-kit in `@nanisoft/prism-ui/gates`. The laws themselves are not in this repository:
-they are the failure messages of those gates, so a fix to one reaches this site in
-one release and cannot be declined here. The four repositories of the family run
+`pnpm check` runs `ui:check` first, then this site's own docs-tree gate and then
+`prism-gates`, the gate kit in `@nanisoft/prism-ui/gates`. The laws themselves are
+not in this repository: they are the failure messages of those gates, so a fix to one
+reaches this site in one release and cannot be declined here. The four repositories
+of the family run
 the same programs and hold none of the wording. What this site holds is its own
 half, in `prism-gates.json` and the two files it names: its stylesheets, its pack
 map and the reason each region exists, its region resolver, and its coverage

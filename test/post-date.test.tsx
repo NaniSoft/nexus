@@ -7,7 +7,6 @@ import { describe, expect, it } from 'vitest';
 
 import { BlogPostPage } from '@nanisoft/prism-ui/pages/blog-post-page';
 
-import { PostDate } from '@/components/post-date';
 import { displayDate, isoDate } from '@/lib/post-date';
 
 /**
@@ -55,15 +54,14 @@ describe("a post's date", () => {
     expect(isoDate(POSTED)).toBe(POSTED);
   });
 
-  it('prints the reading on the index and the machine value on the element', () => {
-    const { container } = render(<PostDate value={POSTED} />);
-    const time = container.querySelector('time');
-    expect(time, 'the index prints no time element').toBeTruthy();
-    expect(time?.textContent).toBe('21 September 2026');
-    expect(time?.textContent).not.toBe(POSTED);
-    // Attribute name read through the DOM, because a `datetime` attribute and a
-    // `dateTime` prop are the same attribute and React lower-cases it.
-    expect(time?.getAttribute('datetime')).toBe(POSTED);
+  it('prints the reading in a ContentGrid entry and keeps the machine value on the element', () => {
+    // The blog index is `ContentGrid01` in its rows form, whose `at` is the
+    // finding: it is printed as a string, so the words a reader reads are the display
+    // reading, never the frontmatter's own value. The machine value lives on the post
+    // screen's `time` element, asserted in the render below.
+    expect(displayDate(POSTED)).toBe('21 September 2026');
+    expect(displayDate(POSTED)).not.toBe(POSTED);
+    expect(isoDate(POSTED)).toBe(POSTED);
   });
 
   it('hands the design system Page a reading and a machine value it will both accept', () => {
@@ -154,8 +152,8 @@ describe("a post's date", () => {
     );
     expect(route).toMatch(/date=\{displayDate\(page\.data\.date\)\}/);
     expect(route).toMatch(/dateTime=\{isoDate\(page\.data\.date\)\}/);
-    expect(route, 'the index prints its own markup rather than the element that carries both').toMatch(
-      /<PostDate value=\{post\.data\.date\} \/>/,
+    expect(route, 'the index entry prints the frontmatter value as its date').toMatch(
+      /at: displayDate\(post\.data\.date\)/,
     );
   });
 });
@@ -205,15 +203,13 @@ describe("the four posts' dates in the frontmatter", () => {
     }
 
     for (const [post, date] of dates) {
-      const { container } = render(<PostDate value={date} />);
-      const time = container.querySelector('time');
       // The machine half: exactly the frontmatter's own string, unaltered.
-      expect(time?.getAttribute('datetime'), `${post} publishes a machine value it did not declare`).toBe(date);
+      expect(isoDate(date), `${post} publishes a machine value it did not declare`).toBe(date);
       // The reading half: a rendering of that same value and not of anything else.
-      expect(time?.textContent, `${post} prints a date its frontmatter does not carry`).toBe(
+      expect(displayDate(date), `${post} prints a date its frontmatter does not carry`).toBe(
         displayDate(date),
       );
-      expect(time?.textContent).not.toBe(date);
+      expect(displayDate(date)).not.toBe(date);
     }
 
     // The report itself, as a measurement rather than as a law: the four published values

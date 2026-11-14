@@ -37,6 +37,10 @@ jobs:
       # site that never ran it could not tell a typed import from an untyped one, and
       # an untyped import silences every diagnostic a rename would have produced.
       - run: pnpm typecheck
+      # The UI compliance gate runs on source alone, so it can fail before the
+      # tests do; it is also part of `check` below because a clean tree is one
+      # statement and not five.
+      - run: pnpm ui:check
       - run: pnpm test
       - run: pnpm build
       # After the build, because four of the five gates read the export. The dependency

@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react'
-
 /**
  * The Nexus editorial figure: containers on a conveyor, one of them in review.
  *
@@ -20,9 +18,9 @@ export function EditorialFloor() {
       preserveAspectRatio="xMidYMid slice"
       className="h-full w-full"
     >
-      <rect width="1200" height="675" className="fill-muted" />
+      <rect width="1200" height="675" className="fill-accent" />
 
-      <g className="text-foreground/20" stroke="currentColor" strokeWidth="1.5" fill="none">
+      <g className="text-muted-foreground" stroke="currentColor" strokeWidth="1.5" fill="none">
         <path d="M 80 500 H 1120" />
         <path d="M 80 500 L 150 455 H 1050 L 1120 500" />
         <path d="M 80 500 L 150 545 H 1050 L 1120 500" />
@@ -61,11 +59,10 @@ export function EditorialFloor() {
           height="20"
           rx="4"
           className="prism-ambient-travel"
-          style={{ '--ambient-travel-distance': '840px' } as CSSProperties}
         />
       </g>
 
-      <g className="text-foreground/30" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <g className="text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5">
         <circle cx="600" cy="180" r="120" strokeDasharray="6 10" />
         <circle cx="600" cy="180" r="70" strokeDasharray="3 8" />
       </g>

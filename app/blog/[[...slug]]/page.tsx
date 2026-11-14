@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactElement } from 'react';
-import Link from 'next/link';
+import { ContentGrid01 } from '@nanisoft/prism-ui/blocks/content-grid-01';
 import { BlogPostPage } from '@nanisoft/prism-ui/pages';
 
-import { PostDate } from '@/components/post-date';
 import { JsonLd } from '@/components/json-ld';
 import { SiteChrome } from '@/components/site-chrome';
 import { StatusNote } from '@/components/status-note';
@@ -56,62 +55,45 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 const TRAIL_LABELS = { previous: 'Previous', next: 'Next' } as const;
 
 /**
- * The blog index, which is this site's own and stays that way.
+ * The blog index, composed from the design system and nothing else.
  *
- * The design system deliberately ships no blog index Page: the four blog lists in this
- * family are four deliberate designs, and flattening them into one is the reason the
- * item was cut. So the index is site content over site classes, the four launch posts
- * keep this site's own list, and the post screen behind each title is the design
- * system's own Page, which owns the byline, the date in both its display and its
- * machine form, and the trail to the neighbouring posts.
+ * The design system ships no blog index Page, but the question this page answers
+ * is the one `ContentGrid01` was drawn for: a reader is choosing which post to
+ * open, and the grid is the arrangement in which a set of dated entries is
+ * compared at once. The four launch posts are its entries: title, summary, the
+ * date as the reader reads it, and the words on the link. The post screen
+ * behind each title remains the design system's own Page, which owns the
+ * byline, the date in both its display and its machine form, the tags, and the
+ * trail to the neighbouring posts.
  *
- * Two things changed and neither is the design. The eyebrow above the title read
- * "nanisoft · nexus · blog", the same three elements of one fact the docs index used
- * to carry, and it is gone. The meta line under each post read as a date, then a
- * middle dot, then every tag joined by another one, so a three-tag post carried three
- * separators on one line and the line read as a sentence with a date in it. The date
- * and the tags are now two rows in one band, with the gap between them doing the work
- * a glyph was doing, and a tag is a tag rather than a fragment of a list.
+ * The eyebrow above the title read "nanisoft · nexus, blog", the same three
+ * elements of one fact the docs index used to carry, and it is gone. The tags
+ * were a middot-joined run after the date, which read as a sentence with
+ * punctuation in it, so they now live where the post screen already carries
+ * them, on the post itself.
  *
- * **The date is two strings on both screens, and it used to be one on both.** This
- * index printed the frontmatter's own value as the text of its `time` element, and the
- * post Page below was handed that same value as both its display date and its
- * `dateTime`. `lib/post-date.ts` is where the pair now lives, and
- * `components/post-date.tsx` is the element this index prints, so the two halves of the
- * claim can be asserted against a render rather than read off a source file.
+ * **The date printed here is the display reading, and it used to be the
+ * frontmatter's own value.** `lib/post-date.ts` is where the pair lives, and
+ * the post screen below is handed both: `dateTime` is the machine value and
+ * the heading is the reading. An entry's `at` is the string the reader reads.
  */
 function BlogIndex(): ReactElement {
   const posts = published();
   return (
-    <div className="site-catalog">
-      <h1 className="site-catalog__title">The build log</h1>
-      <p className="site-catalog__lede">
-        Notes from building the Agent Factory: the thesis, the architecture, the feedback
-        loop, and the build as it happens.
-      </p>
-      <ul className="site-blog-list">
-        {posts.map((post) => (
-          <li key={post.url}>
-            <Link href={post.url} className="site-blog-list__title">
-              {post.data.title}
-            </Link>
-            <p className="site-blog-list__description">{post.data.description}</p>
-            <p className="site-blog-list__meta">
-              <PostDate value={post.data.date} />
-              {post.data.tags.length > 0 && (
-                <span className="site-blog-list__tags">
-                  {post.data.tags.map((tag) => (
-                    <span className="site-blog-list__tag" key={tag}>
-                      {tag}
-                    </span>
-                  ))}
-                </span>
-              )}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ContentGrid01
+      headingLevel="h1"
+      title="The build log"
+      description="Notes from building the Agent Factory: the thesis, the architecture, the feedback loop, and the build as it happens."
+      variant="rows"
+      entries={posts.map((post) => ({
+        id: post.url,
+        title: post.data.title,
+        summary: post.data.description,
+        at: displayDate(post.data.date),
+        href: post.url,
+        hrefLabel: `Read ${post.data.title}`,
+      }))}
+    />
   );
 }
 
@@ -164,10 +146,10 @@ export default async function BlogPage({ params }: PageProps): Promise<ReactElem
         previous={previous && { title: previous.data.title, href: previous.url }}
         next={next && { title: next.data.title, href: next.url }}
       >
-        <StatusNote />
-        <div className="site-prose-table">
+        <>
+          <StatusNote />
           <MDX components={getMdxComponents()} />
-        </div>
+        </>
       </BlogPostPage>
     </SiteChrome>
   );

@@ -4,7 +4,8 @@ import { Diff, type DiffLine } from '@nanisoft/prism-ui/components/diff'
 import { PulseGraph } from '@nanisoft/prism-ui/components/pulse-graph'
 import { Status } from '@nanisoft/prism-ui/components/status'
 
-import { NexusLogo } from '@/components/logo'
+import { NexusMark } from '@nanisoft/prism-ui/components/product-marks'
+
 import { LOOP_FIGURE } from '@/lib/landing-content'
 
 /**
@@ -45,7 +46,7 @@ export function ReviewPanel() {
       label="the review, as designed"
       footnote="A designed run: the board the design specifies, with one card on the review lane and the loop that carried it there."
       caption="A review card with the three decisions, the proposed diff and the five-stage loop it belongs to."
-      actions={<NexusLogo size={22} className="site-panel-logo" />}
+      actions={<NexusMark className="size-5" />}
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -81,7 +82,7 @@ export function ReviewPanel() {
           <Badge variant="outline">reject</Badge>
         </div>
 
-        <div className="site-review-graph border-border border-t pt-2">
+        <div className="border-border border-t pt-2">
           <PulseGraph
             nodes={LOOP_FIGURE.nodes}
             relations={LOOP_FIGURE.relations}

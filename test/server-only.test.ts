@@ -64,8 +64,6 @@ describe('the site has no client code', () => {
       'app/sitemap.ts',
       'components/editorial-floor.tsx',
       'components/json-ld.tsx',
-      'components/logo.tsx',
-      'components/post-date.tsx',
       'components/review-panel.tsx',
       'components/site-chrome.tsx',
       'components/status-note.tsx',
@@ -107,13 +105,9 @@ describe('the site has no client code', () => {
 
   it('authors no hidden state, so the reveal law has nothing to govern', () => {
     // The reveal law, as an assertion: a CSS-authored hidden state needs an escapable
-    // condition, and the cheapest way to be sure there is none is that the stylesheet
-    // declares no opacity or visibility of zero at all, and no keyframes.
-    const css = readFileSync(path.join(ROOT, 'app', 'globals.css'), 'utf8');
-    expect(css).not.toMatch(/opacity:\s*0\b/);
-    expect(css).not.toMatch(/visibility:\s*hidden/);
-    expect(css).not.toMatch(/data-reveal|\.is-in/);
-    expect(css).not.toMatch(/@keyframes/);
+    // condition, and the cheapest way to be sure there is none is that this site
+    // ships no stylesheet in which a hidden state could be authored at all.
+    expect(existsSync(path.join(ROOT, 'app', 'globals.css')), 'this site ships its own stylesheet').toBe(false);
   });
 
   it('imports the design system stylesheet exactly once, in the root layout', () => {
@@ -124,28 +118,9 @@ describe('the site has no client code', () => {
   });
 
   it('reads no custom property the design system does not declare', () => {
-    // The dead-alias shape, as an assertion over the whole sheet rather than over the
-    // two rules that were known to be broken. Every `var(--name)` in this sheet must
-    // name a property the emitted stylesheet declares, or a property the sheet itself
-    // declares. There is no third list and no allowance any more: this sheet used to
-    // read `--font-inter`, the variable a `next/font` call put on the document element
-    // at build time, and a custom property nothing on disk declares is exactly the
-    // shape this law is about, so exempting it here would have been exempting the
-    // defect from its own assertion.
-    //
-    // Comments are blanked first, for the same reason the gate blanks them: a comment
-    // that names a property in order to say it resolves to nothing is prose about a
-    // declaration, not a declaration.
-    const source = readFileSync(path.join(ROOT, 'app', 'globals.css'), 'utf8');
-    const css = source.replace(/\/\*[\s\S]*?\*\//g, '');
-    const names = (text: string) =>
-      [...text.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((match) => match[1] as string);
-    const read = new Set([...css.matchAll(/var\((--[a-z0-9-]+)/g)].map((match) => match[1] as string));
-    const owned = new Set(names(css));
-    const emitted = new Set(
-      names(readFileSync(path.join(ROOT, 'node_modules', '@nanisoft', 'prism-ui', 'dist', 'styles.css'), 'utf8')),
-    );
-    const dead = [...read].filter((name) => !owned.has(name) && !emitted.has(name));
-    expect(dead, `a custom property this sheet reads and nothing declares: ${dead.join(', ')}`).toEqual([]);
+    // The dead-alias shape needs a sheet to be a defect of, and this site ships
+    // none: there is no stylesheet left that could read a custom property nothing
+    // declares. The only sheet is the emitted one, which declares what it reads.
+    expect(existsSync(path.join(ROOT, 'app', 'globals.css')), 'this site ships its own stylesheet').toBe(false);
   });
 });

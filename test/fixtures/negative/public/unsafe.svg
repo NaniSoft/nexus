@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <script>alert('fixture')</script>
+  <path d="M4 16 L28 16" onclick="alert('fixture')" />
+</svg>

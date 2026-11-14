@@ -71,11 +71,11 @@ describe('the site ships no font file of its own', () => {
 
   it('downloads no typeface, in any form next/font can take', () => {
     // The belt to the braces above. A font can also arrive without a module specifier:
-    // a `@font-face` in the site's own sheet, or a `src: url()` pointing at a file
-    // this repository ships. Both would put a second copy of a face in the export, and
-    // neither is caught by looking for an import.
-    const sheet = read(path.join(ROOT, 'app', 'globals.css')).replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(sheet, 'a @font-face in this repository\'s own stylesheet').not.toMatch(/@font-face/);
+    // a `@font-face` in a site-owned sheet, or a `src: url()` pointing at a file this
+    // repository ships. Both would put a second copy of a face in the export, and
+    // neither is caught by looking for an import. This site ships no sheet at all, so
+    // the first half is an absence rather than a scan.
+    expect(existsSync(path.join(ROOT, 'app', 'globals.css')), 'this site ships its own stylesheet').toBe(false);
     const sources = files.filter((file) => file.endsWith('.css') && /@font-face|\.woff2?\b/.test(read(file)));
     expect(sources.map(relative), `a font source in ${sources.map(relative).join(', ')}`).toEqual([]);
   });
@@ -84,12 +84,9 @@ describe('the site ships no font file of its own', () => {
     // The override this site used to carry. It is the other half of the same defect:
     // the `:root { --font-sans: var(--font-inter), ... }` block had to exist to make
     // the site's own copy the family that won, and an unlayered `:root` declaration
-    // outranks the design system's layered base at any specificity. It was also one
-    // undefined `var()` read away from taking the whole token down, which is the
-    // failure the dead-alias assertion in `test/server-only.test.ts` covers.
-    const sheet = read(path.join(ROOT, 'app', 'globals.css')).replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(sheet, 'a --font-sans override in this repository\'s own stylesheet').not.toMatch(/--font-sans\s*:/);
-    expect(sheet, 'a --font-inter read in this repository\'s own stylesheet').not.toMatch(/--font-inter/);
+    // outranks the design system's layered base at any specificity. This site ships
+    // no sheet, so no such override can exist.
+    expect(existsSync(path.join(ROOT, 'app', 'globals.css')), 'this site ships its own stylesheet').toBe(false);
   });
 
   it('names no font variable on the document element', () => {

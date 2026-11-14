@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactElement } from 'react';
-import Link from 'next/link';
+import { ContentGrid01 } from '@nanisoft/prism-ui/blocks/content-grid-01';
+import { Prose } from '@nanisoft/prism-ui/components/prose';
+import { Section } from '@nanisoft/prism-ui/components/section';
 import { DocsShell } from '@nanisoft/prism-ui/pages';
 
 import { SiteChrome } from '@/components/site-chrome';
@@ -103,45 +105,51 @@ const SHELL_LABELS = {
 } as const;
 
 /**
- * The section index, which is this site's own and not the design system's.
+ * The section index, composed from the design system and nothing else.
  *
- * The catalogue deliberately ships no documentation index Page, for the same reason it
- * ships no blog index: a Page is judged on what it encodes, and a section catalogue
- * encodes this site's information architecture. So the copy, the six blurbs and the
- * starting point are site content over site classes, and the twenty-seven documents
- * behind them are the design system's own screen.
+ * The catalogue ships no documentation index Page, but it does ship the arrangement
+ * a reader is choosing in, and choosing is the question this page answers: that is
+ * `ContentGrid01` in its `cards` form, three columns, with the six sections as
+ * its entries. The copy, the six blurbs and the starting point are this site's
+ * content over the system's arrangement, and the twenty-seven documents behind
+ * them are the design system's own screen.
  *
- * The grid is the site's own class because the catalogue ships no section catalogue.
- * It is declared in `app/globals.css` with the same three-longhand treatment every
- * box in that sheet gets, and it used to be declared nowhere: `.site-catalog__grid`
- * was on this markup and not in the sheet, so six section cards stacked in one column
- * at every width, and the class named a grid that did not exist.
+ * The standing status note sits in its own compact band below the grid, because
+ * the grid is a `Section` with a container of its own and the note needs the
+ * same one. The starting point is plain prose with a link, which is what prose
+ * is for.
  *
- * The eyebrow above the title is gone. It read "nanisoft · nexus — docs", which is the
- * header's wordmark with a separator on each side and this page's own name again, so
- * three elements of one fact above a heading that already says what the page is.
+ * The eyebrow above the title is gone. It read "nanisoft · nexus, docs", which
+ * is the header's wordmark with a separator on each side and this page's own
+ * name again, so three elements of one fact above a heading that already says
+ * what the page is.
  */
 function DocsIndex(): ReactElement {
   return (
-    <div className="site-catalog">
-      <h1 className="site-catalog__title">Nexus documentation</h1>
-      <p className="site-catalog__lede">
-        The Agent Factory: what it is, how it is built, and how to work with it. Six
-        sections, each tracing to the design.
-      </p>
-      <StatusNote />
-      <div className="site-catalog__grid">
-        {SECTIONS.map((section) => (
-          <Link className="site-catalog__item" href={section.url} key={section.title}>
-            <strong>{section.title}</strong>
-            <span>{section.blurb}</span>
-          </Link>
-        ))}
-      </div>
-      <p className="site-catalog__start">
-        New here? Start with <Link href="/docs/introduction">Introduction</Link>.
-      </p>
-    </div>
+    <>
+      <ContentGrid01
+        headingLevel="h1"
+        title="Nexus documentation"
+        description="The Agent Factory: what it is, how it is built, and how to work with it. Six sections, each tracing to the design."
+        variant="cards"
+        columns={3}
+        entries={SECTIONS.map((section) => ({
+          id: section.url,
+          title: section.title,
+          summary: section.blurb,
+          href: section.url,
+          hrefLabel: `Read ${section.title}`,
+        }))}
+      />
+      <Section size="compact">
+        <StatusNote />
+        <Prose className="mt-10">
+          <p>
+            New here? Start with <a href="/docs/introduction">Introduction</a>.
+          </p>
+        </Prose>
+      </Section>
+    </>
   );
 }
 
@@ -171,10 +179,10 @@ export default async function DocsPage({ params }: PageProps): Promise<ReactElem
         currentHref={page.url}
         {...SHELL_LABELS}
       >
-        <div className="site-prose-table">
+        <>
           <StatusNote />
           <MDX components={getMdxComponents()} />
-        </div>
+        </>
       </DocsShell>
     </SiteChrome>
   );

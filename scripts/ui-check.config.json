@@ -1,0 +1,35 @@
+{
+  "$comment": [
+    "Configuration for scripts/ui-check.mjs. It is data, not policy.",
+    "The policy lives in the gate. This file lists the facts only this",
+    "repository knows: where the source is, which imports are allowed, and",
+    "which violations are documented exceptions with an owner and an expiry.",
+    "An exception suppresses exactly one file and one code. There is no",
+    "unrestricted suppression."
+  ],
+  "roots": ["app", "components", "lib"],
+  "packageJson": "package.json",
+  "assetRegistry": "asset-registry.json",
+  "allowedImportPrefixes": [
+    "react",
+    "react-dom",
+    "next/",
+    "@nanisoft/prism-ui",
+    "fumadocs-core",
+    "fumadocs-mdx",
+    "zod",
+    "node:",
+    "@/",
+    "./",
+    "../"
+  ],
+  "exceptions": [
+    {
+      "file": "app/opengraph-image.tsx",
+      "codes": ["UI002", "UI003", "ASSET001", "ASSET007"],
+      "why": "next/og ImageResponse paints a bitmap once at build time. There is no cascade and no data-pack in a bitmap, so inline styles and literal colours are the og renderer's only interface, and the literals mirror the dark cyan theme tokens. The raw <img> draws a data-URI mark the renderer cannot resolve any other way.",
+      "owner": "nexus-platform",
+      "reviewBy": "2026-12-31"
+    }
+  ]
+}

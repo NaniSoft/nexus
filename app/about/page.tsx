@@ -58,7 +58,7 @@ export default function AboutPage(): ReactElement {
           argument and needs nothing standing over it.
         */}
         <SectionHeading as="h1" align="left" title="The factory, not another assistant." />
-        <Prose className="site-measure">
+        <Prose>
           <p>
             Nexus is NaniSoft&rsquo;s Agent Factory: a software-creation engine that takes a
             GitHub issue as its input and returns a reviewed, merged pull request as its
@@ -87,9 +87,14 @@ export default function AboutPage(): ReactElement {
           </p>
         </Prose>
 
-        <FactList className="site-about__facts" facts={FACTS} />
+        {/* Held to the measure of the prose it interrupts: `Prose` carries the
+            reading measure, so the list's rows do not stand 950px apart from the
+            prose beside them. */}
+        <Prose className="mt-10 mb-10">
+          <FactList facts={FACTS} />
+        </Prose>
 
-        <Prose className="site-measure">
+        <Prose>
           <p>
             Nexus is the core of the platform story: Atlas, AlphaLens, and Prism are
             built on top of it, and Prism is the design language all of them wear. Read
@@ -106,7 +111,7 @@ export default function AboutPage(): ReactElement {
           </p>
         </Prose>
 
-        <div className="site-about__links">
+        <div className="mt-10 flex flex-wrap gap-6">
           {OUT.map((link) => (
             <CtaLink
               key={link.href}

@@ -1,0 +1,16 @@
+{
+  "$comment": "Fixture registry. The large logo asset below exceeds its budget on purpose.",
+  "version": 1,
+  "assets": [
+    {
+      "id": "fixture logo",
+      "path": "public/large-logo.svg",
+      "category": "logo",
+      "format": "svg",
+      "allowedVariants": ["logo"],
+      "themeAware": false,
+      "budgetKiB": 50,
+      "role": "brand-logo"
+    }
+  ]
+}

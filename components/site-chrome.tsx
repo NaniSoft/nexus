@@ -2,10 +2,9 @@ import type { ReactNode } from 'react';
 
 import { SiteFooter } from '@nanisoft/prism-ui/blocks/site-footer';
 import { SiteNavbar } from '@nanisoft/prism-ui/blocks/site-navbar';
-import { AlphaLensMark, AtlasMark, NaniSoftMark, PrismMark } from '@nanisoft/prism-ui/components/product-marks';
+import { AlphaLensMark, AtlasMark, NaniSoftMark, NexusMark, PrismMark } from '@nanisoft/prism-ui/components/product-marks';
 
 import { BAR_DEFAULT_MODE, BAR_DEFAULT_PACK, BAR_PRODUCT, COPY, NAV, SITES } from '@/lib/bar';
-import { NexusLogo } from '@/components/logo';
 
 /**
  * The chrome, in one place, and the reason it is not in the root layout.
@@ -57,7 +56,7 @@ export type SiteSection = '/docs' | '/blog' | '/about';
  * page from this one fact, so a reader meets one sign three times rather than
  * a disc twice and a drawing once.
  */
-const PRODUCT = { ...BAR_PRODUCT, mark: <NexusLogo className="site-product-mark" /> };
+const PRODUCT = { ...BAR_PRODUCT, mark: <NexusMark className="h-full w-full" /> };
 
 /**
  * The family's marks, as the bar's sites menu draws them.
@@ -68,11 +67,11 @@ const PRODUCT = { ...BAR_PRODUCT, mark: <NexusLogo className="site-product-mark"
  * so the menu shows each member's own logo rather than the two-colour disc.
  */
 const SITE_MARKS: Record<string, ReactNode> = {
-  www: <NaniSoftMark className="site-product-mark" />,
-  nexus: <NexusLogo className="site-product-mark" />,
-  atlas: <AtlasMark className="site-product-mark" />,
-  alphalens: <AlphaLensMark className="site-product-mark" />,
-  prism: <PrismMark className="site-product-mark" />,
+  www: <NaniSoftMark className="h-full w-full" />,
+  nexus: <NexusMark className="h-full w-full" />,
+  atlas: <AtlasMark className="h-full w-full" />,
+  alphalens: <AlphaLensMark className="h-full w-full" />,
+  prism: <PrismMark className="h-full w-full" />,
 };
 
 /** The family, with each member's drawn mark attached to its directory entry. */
@@ -114,15 +113,15 @@ export function SiteChrome({
         }}
         mode={{ lightLabel: COPY.toDark, darkLabel: COPY.toLight }}
       />
-      <main className="site-main">{children}</main>
+      <main className="grow">{children}</main>
       <SiteFooter
         product={PRODUCT}
         about={
           // The one sentence a reader who reached the bottom has not been told
           // yet, in this site's own words from its own lede, under the page's
           // claim in the ink of the brand.
-          <div className="site-footer-about">
-            <p className="site-footer-tagline">Industrializing software delivery with AI agents.</p>
+          <div>
+            <p>Industrializing software delivery with AI agents.</p>
             <p>Nexus is the Agent Factory: one issue in, one reviewed pull request out.</p>
           </div>
         }

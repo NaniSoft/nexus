@@ -31,8 +31,12 @@
     "runtime-token-read"
   ],
   "stylesheet-ownership": {
-    "sheets": ["app/globals.css"],
-    "minDeclarations": 20
+    "sheets": [],
+    "minDeclarations": 0
+  },
+  "hidden-state": {
+    "sheets": [],
+    "minRules": 0
   },
   "links": {
     "outDir": "out",

@@ -5,11 +5,12 @@ import { PrismThemeScript } from '@nanisoft/prism-ui/provider';
 
 import { DEFAULT_MODE, GROUND_PACK, THEME_ATTRIBUTES } from '@/lib/site';
 
-// The one stylesheet. Every token, every utility and every base rule on this site
-// arrives in this one import: the design system compiles its own source into it, and
-// a consumer adds its own sheet after it and nothing else.
+// The one stylesheet. Every token, every utility and every base rule on this
+// site arrives in this one import: the design system compiles its own source
+// into it, and this site ships no stylesheet of its own. The document frame
+// (a column at least one viewport tall, with main growing) is the layout's
+// own DS utilities, which the emitted sheet already carries.
 import '@nanisoft/prism-ui/styles.css';
-import './globals.css';
 
 /**
  * What the document says about the site, once.
@@ -51,10 +52,7 @@ export const metadata: Metadata = {
 // the one stylesheet is importing the face. This site used to supply its own Inter
 // through `next/font/google` back when the pinned package shipped none, and the
 // supply outlived its reason: it downloaded 214 KB of a typeface the design system
-// already ships, and it needed the `:root { --font-sans: ... }` override in
-// `app/globals.css` to be the family that won, which is a second answer to a
-// question the design system already answers. Both are gone. Nothing downstream of
-// this import loads Inter.
+// already ships. Both are gone. Nothing downstream of this import loads Inter.
 
 /**
  * The document: the two theme attributes, one blocking script, and the page.
@@ -97,7 +95,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             nothing a reader chose is ever cleared by this site. */}
         <PrismThemeScript defaultPack={GROUND_PACK} defaultMode={DEFAULT_MODE} />
       </head>
-      <body>{children}</body>
+      <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
 }

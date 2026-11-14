@@ -1,0 +1,20 @@
+{
+  "$comment": "Fixture configuration. The scanned roots and the package.json here are deliberate violations.",
+  "roots": ["app"],
+  "packageJson": "package.json",
+  "assetRegistry": "asset-registry.json",
+  "allowedImportPrefixes": [
+    "react",
+    "react-dom",
+    "next/",
+    "@nanisoft/prism-ui",
+    "fumadocs-core",
+    "fumadocs-mdx",
+    "zod",
+    "node:",
+    "@/",
+    "./",
+    "../"
+  ],
+  "exceptions": []
+}

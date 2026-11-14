@@ -1,0 +1,26 @@
+{
+  "$comment": "Fixture registry for the positive suite. Every local asset below resolves.",
+  "version": 1,
+  "assets": [
+    {
+      "id": "fixture-hero",
+      "path": "public/assets/fixture-hero.webp",
+      "category": "image",
+      "format": "webp",
+      "allowedVariants": ["card"],
+      "themeAware": false,
+      "budgetKiB": 200,
+      "role": "content"
+    },
+    {
+      "id": "fixture-logo",
+      "path": "public/assets/fixture-logo.svg",
+      "category": "logo",
+      "format": "svg",
+      "allowedVariants": ["logo"],
+      "themeAware": false,
+      "budgetKiB": 50,
+      "role": "brand-logo"
+    }
+  ]
+}
