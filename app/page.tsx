@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import { Bento01 } from '@nanisoft/prism-ui/blocks/bento-01';
 import { Cta01 } from '@nanisoft/prism-ui/blocks/cta-01';
 import { FeatureGrid01 } from '@nanisoft/prism-ui/blocks/feature-grid-01';
+import { Ground01 } from '@nanisoft/prism-ui/blocks/ground-01';
 import { Hero01 } from '@nanisoft/prism-ui/blocks/hero-01';
 import { LogoStrip01 } from '@nanisoft/prism-ui/blocks/logo-strip-01';
 import { MediaBand01 } from '@nanisoft/prism-ui/blocks/media-band-01';
@@ -12,13 +13,10 @@ import { ProcessFlow01 } from '@nanisoft/prism-ui/blocks/process-flow-01';
 import { ProductGrid01 } from '@nanisoft/prism-ui/blocks/product-grid-01';
 import { StackGrid01 } from '@nanisoft/prism-ui/blocks/stack-grid-01';
 import { StatusLedger01 } from '@nanisoft/prism-ui/blocks/status-ledger-01';
-import { AuroraWash } from '@nanisoft/prism-ui/components/aurora-wash';
 import { Badge } from '@nanisoft/prism-ui/components/badge';
 import { Diff, type DiffLine } from '@nanisoft/prism-ui/components/diff';
-import { HeaderTransparency } from '@nanisoft/prism-ui/components/header-transparency';
 import { AlphaLensMark, AtlasMark, PrismMark } from '@nanisoft/prism-ui/components/product-marks';
 import { Reveal } from '@nanisoft/prism-ui/components/reveal';
-import { TsparticlesField } from '@nanisoft/prism-ui/components/tsparticles-field';
 
 import { EditorialFloor } from '@/components/editorial-floor';
 import { JsonLd } from '@/components/json-ld';
@@ -137,8 +135,8 @@ const JSON_LD = {
  * `eyebrow` used to be this site's own name, which the Block draws as a rounded badge
  * and the header already draws as a wordmark forty pixels higher up. A pill that says
  * the same word twice is not information, and the thesis, the one line under it and
- * the two actions are the whole of what a reader needs before they scroll. The nuance
- * line that used to be a band of its own is gone for the same reason: it said
+ * the two actions are the whole of what a reader needs before they scroll. The
+ * nuance line that used to be a band of its own is gone for the same reason: it said
  * what the platform section at the foot of the page says, in the same words, and a
  * page that argues its platform story twice is a page that has not noticed it has
  * already said it.
@@ -276,15 +274,14 @@ export default function Landing(): ReactElement {
   return (
     <SiteChrome>
       <JsonLd data={JSON_LD} />
-      <HeaderTransparency />
       {/* The page's one continuous ground: light and a moving medium, fixed
           behind every section so the whole page reads as one surface rather than
-          as a hero and a set of separate bands. It is `aria-hidden` because a
-          medium is not information. */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-        <AuroraWash />
-        <TsparticlesField />
-      </div>
+          as a hero and a set of separate bands. The Block is the assembly the
+          design system publishes, so the composition of the wash, the field and
+          the bar's transparency is made once upstream and chosen here by props:
+          this page wears the defaults, which are the landing's own figures. It
+          is `aria-hidden` because a medium is not information. */}
+      <Ground01 />
       {/* The thesis, the page's own h1, and the loop drawn beside it. The panel's
           title-bar slot carries the mark, because a figure of the factory should
           wear the factory's mark the way a product's screenshot wears its own. */}

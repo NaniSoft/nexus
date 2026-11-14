@@ -113,7 +113,11 @@ export function SiteChrome({
         }}
         mode={{ lightLabel: COPY.toDark, darkLabel: COPY.toLight }}
       />
-      <main className="grow">{children}</main>
+      {/* The slot is the page's half of the ground's stacking contract: the
+          stylesheet raises a main carrying it above the fixed layer the ground
+          Block paints at z-index -1, so the atmosphere sits over the body's
+          background and under every section this column renders. */}
+      <main className="grow" data-slot="site-main">{children}</main>
       <SiteFooter
         product={PRODUCT}
         about={

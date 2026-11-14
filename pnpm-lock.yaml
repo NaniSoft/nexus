@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@nanisoft/prism-ui':
-        specifier: 1.7.1
-        version: 1.7.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: 1.8.0
+        version: 1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       fumadocs-core:
         specifier: ^16.15.12
         version: 16.15.12(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.3.0)(lucide-react@0.545.0(react@19.3.0))(next@16.3.5(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@10.2.2)(zod@4.6.5)
@@ -740,12 +740,12 @@ packages:
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
 
-  '@nanisoft/prism-tokens@1.7.0':
-    resolution: {integrity: sha512-6FK6tZbcooP+zgeIjbVKclLJEUsQFFI5efEoG8/F3ksHZ1sl4L5ii9Et+s5J24UnkcJHiU1AJJUxM8WL6PRX7A==}
+  '@nanisoft/prism-tokens@1.8.0':
+    resolution: {integrity: sha512-bPdzBPQ27CXRvogI3A1VdwtTd7y9KWbXBALPE8/33KAJJe7VNwc0LJo9ACVRfWHjPsadlHzUb5ByaFOyJOtyXg==}
     engines: {node: '>=22.14.0'}
 
-  '@nanisoft/prism-ui@1.7.1':
-    resolution: {integrity: sha512-SL3Kd9owCvgIunVo3M70Y5lJSBJCyZHWvvIYJ4F3v6mtn81/Bm1r/zdYHg/kZkfVc23pvzIg67ORUWjf3H68uA==}
+  '@nanisoft/prism-ui@1.8.0':
+    resolution: {integrity: sha512-gSmuXeVwQCAm0jp4FTsC4AuUz3NnNPBpXXkH7n/eNc1BNDi804koWo1VK9cqBjMkXnBMj05vv3pxKHa+Y7o+HA==}
     engines: {node: '>=22.14.0'}
     hasBin: true
     peerDependencies:
@@ -3157,12 +3157,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nanisoft/prism-tokens@1.7.0': {}
+  '@nanisoft/prism-tokens@1.8.0': {}
 
-  '@nanisoft/prism-ui@1.7.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@nanisoft/prism-ui@1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@base-ui/react': 1.9.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@nanisoft/prism-tokens': 1.7.0
+      '@nanisoft/prism-tokens': 1.8.0
       '@tsparticles/engine': 4.5.3
       '@tsparticles/react': 4.5.3(@tsparticles/engine@4.5.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tsparticles/slim': 4.5.3
