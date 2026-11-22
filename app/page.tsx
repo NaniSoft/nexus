@@ -161,8 +161,8 @@ const JSON_LD = {
  * index into its corner radius.
  *
  * **Nine bands and nine shapes, and the one thing that made two of them the same is
- * gone.** Every band on this page is a `max-w-page` column with a left-aligned
- * `SectionHeading` on the design system's own `py-16 sm:py-24`, and six of the nine carry
+ * gone.** Every band on this page is a `max-w-page` column on the design system's own
+ * `py-16 sm:py-24`, and six of the nine carry
  * that padding as the identical class string. That frame is not this site's to change:
  * `Section` owns it and every Block composes it, so a band cannot leave it without
  * restyling a catalogue item. What was inside the frame was, and that is the only lever
