@@ -18,6 +18,7 @@ next-env.d.ts
 
 # local agent config - never committed
 .opencode/
+.impeccable/
 
 # misc
 .DS_Store
