@@ -1,7 +1,8 @@
 # UI governance: zero custom styling
 
 **Status:** migrated and enforced. `@nanisoft/prism-ui` 1.6.0 upgraded to 1.7.0
-(pnpm). The only stylesheet is the design system's own. `pnpm ui:check` is the
+(pnpm), and pinned exactly ever since; the pin this repository runs against is the
+one `package.json` declares (1.13.0). The only stylesheet is the design system's own. `pnpm ui:check` is the
 gate; `pnpm check` runs it first; CI runs it as a mandatory step.
 
 Applications own business logic, data and domain-specific content. The design

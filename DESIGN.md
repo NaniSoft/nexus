@@ -23,6 +23,11 @@ colors:
   ray-mint: "#9ddcad"
   ray-gold: "#edc47d"
   ray-sky: "#9bd1ff"
+  spectrum-blush: "#ec88a0"
+  spectrum-lavender: "#bc97e7"
+  spectrum-mint: "#73bf88"
+  spectrum-sky: "#6cb2eb"
+  spectrum-peach: "#e4965e"
 typography:
   display:
     fontFamily: "Inter, Inter Fallback, ui-sans-serif, system-ui, sans-serif"
@@ -72,7 +77,7 @@ One cycle, walked again by every band: an issue arrives, a fresh container spins
 
 Nexus is the evidence site of the family. Its artifacts claim nothing they cannot prove: mono-numbered diff blocks with a plus-two and a minus-one, badge rows that are labels and not buttons, run-step lists with done and now states, and every example artifact captioned "as designed" because nothing has shipped yet. The build-order honesty ledger marks design complete and implementation running, and the blog is called "The build log" because that is what it is. Motion is the loop made visible: a packet rides the editorial factory floor, markers travel the rails, and scroll reveals stagger through the middle bands while the hero stays still.
 
-The site ships zero CSS of its own. Every value below arrives through the pinned `@nanisoft/prism-ui@1.11.0` stylesheet (`data-pack="cyan"`), which is normative; these figures are a snapshot of that pin. Dark is the default rendering and the `-day` siblings are the light mode.
+The site ships zero CSS of its own. Every value below arrives through the pinned `@nanisoft/prism-ui@1.13.0` stylesheet (`data-pack="cyan"`), which is normative; these figures are a snapshot of that pin. Dark is the default rendering and the `-day` siblings are the light mode.
 
 **Key Characteristics:**
 - One glacial cyan beam on a near-neutral dark ground, dark first

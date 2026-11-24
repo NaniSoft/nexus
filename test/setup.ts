@@ -10,3 +10,28 @@ import { vi } from 'vitest';
 vi.mock('@nanisoft/prism-ui/components/tsparticles-field', () => ({
   TsparticlesField: () => null,
 }));
+
+/**
+ * jsdom does not implement matchMedia, and the design system's DocsShell rail
+ * disclosure reads `(min-width: 64rem)` on mount, so the environment has to
+ * answer it. A min-width query answers as a desktop viewport, because that is
+ * the arrangement components must hold at rest; a query that describes an
+ * input or a preference (pointer, prefers-reduced-motion) still answers "no",
+ * which is the desktop-with-mouse default the coarse-pointer contracts are
+ * written against. A test that needs the other answer stubs matchMedia itself.
+ */
+if (typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: query.includes('min-width'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
+}

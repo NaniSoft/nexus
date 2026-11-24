@@ -320,17 +320,26 @@ const MEASURE = `(() => {
     const style = getComputedStyle(element);
     return Object.fromEntries(properties.map((property) => [property, style.getPropertyValue(property)]));
   };
-  /* The ground a reader actually sees behind a piece of text: the nearest ancestor
-     that paints one. Measuring a caption against the page ground when it sits on a
-     filled panel reports a contrast ratio for a pairing that is not on the page. */
-  const groundBehind = (element) => {
+  /* The ground a reader actually sees behind a piece of text: every ancestor that
+     paints one, nearest first. Measuring a caption against the page ground when it
+     sits on a filled panel reports a contrast ratio for a pairing that is not on the
+     page, and measuring text against a translucent panel's raw value reports a ratio
+     for a colour that is not on the page either: dark mode's surfaces are seven
+     percent veils over the page ground, and the reader sees the veil over the
+     ground. The compositing happens on the Node side of the lane, where the colour
+     helpers live, because this string is a template literal and a backslash here is
+     a string escape before it is a regex one: a character class written as usual
+     arrives in the page with its backslash eaten. So this walk only collects the raw
+     values and answers nothing about colour. */
+  const groundsBehind = (element) => {
+    const stack = [];
     let node = element;
     while (node) {
       const value = getComputedStyle(node).backgroundColor;
-      if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') return value;
+      if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') stack.push(value);
       node = node.parentElement;
     }
-    return getComputedStyle(document.body).backgroundColor;
+    return stack;
   };
   const disc = (mark) => {
     const element = mark.querySelector('[data-slot="product-mark-disc"]');
@@ -377,7 +386,7 @@ const MEASURE = `(() => {
         tag: (element.className || element.tagName.toLowerCase()).slice(0, 44),
         color: getComputedStyle(element).color,
         own: getComputedStyle(element).backgroundColor,
-        ground: groundBehind(element),
+        ground: groundsBehind(element),
       })),
     proseLink: computed('[data-slot="prose"] a', ['color', 'text-decoration-line']),
     status: computed('[data-slot="alert"]', ['border-top-style', 'border-top-color', 'background-color']),
@@ -443,6 +452,52 @@ function contrast(left, right) {
   const b = luminance(right);
   if (a === null || b === null) return null;
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+/** The alpha channel of a colour, 1 when the spelling carries none. */
+function alphaOf(value) {
+  const match = /^rgba?\(\s*[\d.]+[,\s]+[\d.]+[,\s]+[\d.]+(?:[,\s]+([\d.]+))?\s*\)$/.exec(String(value));
+  if (match) return match[1] === undefined ? 1 : Number(match[1]);
+  return 1;
+}
+
+/**
+ * The ground behind a piece of text, composited.
+ *
+ * The page side hands over every ancestor that paints, nearest first, and this
+ * composites what the reader actually sees. The nearest opaque layer is the bottom
+ * of the visible world: it hides everything farther back than itself, and every
+ * translucent layer nearer than it is a veil over it, applied farthest first, the
+ * way the page paints, so the nearest veil is the last word on the colour the text
+ * sits on. A raw rgba veil read channel by channel is a solid colour at full
+ * strength, which is how text on a glass card measured 1.00:1 against itself in
+ * dark mode: the veil is seven percent, the reader sees the veil over the ground,
+ * and the ratio belongs to the pair the reader has. A layer whose spelling this
+ * file cannot read as a colour (a relative or wide-gamut computed value) is skipped
+ * as paint, which is the old reading too; a world with no opaque layer at all
+ * grounds on white, the canvas default.
+ */
+function groundOf(stack) {
+  const painted = Array.isArray(stack) ? stack : [stack];
+  let base = null;
+  let bottom = painted.length;
+  for (let at = 0; at < painted.length; at += 1) {
+    const rgb = channels(painted[at]);
+    if (!rgb) continue;
+    if (alphaOf(painted[at]) >= 1) {
+      base = rgb;
+      bottom = at;
+      break;
+    }
+  }
+  let behind = base ?? [1, 1, 1];
+  for (let at = bottom - 1; at >= 0; at -= 1) {
+    const rgb = channels(painted[at]);
+    if (!rgb) continue;
+    const alpha = alphaOf(painted[at]);
+    behind = behind.map((channel, channelAt) => rgb[channelAt] * alpha + channel * (1 - alpha));
+  }
+  return `rgb(${behind.map((channel) => Math.round(channel * 255)).join(', ')})`;
 }
 
 /** A colour as `rgb(r, g, b)`, so a token and a computed value can be compared. */
@@ -548,7 +603,10 @@ for (const mode of MODES) {
        screenshot review will not see a caption that has gone to 2:1 on a filled panel:
        the panel is dark, the caption is dark, and the page still looks designed. */
     const worst = measured.paragraphs
-      .map((entry) => ({ ...entry, ratio: contrast(entry.color, entry.ground) }))
+      .map((entry) => {
+        const ground = groundOf(entry.ground);
+        return { ...entry, ground, ratio: contrast(entry.color, ground) };
+      })
       .reduce(
         (lowest, entry) => (entry.ratio !== null && (lowest === null || entry.ratio < lowest.ratio) ? entry : lowest),
         null,
